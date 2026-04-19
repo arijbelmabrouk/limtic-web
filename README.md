@@ -11,8 +11,11 @@ Encadrant : M. Mohamed Sahbi Bahroun
 
 ## Structure du projet
 limtic-web/
+
 ├── limtic-backend/     # API REST Spring Boot
+
 ├── limtic-frontend/    # Interface Angular
+
 └── database/
     └── limtic_db.sql   # Script SQL pour recréer la base
 
