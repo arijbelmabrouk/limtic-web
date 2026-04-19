@@ -17,7 +17,6 @@ limtic-web/
 ├── limtic-frontend/    # Interface Angular
 
 └── database/
-
     └── limtic_db.sql   # Script SQL pour recréer la base
 
 ## Lancer le projet
