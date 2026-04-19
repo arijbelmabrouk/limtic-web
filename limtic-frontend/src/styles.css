@@ -1,0 +1,11 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #111827;
+}
+
+:root {
+  --bg-page: #111827;
+  --bg-card: #1f2937;
+  --border: rgba(255,255,255,0.08);
+}

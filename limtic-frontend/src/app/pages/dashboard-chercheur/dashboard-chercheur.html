@@ -1,0 +1,124 @@
+<div class="dashboard">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+        <span class="brand-logo">⬡</span>
+        <div class="brand-text">
+            <span class="brand-name">LIMTIC</span>
+            <span class="brand-role">Chercheur</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button [class.active]="activeTab() === 'publications'" (click)="activeTab.set('publications')">
+        📄 Mes Publications
+      </button>
+      <button [class.active]="activeTab() === 'ajouter'" (click)="activeTab.set('ajouter')">
+        ➕ Ajouter publication
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="user-email">{{ email() }}</span>
+      <span class="user-role">CHERCHEUR</span>
+      <button class="btn-logout-side" (click)="logout()">⏻ Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    @if (message()) {
+      <div class="alert-success">✅ {{ message() }}</div>
+    }
+
+    <!-- Stats header -->
+    <div class="dash-header">
+      <div>
+        <h1>Mon Espace Chercheur</h1>
+        <p class="dash-sub">Bienvenue, {{ email() }}</p>
+      </div>
+      <span class="role-badge">{{ role() }}</span>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">{{ publications().length }}</div>
+        <div class="stat-label">Publications totales</div>
+      </div>
+      <div class="stat-card clickable" (click)="activeTab.set('ajouter')">
+        <div class="stat-icon">➕</div>
+        <div class="stat-label">Ajouter une publication</div>
+      </div>
+    </div>
+
+    <!-- TAB: AJOUTER -->
+    @if (activeTab() === 'ajouter') {
+      <div class="form-card">
+        <h2>Nouvelle Publication</h2>
+        <div class="form-grid">
+          <div class="field full">
+            <label>Titre *</label>
+            <input [(ngModel)]="newPub.titre" placeholder="Titre de la publication" />
+          </div>
+          <div class="field">
+            <label>Type</label>
+            <select [(ngModel)]="newPub.type">
+              <option value="Journal">Article de journal</option>
+              <option value="Conference">Conférence internationale</option>
+              <option value="Conference Nationale">Conférence nationale</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Année</label>
+            <input type="number" [(ngModel)]="newPub.annee" />
+          </div>
+          <div class="field">
+            <label>Journal / Conférence</label>
+            <input [(ngModel)]="newPub.journal" placeholder="IEEE, ACM..." />
+          </div>
+          <div class="field full">
+            <label>Résumé</label>
+            <textarea [(ngModel)]="newPub.resume" placeholder="Résumé de la publication..." rows="3"></textarea>
+          </div>
+        </div>
+        <button class="btn-submit" (click)="ajouterPublication()">Publier</button>
+      </div>
+    }
+
+    <!-- TAB: PUBLICATIONS -->
+    @if (activeTab() === 'publications') {
+      <div class="tab-header">
+        <h2>Toutes les Publications</h2>
+        <p>{{ publications().length }} publication(s) enregistrée(s)</p>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Type</th>
+              <th>Journal / Conf.</th>
+              <th>Année</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of publications(); track p.id) {
+              <tr>
+                <td class="cell-title">{{ p.titre }}</td>
+                <td>
+                  <span class="badge-type" [class]="p.type === 'Journal' ? 'type-j' : 'type-c'">
+                    {{ p.type }}
+                  </span>
+                </td>
+                <td class="cell-muted">{{ p.journal }}</td>
+                <td class="cell-muted">{{ p.annee }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </main>
+</div>

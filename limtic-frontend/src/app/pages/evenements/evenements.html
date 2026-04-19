@@ -1,0 +1,23 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Événements</h1>
+    <p>Séminaires, workshops et soutenances à venir</p>
+  </div>
+  <div class="events-grid">
+    @for (e of evenements(); track e.id) {
+      <div class="event-card">
+        <div class="event-date">
+          <span class="day">{{ e.dateEvenement | slice:8:10 }}</span>
+          <span class="month">{{ e.dateEvenement | slice:5:7 }}</span>
+          <span class="year">{{ e.dateEvenement | slice:0:4 }}</span>
+        </div>
+        <div class="event-body">
+          <span class="event-type">{{ e.type }}</span>
+          <h3>{{ e.titre }}</h3>
+          <p class="event-lieu">📍 {{ e.lieu }}</p>
+          <p class="event-desc">{{ e.description }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>

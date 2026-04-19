@@ -1,0 +1,27 @@
+@if (showNavbar()) {
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="nav-logo">⬡</span>
+      <span class="nav-title">LIMTIC</span>
+    </div>
+    <div class="nav-links">
+      <a routerLink="/home" routerLinkActive="active">Accueil</a>
+      <a routerLink="/chercheurs" routerLinkActive="active">Chercheurs</a>
+      <a routerLink="/publications" routerLinkActive="active">Publications</a>
+      <a routerLink="/evenements" routerLinkActive="active">Événements</a>
+      <a routerLink="/outils" routerLinkActive="active">Outils</a>
+    </div>
+    <div class="nav-auth">
+      @if (isLoggedIn()) {
+        <div class="user-info">
+          <span class="user-badge">{{ userRole() }}</span>
+          <span class="user-email">{{ userEmail() }}</span>
+        </div>
+        <button class="btn-logout" (click)="logout()">Déconnexion</button>
+      } @else {
+        <a routerLink="/login" class="btn-signup">Connexion</a>
+      }
+    </div>
+  </nav>
+}
+<router-outlet />

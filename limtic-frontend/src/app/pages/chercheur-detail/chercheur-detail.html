@@ -1,0 +1,41 @@
+<div class="page">
+  @if (chercheur()) {
+    <div class="profile-header">
+      <div class="avatar">{{ chercheur()!.prenom[0] }}{{ chercheur()!.nom[0] }}</div>
+      <div class="profile-info">
+        <h1>{{ chercheur()!.prenom }} {{ chercheur()!.nom }}</h1>
+        <span class="grade">{{ chercheur()!.grade }}</span>
+        <span class="institution">🏛️ {{ chercheur()!.institution }}</span>
+        <span class="specialite">🔬 {{ chercheur()!.specialite }}</span>
+        @if (chercheur()!.user) {
+          <span class="email">✉️ {{ chercheur()!.user.email }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Publications <span class="count">{{ chercheur()!.publications.length }}</span></h2>
+      <div class="pub-list">
+        @for (p of chercheur()!.publications; track p.id) {
+          <div class="pub-card">
+            <span class="pub-type" [class]="p.type === 'Journal' ? 'type-journal' : 'type-conf'">
+              {{ p.type }}
+            </span>
+            <div class="pub-body">
+              <h4>{{ p.titre }}</h4>
+              <p>{{ p.journal }} — {{ p.annee }}</p>
+              @if (p.axe) {
+                <span class="axe-tag">{{ p.axe.nom }}</span>
+              }
+            </div>
+          </div>
+        }
+        @empty {
+          <p class="empty">Aucune publication enregistrée.</p>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="loading">Chargement...</div>
+  }
+</div>
