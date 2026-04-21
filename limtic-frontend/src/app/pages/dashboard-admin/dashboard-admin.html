@@ -13,6 +13,9 @@
       <button [class.active]="activeTab() === 'membres'" (click)="setTab('membres')">
         👨‍🔬 Membres
       </button>
+      <button [class.active]="activeTab() === 'comptes'" (click)="setTab('comptes')">
+        👤 Comptes
+      </button>
       <button [class.active]="activeTab() === 'publications'" (click)="setTab('publications')">
         📄 Publications
       </button>
@@ -60,11 +63,11 @@
           <div class="stat-label">Événements</div>
           <div class="stat-action">Gérer →</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">🔬</div>
-          <div class="stat-num">–</div>
-          <div class="stat-label">Axes de recherche</div>
-          <div class="stat-action">Bientôt</div>
+        <div class="stat-card" (click)="setTab('comptes')">
+          <div class="stat-icon">👤</div>
+          <div class="stat-num">{{ users().length }}</div>
+          <div class="stat-label">Comptes</div>
+          <div class="stat-action">Gérer →</div>
         </div>
       </div>
 
@@ -76,6 +79,9 @@
           </div>
           <div class="quick-card" (click)="setTab('evenements'); showForm.set('event')">
             <span>➕</span> Nouvel événement
+          </div>
+          <div class="quick-card" (click)="setTab('comptes'); showForm.set('user')">
+            <span>➕</span> Nouveau compte
           </div>
           <div class="quick-card" (click)="setTab('membres')">
             <span>👥</span> Voir tous les membres
@@ -122,6 +128,86 @@
                   <div class="actions-row">
                     <button class="btn-action btn-view" [routerLink]="['/chercheurs', c.id]">Voir</button>
                     <button class="btn-action btn-delete" (click)="supprimerChercheur(c.id)">Suppr.</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- TAB: COMPTES -->
+    @if (activeTab() === 'comptes') {
+      <div class="tab-header-row">
+        <div>
+          <h1>Gestion des Comptes</h1>
+          <p>{{ users().length }} compte(s) enregistré(s)</p>
+        </div>
+        <button class="btn-add" (click)="showForm.set(showForm() === 'user' ? '' : 'user')">
+          {{ showForm() === 'user' ? '✕ Fermer' : '➕ Nouveau compte' }}
+        </button>
+      </div>
+
+      @if (showForm() === 'user') {
+        <div class="form-card">
+          <h2>Créer un compte</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label>Email *</label>
+              <input [(ngModel)]="newUser.email" placeholder="email@limtic.tn" />
+            </div>
+            <div class="field">
+              <label>Mot de passe *</label>
+              <input type="password" [(ngModel)]="newUser.motDePasse" placeholder="••••••••" />
+            </div>
+            <div class="field">
+              <label>Rôle</label>
+              <select [(ngModel)]="newUser.role">
+                <option value="CHERCHEUR">Chercheur</option>
+                <option value="ADMIN">Admin</option>
+                <option value="VISITEUR">Visiteur</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-submit" (click)="creerCompte()">Créer le compte</button>
+        </div>
+      }
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of users(); track u.id) {
+              <tr>
+                <td class="cell-title">{{ u.email }}</td>
+                <td>
+                  <select class="role-select" [value]="u.role" (change)="changerRole(u.id, $event)">
+                    <option value="CHERCHEUR">CHERCHEUR</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="VISITEUR">VISITEUR</option>
+                  </select>
+                </td>
+                <td>
+                  <span class="badge-status"
+                    [class.status-on]="u.actif"
+                    [class.status-off]="!u.actif">
+                    {{ u.actif ? 'Actif' : 'Désactivé' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-row">
+                    <button class="btn-action btn-view" (click)="toggleActif(u.id)">
+                      {{ u.actif ? 'Désactiver' : 'Activer' }}
+                    </button>
+                    <button class="btn-action btn-delete" (click)="supprimerUser(u.id)">Suppr.</button>
                   </div>
                 </td>
               </tr>

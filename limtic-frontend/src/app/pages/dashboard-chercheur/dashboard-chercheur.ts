@@ -17,6 +17,15 @@ export class DashboardChercheur implements OnInit {
   publications = signal<Publication[]>([]);
   message = signal('');
 
+  chercheurId = signal<number | null>(null);
+
+  profil = signal<any>({});
+  editProfil = {
+    grade: '', specialite: '', institution: '',
+    bureau: '', telephone: '', biographie: '',
+    googleScholar: '', researchGate: '', orcid: '', linkedin: ''
+  };
+
   newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '' };
 
   constructor(private router: Router, private api: ApiService) {}
@@ -27,6 +36,47 @@ export class DashboardChercheur implements OnInit {
     this.email.set(localStorage.getItem('email') || '');
     this.role.set(localStorage.getItem('role') || '');
     this.api.getPublications().subscribe(data => this.publications.set(data));
+    this.loadProfil();
+  }
+
+  loadProfil() {
+    const email = this.email();
+    fetch('http://localhost:8080/api/chercheurs')
+      .then(r => r.json())
+      .then((data: any[]) => {
+        const c = data.find(ch =>
+          ch.user?.email === email || ch.email === email
+        );
+        if (c) {
+          this.chercheurId.set(c.id);
+          this.profil.set(c);
+          this.editProfil = {
+            grade:        c.grade        || '',
+            specialite:   c.specialite   || '',
+            institution:  c.institution  || '',
+            bureau:       c.bureau       || '',
+            telephone:    c.telephone    || '',
+            biographie:   c.biographie   || '',
+            googleScholar: c.googleScholar || '',
+            researchGate:  c.researchGate  || '',
+            orcid:         c.orcid         || '',
+            linkedin:      c.linkedin      || ''
+          };
+        }
+      });
+  }
+
+  sauvegarderProfil() {
+    const id = this.chercheurId();
+    if (!id) { this.message.set('Profil introuvable.'); return; }
+    fetch(`http://localhost:8080/api/chercheurs/${id}/profil`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(this.editProfil)
+    }).then(() => {
+      this.message.set('Profil mis à jour avec succès !');
+      this.loadProfil();
+    });
   }
 
   ajouterPublication() {

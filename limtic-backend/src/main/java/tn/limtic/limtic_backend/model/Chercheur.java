@@ -3,7 +3,7 @@ package tn.limtic.limtic_backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
@@ -31,13 +31,21 @@ public class Chercheur {
     private String photoUrl;
     private String cvUrl;
 
+    private String bureau;
+    private String telephone;
+    private String biographie;
+    private String googleScholar;
+    private String researchGate;
+    private String orcid;
+    private String linkedin;
+
     @ManyToMany
     @JoinTable(
         name = "chercheur_publication",
         joinColumns = @JoinColumn(name = "chercheur_id"),
         inverseJoinColumns = @JoinColumn(name = "publication_id")
     )
-    @JsonIgnoreProperties("chercheurs")
+    @JsonIgnoreProperties({"chercheurs", "axe"})
     private List<Publication> publications;
 
     @ManyToMany
@@ -46,5 +54,6 @@ public class Chercheur {
         joinColumns = @JoinColumn(name = "chercheur_id"),
         inverseJoinColumns = @JoinColumn(name = "axe_id")
     )
+    @JsonIgnoreProperties("chercheurs")
     private List<AxeRecherche> axes;
 }

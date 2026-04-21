@@ -3,8 +3,7 @@ package tn.limtic.limtic_backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -20,7 +19,7 @@ public class AxeRecherche {
 
     private String description;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "axes")
-    @JsonIgnoreProperties("axes")
     private List<Chercheur> chercheurs;
 }

@@ -10,6 +10,9 @@
         </div>
     </div>
     <nav class="sidebar-nav">
+      <button [class.active]="activeTab() === 'profil'" (click)="activeTab.set('profil')">
+        👤 Mon Profil
+      </button>
       <button [class.active]="activeTab() === 'publications'" (click)="activeTab.set('publications')">
         📄 Mes Publications
       </button>
@@ -49,7 +52,72 @@
         <div class="stat-icon">➕</div>
         <div class="stat-label">Ajouter une publication</div>
       </div>
+      <div class="stat-card clickable" (click)="activeTab.set('profil')">
+        <div class="stat-icon">👤</div>
+        <div class="stat-label">Mon Profil</div>
+      </div>
     </div>
+
+    <!-- TAB: PROFIL -->
+    @if (activeTab() === 'profil') {
+      <div class="tab-header">
+        <h1>Mon Profil</h1>
+        <p>{{ profil().prenom }} {{ profil().nom }}</p>
+      </div>
+
+      <div class="form-card">
+        <h2>Informations générales</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label>Grade</label>
+            <input [(ngModel)]="editProfil.grade" placeholder="ex. Maître de conférences" />
+          </div>
+          <div class="field">
+            <label>Spécialité</label>
+            <input [(ngModel)]="editProfil.specialite" placeholder="ex. Intelligence Artificielle" />
+          </div>
+          <div class="field">
+            <label>Institution</label>
+            <input [(ngModel)]="editProfil.institution" placeholder="ex. ISI El Manar" />
+          </div>
+          <div class="field">
+            <label>Bureau</label>
+            <input [(ngModel)]="editProfil.bureau" placeholder="ex. Bureau 204" />
+          </div>
+          <div class="field">
+            <label>Téléphone</label>
+            <input [(ngModel)]="editProfil.telephone" placeholder="ex. +216 71 XXX XXX" />
+          </div>
+          <div class="field full">
+            <label>Biographie</label>
+            <textarea [(ngModel)]="editProfil.biographie" rows="4"
+              placeholder="Décrivez vos activités de recherche..."></textarea>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 1.5rem; margin-bottom: 1rem;">Liens externes</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label>🎓 Google Scholar</label>
+            <input [(ngModel)]="editProfil.googleScholar" placeholder="https://scholar.google.com/..." />
+          </div>
+          <div class="field">
+            <label>🔬 ResearchGate</label>
+            <input [(ngModel)]="editProfil.researchGate" placeholder="https://www.researchgate.net/..." />
+          </div>
+          <div class="field">
+            <label>🆔 ORCID</label>
+            <input [(ngModel)]="editProfil.orcid" placeholder="https://orcid.org/..." />
+          </div>
+          <div class="field">
+            <label>💼 LinkedIn</label>
+            <input [(ngModel)]="editProfil.linkedin" placeholder="https://linkedin.com/in/..." />
+          </div>
+        </div>
+
+        <button class="btn-submit" (click)="sauvegarderProfil()">💾 Sauvegarder le profil</button>
+      </div>
+    }
 
     <!-- TAB: AJOUTER -->
     @if (activeTab() === 'ajouter') {

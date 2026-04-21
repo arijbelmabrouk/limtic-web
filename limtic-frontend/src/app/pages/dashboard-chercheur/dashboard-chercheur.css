@@ -281,3 +281,11 @@
   letter-spacing: 1px;
   text-transform: uppercase;
 }
+
+.tab-header h1 {
+  color: white;
+}
+
+.tab-header h2 {
+  color: white;
+}

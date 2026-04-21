@@ -18,6 +18,7 @@ export class DashboardAdmin implements OnInit {
   chercheurs = signal<any[]>([]);
   publications = signal<any[]>([]);
   evenements = signal<any[]>([]);
+  users = signal<any[]>([]);
 
   showForm = signal('');
   message = signal('');
@@ -26,6 +27,7 @@ export class DashboardAdmin implements OnInit {
   newChercheur = { nom: '', prenom: '', grade: '', institution: '', specialite: '' };
   newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '' };
   newEvent = { titre: '', type: 'Séminaire', dateEvenement: '', lieu: '', description: '' };
+  newUser = { email: '', motDePasse: '', role: 'CHERCHEUR' };
 
   constructor(private router: Router, private api: ApiService) {}
 
@@ -53,6 +55,7 @@ export class DashboardAdmin implements OnInit {
       this.evenements.set(data);
       this.stats.update(s => ({ ...s, evenements: data.length }));
     });
+    this.loadUsers();
   }
 
   setTab(tab: string) {
@@ -61,6 +64,7 @@ export class DashboardAdmin implements OnInit {
     this.message.set('');
   }
 
+  // ── Publications ──────────────────────────────────────────
   ajouterPublication() {
     fetch('http://localhost:8080/api/publications', {
       method: 'POST',
@@ -83,6 +87,7 @@ export class DashboardAdmin implements OnInit {
       });
   }
 
+  // ── Événements ────────────────────────────────────────────
   ajouterEvenement() {
     fetch('http://localhost:8080/api/evenements', {
       method: 'POST',
@@ -105,6 +110,7 @@ export class DashboardAdmin implements OnInit {
       });
   }
 
+  // ── Chercheurs ────────────────────────────────────────────
   supprimerChercheur(id: number) {
     if (!confirm('Supprimer ce chercheur ?')) return;
     fetch(`http://localhost:8080/api/chercheurs/${id}`, { method: 'DELETE' })
@@ -114,8 +120,66 @@ export class DashboardAdmin implements OnInit {
       });
   }
 
+  // ── Comptes ───────────────────────────────────────────────
+  loadUsers() {
+    fetch('http://localhost:8080/api/users')
+      .then(r => r.json())
+      .then(data => this.users.set(data));
+  }
+
+  creerCompte() {
+    if (!this.newUser.email || !this.newUser.motDePasse) {
+      this.message.set('Email et mot de passe obligatoires.');
+      return;
+    }
+    fetch('http://localhost:8080/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(this.newUser)
+    }).then(r => r.json()).then(res => {
+      if (res.error) {
+        this.message.set(res.error);
+      } else {
+        this.message.set('Compte créé avec succès !');
+        this.showForm.set('');
+        this.newUser = { email: '', motDePasse: '', role: 'CHERCHEUR' };
+        this.loadUsers();
+      }
+    });
+  }
+
+  changerRole(id: number, event: Event) {
+    const role = (event.target as HTMLSelectElement).value;
+    fetch(`http://localhost:8080/api/users/${id}/role`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role })
+    }).then(() => {
+      this.message.set('Rôle modifié.');
+      this.loadUsers();
+    });
+  }
+
+  toggleActif(id: number) {
+    fetch(`http://localhost:8080/api/users/${id}/toggle`, { method: 'PATCH' })
+      .then(() => {
+        this.message.set('Statut du compte modifié.');
+        this.loadUsers();
+      });
+  }
+
+  supprimerUser(id: number) {
+    if (!confirm('Supprimer ce compte définitivement ?')) return;
+    fetch(`http://localhost:8080/api/users/${id}`, { method: 'DELETE' })
+      .then(() => {
+        this.message.set('Compte supprimé.');
+        this.loadUsers();
+      });
+  }
+
+  // ── Auth ──────────────────────────────────────────────────
   logout() {
-  localStorage.clear();
-  this.router.navigate(['/login']);
-}
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
 }

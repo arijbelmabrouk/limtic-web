@@ -1,4 +1,8 @@
 <div class="page">
+  <button class="btn-retour" (click)="retour()">
+    ← {{ isAdmin ? 'Retour au dashboard' : 'Retour aux chercheurs' }}
+  </button>
+
   @if (chercheur()) {
     <div class="profile-header">
       <div class="avatar">{{ chercheur()!.prenom[0] }}{{ chercheur()!.nom[0] }}</div>
@@ -14,7 +18,7 @@
     </div>
 
     <div class="section">
-      <h2>Publications <span class="count">{{ chercheur()!.publications.length }}</span></h2>
+      <h2>Publications <span class="count">{{ chercheur()!.publications?.length || 0 }}</span></h2>
       <div class="pub-list">
         @for (p of chercheur()!.publications; track p.id) {
           <div class="pub-card">

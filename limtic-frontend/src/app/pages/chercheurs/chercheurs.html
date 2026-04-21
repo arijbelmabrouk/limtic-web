@@ -13,7 +13,7 @@
           <span class="grade">{{ c.grade }}</span>
           <span class="institution">{{ c.institution }}</span>
           <div class="specialite">🔬 {{ c.specialite }}</div>
-          <div class="pub-count">{{ c.publications.length }} publication(s)</div>
+          <div class="pub-count">{{ c.publications?.length || 0 }} publication(s)</div>
         </div>
         <div class="card-footer">Voir profil →</div>
       </div>
