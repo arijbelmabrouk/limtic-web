@@ -4,16 +4,73 @@
       <span class="nav-logo">⬡</span>
       <span class="nav-title">LIMTIC</span>
     </div>
+
     <div class="nav-links">
-      <a routerLink="/home"         routerLinkActive="active">Accueil</a>
-      <a routerLink="/chercheurs"   routerLinkActive="active">Chercheurs</a>
-      <a routerLink="/axes"         routerLinkActive="active">Axes</a>
-      <a routerLink="/doctorants" routerLinkActive="active">Doctorants</a>
-      <a routerLink="/publications" routerLinkActive="active">Publications</a>
-      <a routerLink="/evenements"   routerLinkActive="active">Événements</a>
-      <a routerLink="/outils"       routerLinkActive="active">Outils</a>
-      <a routerLink="/contact"      routerLinkActive="active">Contact</a>
+      <a routerLink="/home" routerLinkActive="active" (click)="fermerDropdowns()">Accueil</a>
+
+      <!-- Équipe -->
+      <div class="nav-dropdown">
+        <span class="nav-dropdown-trigger" [class.active]="dropdownOuvert() === 'equipe'"
+              (click)="toggleDropdown('equipe')">
+          Équipe <span class="arrow">▾</span>
+        </span>
+        @if (dropdownOuvert() === 'equipe') {
+          <div class="dropdown-menu">
+            <a routerLink="/directeur" routerLinkActive="active" (click)="fermerDropdowns()">
+              <span class="dd-icon">👤</span> Directeur
+            </a>
+            <a routerLink="/chercheurs" routerLinkActive="active" (click)="fermerDropdowns()">
+              <span class="dd-icon">🔬</span> Chercheurs
+            </a>
+            <a routerLink="/doctorants" routerLinkActive="active" (click)="fermerDropdowns()">
+              <span class="dd-icon">🎓</span> Doctorants
+            </a>
+            <a routerLink="/masteriens" routerLinkActive="active" (click)="fermerDropdowns()">
+              <span class="dd-icon">📚</span> Mastériens
+            </a>
+          </div>
+        }
+      </div>
+
+      <!-- Recherche -->
+      <div class="nav-dropdown">
+        <span class="nav-dropdown-trigger" [class.active]="dropdownOuvert() === 'recherche'"
+              (click)="toggleDropdown('recherche')">
+          Recherche <span class="arrow">▾</span>
+        </span>
+        @if (dropdownOuvert() === 'recherche') {
+          <div class="dropdown-menu">
+            <a routerLink="/publications" routerLinkActive="active" (click)="fermerDropdowns()">
+              <span class="dd-icon">📄</span> Publications
+            </a>
+            <a routerLink="/axes" routerLinkActive="active" (click)="fermerDropdowns()">
+              <span class="dd-icon">🧭</span> Axes de recherche
+            </a>
+            <a routerLink="/outils" routerLinkActive="active" (click)="fermerDropdowns()">
+              <span class="dd-icon">🛠️</span> Outils
+            </a>
+          </div>
+        }
+      </div>
+
+      <!-- Activités -->
+      <div class="nav-dropdown">
+        <span class="nav-dropdown-trigger" [class.active]="dropdownOuvert() === 'activites'"
+              (click)="toggleDropdown('activites')">
+          Activités <span class="arrow">▾</span>
+        </span>
+        @if (dropdownOuvert() === 'activites') {
+          <div class="dropdown-menu">
+            <a routerLink="/evenements" routerLinkActive="active" (click)="fermerDropdowns()">
+              <span class="dd-icon">📅</span> Événements
+            </a>
+          </div>
+        }
+      </div>
+
+      <a routerLink="/contact" routerLinkActive="active" (click)="fermerDropdowns()">Contact</a>
     </div>
+
     <div class="nav-auth">
       @if (isLoggedIn()) {
         <div class="user-info">

@@ -15,14 +15,13 @@ export class DashboardAdmin implements OnInit {
   email     = signal('');
   activeTab = signal('dashboard');
 
-  stats = signal({ chercheurs: 0, publications: 0, evenements: 0, outils: 0, axes: 0, users: 0, doctorants: 0 });
-
+  stats = signal({ chercheurs: 0, publications: 0, evenements: 0, outils: 0, axes: 0, users: 0, doctorants: 0, masteriens: 0 });
   chercheurs   = signal<any[]>([]);
   publications = signal<any[]>([]);
   evenements   = signal<any[]>([]);
   users        = signal<any[]>([]);
   doctorants   = signal<any[]>([]);
-
+  masteriens   = signal<any[]>([]);
   // ── Axes ──────────────────────────────────────────────────
   axes       = signal<any[]>([]);
   editingAxe = signal<any | null>(null);
@@ -40,8 +39,14 @@ export class DashboardAdmin implements OnInit {
     mention: '', photoUrl: ''
   };
 
-  // editing doctorant
+  newMasterien = {
+    nom: '', prenom: '', sujetMemoire: '',
+    encadrantId: null as number | null,
+    promotion: '', statut: 'EN_COURS'
+  };
+  
   editingDoctorant = signal<any | null>(null);
+  editingMasterien = signal<any | null>(null);
 
   showForm = signal('');
   message  = signal('');
@@ -76,6 +81,7 @@ export class DashboardAdmin implements OnInit {
     this.loadUsers();
     this.loadAxes();
     this.loadDoctorants();
+    this.loadMasteriens();
   }
 
   setTab(tab: string) {
@@ -84,6 +90,7 @@ export class DashboardAdmin implements OnInit {
     this.message.set('');
     this.editingAxe.set(null);
     this.editingDoctorant.set(null);
+    this.editingMasterien.set(null);
   }
 
   // ── Publications ──────────────────────────────────────────
@@ -309,6 +316,57 @@ export class DashboardAdmin implements OnInit {
     this.api.deleteDoctorant(id).subscribe(() => {
       this.message.set('Doctorant supprimé.');
       this.loadDoctorants();
+    });
+  }
+
+    // ── Masteriens ────────────────────────────────────────────
+  loadMasteriens() {
+    this.api.getMasteriens().subscribe(data => {
+      this.masteriens.set(data);
+      this.stats.update(s => ({ ...s, masteriens: data.length }));
+    });
+  }
+
+  ajouterMasterien() {
+    if (!this.newMasterien.nom || !this.newMasterien.prenom) {
+      this.message.set('Nom et prénom obligatoires.');
+      return;
+    }
+    this.api.createMasterien(this.newMasterien).subscribe(() => {
+      this.message.set('Mastérien ajouté !');
+      this.showForm.set('');
+      this.newMasterien = { nom: '', prenom: '', sujetMemoire: '', encadrantId: null, promotion: '', statut: 'EN_COURS' };
+      this.loadMasteriens();
+    });
+  }
+
+  startEditMasterien(m: any) {
+    this.editingMasterien.set({
+      id: m.id, nom: m.nom, prenom: m.prenom,
+      sujetMemoire: m.sujetMemoire || '',
+      encadrantId: m.encadrant?.id ?? null,
+      promotion: m.promotion || '',
+      statut: m.statut || 'EN_COURS'
+    });
+  }
+
+  saveEditMasterien() {
+    const m = this.editingMasterien();
+    if (!m) return;
+    this.api.updateMasterien(m.id, m).subscribe(() => {
+      this.message.set('Mastérien mis à jour !');
+      this.editingMasterien.set(null);
+      this.loadMasteriens();
+    });
+  }
+
+  cancelEditMasterien() { this.editingMasterien.set(null); }
+
+  supprimerMasterien(id: number) {
+    if (!confirm('Supprimer ce mastérien ?')) return;
+    this.api.deleteMasterien(id).subscribe(() => {
+      this.message.set('Mastérien supprimé.');
+      this.loadMasteriens();
     });
   }
 

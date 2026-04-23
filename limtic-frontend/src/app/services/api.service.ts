@@ -133,4 +133,26 @@ export class ApiService {
       headers: this.getHttpHeaders()
     });
   }
+
+  getMasteriens(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/masteriens`);
+  }
+
+  createMasterien(body: any): Observable<any> {
+    return this.http.post(`${this.base}/masteriens`, body, {
+      headers: this.getHttpHeaders()
+    });
+  }
+
+  updateMasterien(id: number, body: any): Observable<any> {
+    return this.http.put(`${this.base}/masteriens/${id}`, body, {
+      headers: this.getHttpHeaders()
+    });
+  }
+
+  deleteMasterien(id: number): Observable<any> {
+    return this.http.delete(`${this.base}/masteriens/${id}`, {
+      headers: this.getHttpHeaders()
+    });
+  }
 }

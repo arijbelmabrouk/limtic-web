@@ -28,6 +28,9 @@
       <button [class.active]="activeTab() === 'doctorants'" (click)="setTab('doctorants')">
         🎓 Doctorants
       </button>
+      <button [class.active]="activeTab() === 'masteriens'" (click)="setTab('masteriens')">
+        📚 Mastériens
+      </button>
     </nav>
     <div class="sidebar-footer">
       <span class="admin-email">{{ email() }}</span>
@@ -87,6 +90,12 @@
           <div class="stat-label">Doctorants</div>
           <div class="stat-action">Gérer →</div>
         </div>
+        <div class="stat-card" (click)="setTab('masteriens')">
+          <div class="stat-icon">📚</div>
+          <div class="stat-num">{{ stats().masteriens }}</div>
+          <div class="stat-label">Mastériens</div>
+          <div class="stat-action">Gérer →</div>
+        </div>
       </div>
 
       <div class="quick-section">
@@ -106,6 +115,9 @@
           </div>
           <div class="quick-card" (click)="setTab('doctorants'); showForm.set('doc')">
             <span>➕</span> Nouveau doctorant
+          </div>
+          <div class="quick-card" (click)="setTab('masteriens'); showForm.set('masterien')">
+            <span>➕</span> Nouveau mastérien
           </div>
           <div class="quick-card" (click)="setTab('membres')">
             <span>👥</span> Voir tous les membres
@@ -627,7 +639,6 @@
           </tbody>
         </table>
       </div>
-
       @if (editingDoctorant()) {
         <div class="form-card">
           <h2>Modifier le doctorant</h2>
@@ -684,6 +695,149 @@
         </div>
       }
     }
+
+    <!-- TAB: MASTERIENS -->
+      @if (activeTab() === 'masteriens') {
+        <div class="tab-header-row">
+          <div>
+            <h1>Gestion des Mastériens</h1>
+            <p>{{ masteriens().length }} mastérien(s) enregistré(s)</p>
+          </div>
+          <button class="btn-add" (click)="showForm.set(showForm() === 'master' ? '' : 'master')">
+            {{ showForm() === 'master' ? '✕ Fermer' : '➕ Nouveau mastérien' }}
+          </button>
+        </div>
+
+        @if (showForm() === 'master') {
+          <div class="form-card">
+            <h2>Ajouter un mastérien</h2>
+            <div class="form-grid">
+              <div class="field">
+                <label>Nom *</label>
+                <input [(ngModel)]="newMasterien.nom" placeholder="Nom" />
+              </div>
+              <div class="field">
+                <label>Prénom *</label>
+                <input [(ngModel)]="newMasterien.prenom" placeholder="Prénom" />
+              </div>
+              <div class="field full">
+                <label>Sujet de mémoire</label>
+                <input [(ngModel)]="newMasterien.sujetMemoire" placeholder="Sujet du mémoire..." />
+              </div>
+              <div class="field">
+                <label>Encadrant</label>
+                <select [(ngModel)]="newMasterien.encadrantId">
+                  <option [value]="null">Aucun</option>
+                  @for (c of chercheurs(); track c.id) {
+                    <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label>Promotion</label>
+                <input [(ngModel)]="newMasterien.promotion" placeholder="ex: 2023-2024" />
+              </div>
+              <div class="field">
+                <label>Statut</label>
+                <select [(ngModel)]="newMasterien.statut">
+                  <option value="EN_COURS">En cours</option>
+                  <option value="DIPLOME">Diplômé</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-submit" (click)="ajouterMasterien()">Enregistrer</button>
+          </div>
+        }
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mastérien</th>
+                <th>Sujet</th>
+                <th>Encadrant</th>
+                <th>Promotion</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of masteriens(); track m.id) {
+                <tr>
+                  <td>
+                    <div class="cell-user">
+                      <div class="mini-avatar">{{ m.prenom?.[0] }}{{ m.nom?.[0] }}</div>
+                      <span>{{ m.prenom }} {{ m.nom }}</span>
+                    </div>
+                  </td>
+                  <td class="cell-muted">{{ m.sujetMemoire || '-' }}</td>
+                  <td class="cell-muted">
+                    {{ m.encadrant ? m.encadrant.prenom + ' ' + m.encadrant.nom : '-' }}
+                  </td>
+                  <td class="cell-muted">{{ m.promotion || '-' }}</td>
+                  <td>
+                    <span class="badge-status"
+                      [class.status-on]="m.statut === 'EN_COURS'"
+                      [class.status-off]="m.statut === 'DIPLOME'">
+                      {{ m.statut === 'EN_COURS' ? 'En cours' : 'Diplômé' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="actions-row">
+                      <button class="btn-action btn-edit" (click)="startEditMasterien(m)">Éditer</button>
+                      <button class="btn-action btn-delete" (click)="supprimerMasterien(m.id)">Suppr.</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (editingMasterien()) {
+          <div class="form-card">
+            <h2>Modifier le mastérien</h2>
+            <div class="form-grid">
+              <div class="field">
+                <label>Nom *</label>
+                <input [(ngModel)]="editingMasterien().nom" placeholder="Nom" />
+              </div>
+              <div class="field">
+                <label>Prénom *</label>
+                <input [(ngModel)]="editingMasterien().prenom" placeholder="Prénom" />
+              </div>
+              <div class="field full">
+                <label>Sujet de mémoire</label>
+                <input [(ngModel)]="editingMasterien().sujetMemoire" placeholder="Sujet..." />
+              </div>
+              <div class="field">
+                <label>Encadrant</label>
+                <select [(ngModel)]="editingMasterien().encadrantId">
+                  <option [value]="null">Aucun</option>
+                  @for (c of chercheurs(); track c.id) {
+                    <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label>Promotion</label>
+                <input [(ngModel)]="editingMasterien().promotion" placeholder="ex: 2023-2024" />
+              </div>
+              <div class="field">
+                <label>Statut</label>
+                <select [(ngModel)]="editingMasterien().statut">
+                  <option value="EN_COURS">En cours</option>
+                  <option value="DIPLOME">Diplômé</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-submit" (click)="saveEditMasterien()">Enregistrer</button>
+              <button class="btn-cancel" (click)="cancelEditMasterien()">Annuler</button>
+            </div>
+          </div>
+        }
+      }
 
   </main>
 </div>

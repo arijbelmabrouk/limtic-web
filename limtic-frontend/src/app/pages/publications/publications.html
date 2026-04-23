@@ -1,23 +1,92 @@
 <div class="page">
   <div class="page-header">
     <h1>Publications</h1>
-    <p>Travaux scientifiques du laboratoire LIMTIC</p>
+    <p>{{ publicationsFiltrees().length }} publication(s) — Travaux scientifiques du laboratoire LIMTIC</p>
   </div>
+
+  <!-- Barre de recherche + filtres -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        placeholder="Rechercher par titre, journal, résumé..."
+        [ngModel]="recherche()"
+        (ngModelChange)="recherche.set($event)"
+      />
+    </div>
+
+    <div class="filters-row">
+      <select [ngModel]="filtreType()" (ngModelChange)="filtreType.set($event)">
+        <option value="">Tous les types</option>
+        <option value="Journal">Journal</option>
+        <option value="Conference">Conférence</option>
+        <option value="Conference Nationale">Conf. Nationale</option>
+        <option value="Chapitre">Chapitre</option>
+      </select>
+
+      <select [ngModel]="filtreAnnee()" (ngModelChange)="filtreAnnee.set($event)">
+        <option value="">Toutes les années</option>
+        @for (a of annees(); track a) {
+          <option [value]="a">{{ a }}</option>
+        }
+      </select>
+
+      <select [ngModel]="filtreAxe()" (ngModelChange)="filtreAxe.set($event)">
+        <option value="">Tous les axes</option>
+        @for (axe of axes(); track axe) {
+          <option [value]="axe">{{ axe }}</option>
+        }
+      </select>
+
+      <select [ngModel]="triPar()" (ngModelChange)="triPar.set($event)">
+        <option value="annee-desc">Année ↓</option>
+        <option value="annee-asc">Année ↑</option>
+        <option value="titre">Titre A→Z</option>
+      </select>
+
+      <button class="btn-reset" (click)="resetFiltres()">✕ Réinitialiser</button>
+    </div>
+
+    <div class="export-row">
+      <button class="btn-export bibtex" (click)="exportBibtex()">⬇ BibTeX</button>
+      <button class="btn-export csv" (click)="exportCsv()">⬇ CSV</button>
+    </div>
+  </div>
+
+  <!-- Liste publications -->
   <div class="pub-list">
-    @for (p of publications(); track p.id) {
+    @for (p of publicationsFiltrees(); track p.id) {
       <div class="pub-card">
-        <div class="pub-type" [class]="p.type === 'Journal' ? 'type-journal' : 'type-conf'">
-          {{ p.type }}
+        <div class="pub-left">
+          <div class="pub-type" [class]="p.type === 'Journal' ? 'type-journal' : 'type-conf'">
+            {{ p.type }}
+          </div>
+          @if (getBadgeClassement(p); as badge) {
+            <span class="badge-classement" [class]="badge.css">{{ badge.label }}</span>
+          }
         </div>
+
         <div class="pub-body">
           <h3>{{ p.titre }}</h3>
           <p class="pub-meta">{{ p.journal }} — {{ p.annee }}</p>
           <p class="pub-resume">{{ p.resume }}</p>
-          @if (p.axe) {
-            <span class="pub-axe">🔬 {{ p.axe.nom }}</span>
-          }
+          <div class="pub-tags">
+            @if (p.axe) {
+              <span class="pub-axe">🔬 {{ p.axe.nom }}</span>
+            }
+          </div>
         </div>
+
         <div class="pub-year">{{ p.annee }}</div>
+      </div>
+    }
+
+    @if (publicationsFiltrees().length === 0) {
+      <div class="empty-state">
+        <span>📭</span>
+        <p>Aucune publication ne correspond à votre recherche.</p>
+        <button class="btn-reset" (click)="resetFiltres()">Réinitialiser les filtres</button>
       </div>
     }
   </div>

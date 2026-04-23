@@ -17,4 +17,6 @@ export const routes: Routes = [
   { path: 'reset-password',  loadComponent: () => import('./pages/reset-password/reset-password').then(m => m.ResetPassword) },
   { path: 'contact', loadComponent: () => import('./pages/contact/contact').then(m => m.Contact) },
   { path: 'doctorants', loadComponent: () => import('./pages/doctorants/doctorants').then(m => m.Doctorants) },
+  { path: 'masteriens', loadComponent: () => import('./pages/masteriens/masteriens').then(m => m.Masteriens) },
+  { path: 'directeur', loadComponent: () => import('./pages/directeur/directeur').then(m => m.Directeur) },
 ];

@@ -43,6 +43,7 @@ export interface Chercheur {
   specialite: string;
   photoUrl: string;
   cvUrl: string;
+  statut?: string; 
   publications: Publication[];
   axes: AxeRecherche[];
 }
