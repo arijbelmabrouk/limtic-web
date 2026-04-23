@@ -1,0 +1,88 @@
+<div class="contact-page">
+
+  <!-- Hero -->
+  <section class="contact-hero">
+    <h1>Contactez-nous</h1>
+    <p>Laboratoire LIMTIC — Nous sommes à votre disposition</p>
+  </section>
+
+  <div class="contact-body">
+
+    <!-- Infos + Carte -->
+    <div class="contact-left">
+      <div class="info-card">
+        <h2>Informations</h2>
+        <div class="info-item">
+          <span class="info-icon">📍</span>
+          <div>
+            <strong>Adresse</strong>
+            <p>Institut Supérieur d'Informatique<br>2 Rue Abou Rayhane Bayrouni, Ariana 2080, Tunisie</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">📞</span>
+          <div>
+            <strong>Téléphone</strong>
+            <p>+216 71 000 000</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">✉️</span>
+          <div>
+            <strong>Email</strong>
+            <p>contact@limtic.tn</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Google Maps embed -->
+      <div class="map-container">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3193.4!2d10.1658!3d36.8978!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDUzJzUyLjEiTiAxMMKwMDknNTYuOSJF!5e0!3m2!1sfr!2stn!4v1600000000000!5m2!1sfr!2stn"
+          width="100%"
+          height="300"
+          style="border:0;"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="contact-right">
+      <div class="form-card">
+        <h2>Envoyer un message</h2>
+
+        @if (erreur()) {
+          <div class="error-msg">⚠️ {{ erreur() }}</div>
+        }
+        @if (success()) {
+          <div class="success-msg">{{ success() }}</div>
+        }
+
+        <div class="field">
+          <label>Nom complet *</label>
+          <input [(ngModel)]="form.nom" placeholder="Votre nom" />
+        </div>
+        <div class="field">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="form.email" placeholder="votre@email.com" />
+        </div>
+        <div class="field">
+          <label>Sujet *</label>
+          <input [(ngModel)]="form.sujet" placeholder="Objet de votre message" />
+        </div>
+        <div class="field">
+          <label>Message *</label>
+          <textarea [(ngModel)]="form.message" rows="6" placeholder="Votre message..."></textarea>
+        </div>
+
+        <button class="btn-submit" (click)="onSubmit()" [disabled]="loading()">
+          {{ loading() ? 'Envoi en cours...' : 'Envoyer le message' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

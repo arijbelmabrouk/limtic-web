@@ -8,6 +8,18 @@ export interface AxeRecherche {
   id: number;
   nom: string;
   description: string;
+  responsable?: {               // le chercheur responsable (optionnel)
+    id: number;
+    nom: string;
+    prenom: string;
+    grade: string;
+  };
+  chercheurs?: {                // liste des membres (optionnel)
+    id: number;
+    nom: string;
+    prenom: string;
+    grade: string;
+  }[];
 }
 
 export interface Publication {

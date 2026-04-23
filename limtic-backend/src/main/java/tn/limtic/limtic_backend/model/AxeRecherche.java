@@ -1,9 +1,12 @@
 package tn.limtic.limtic_backend.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@Data
 @Entity
 @Table(name = "axes_recherche")
 public class AxeRecherche {
@@ -18,26 +21,14 @@ public class AxeRecherche {
     @Column(columnDefinition = "text")
     private String description;
 
+    // Responsable de l'axe (un chercheur)
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "responsable_id")
+    @JsonIgnoreProperties({"axes", "publications", "user"})
     private Chercheur responsable;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "chercheur_axe",
-        joinColumns = @JoinColumn(name = "axe_id"),
-        inverseJoinColumns = @JoinColumn(name = "chercheur_id")
-    )
+    // Membres de l'axe — côté "inverse" : le @JoinTable est dans Chercheur.java
+    @ManyToMany(mappedBy = "axes", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"axes", "publications", "user"})
     private List<Chercheur> chercheurs = new ArrayList<>();
-
-    // Getters & Setters
-    public Long getId() { return id; }
-    public String getNom() { return nom; }
-    public void setNom(String nom) { this.nom = nom; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public Chercheur getResponsable() { return responsable; }
-    public void setResponsable(Chercheur responsable) { this.responsable = responsable; }
-    public List<Chercheur> getChercheurs() { return chercheurs; }
-    public void setChercheurs(List<Chercheur> chercheurs) { this.chercheurs = chercheurs; }
 }

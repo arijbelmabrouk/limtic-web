@@ -48,12 +48,13 @@ public class Chercheur {
     @JsonIgnoreProperties({"chercheurs", "axe"})
     private List<Publication> publications;
 
+    // C'est CE côté qui possède le @JoinTable pour chercheur_axe
     @ManyToMany
     @JoinTable(
         name = "chercheur_axe",
         joinColumns = @JoinColumn(name = "chercheur_id"),
         inverseJoinColumns = @JoinColumn(name = "axe_id")
     )
-    @JsonIgnoreProperties("chercheurs")
+    @JsonIgnoreProperties({"chercheurs", "responsable"})
     private List<AxeRecherche> axes;
 }

@@ -22,6 +22,12 @@
       <button [class.active]="activeTab() === 'evenements'" (click)="setTab('evenements')">
         📅 Événements
       </button>
+      <button [class.active]="activeTab() === 'axes'" (click)="setTab('axes')">
+        🔬 Axes
+      </button>
+      <button [class.active]="activeTab() === 'doctorants'" (click)="setTab('doctorants')">
+        🎓 Doctorants
+      </button>
     </nav>
     <div class="sidebar-footer">
       <span class="admin-email">{{ email() }}</span>
@@ -63,10 +69,22 @@
           <div class="stat-label">Événements</div>
           <div class="stat-action">Gérer →</div>
         </div>
+        <div class="stat-card" (click)="setTab('axes')">
+          <div class="stat-icon">🔬</div>
+          <div class="stat-num">{{ stats().axes }}</div>
+          <div class="stat-label">Axes</div>
+          <div class="stat-action">Gérer →</div>
+        </div>
         <div class="stat-card" (click)="setTab('comptes')">
           <div class="stat-icon">👤</div>
           <div class="stat-num">{{ users().length }}</div>
           <div class="stat-label">Comptes</div>
+          <div class="stat-action">Gérer →</div>
+        </div>
+        <div class="stat-card" (click)="setTab('doctorants')">
+          <div class="stat-icon">🎓</div>
+          <div class="stat-num">{{ stats().doctorants }}</div>
+          <div class="stat-label">Doctorants</div>
           <div class="stat-action">Gérer →</div>
         </div>
       </div>
@@ -80,8 +98,14 @@
           <div class="quick-card" (click)="setTab('evenements'); showForm.set('event')">
             <span>➕</span> Nouvel événement
           </div>
+          <div class="quick-card" (click)="setTab('axes'); showForm.set('axe')">
+            <span>➕</span> Nouvel axe
+          </div>
           <div class="quick-card" (click)="setTab('comptes'); showForm.set('user')">
             <span>➕</span> Nouveau compte
+          </div>
+          <div class="quick-card" (click)="setTab('doctorants'); showForm.set('doc')">
+            <span>➕</span> Nouveau doctorant
           </div>
           <div class="quick-card" (click)="setTab('membres')">
             <span>👥</span> Voir tous les membres
@@ -368,6 +392,297 @@
           </tbody>
         </table>
       </div>
+    }
+
+    <!-- TAB: AXES -->
+    @if (activeTab() === 'axes') {
+      <div class="tab-header-row">
+        <div>
+          <h1>Gestion des Axes</h1>
+          <p>{{ axes().length }} axe(s) de recherche</p>
+        </div>
+        <button class="btn-add" (click)="showForm.set(showForm() === 'axe' ? '' : 'axe')">
+          {{ showForm() === 'axe' ? '✕ Fermer' : '➕ Nouvel axe' }}
+        </button>
+      </div>
+
+      @if (showForm() === 'axe') {
+        <div class="form-card">
+          <h2>Créer un axe de recherche</h2>
+          <div class="form-grid">
+            <div class="field full">
+              <label>Nom de l'axe *</label>
+              <input [(ngModel)]="newAxe.nom" placeholder="ex. Intelligence Artificielle" />
+            </div>
+            <div class="field full">
+              <label>Description</label>
+              <textarea [(ngModel)]="newAxe.description" rows="3" placeholder="Description de l'axe..."></textarea>
+            </div>
+            <div class="field">
+              <label>Responsable</label>
+              <select [(ngModel)]="newAxe.responsableId">
+                <option value="">Aucun</option>
+                @for (c of chercheurs(); track c.id) {
+                  <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <button class="btn-submit" (click)="ajouterAxe()">Créer l'axe</button>
+        </div>
+      }
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Description</th>
+              <th>Responsable</th>
+              <th>Membres</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (axe of axes(); track axe.id) {
+              <tr>
+                <td class="cell-title">{{ axe.nom }}</td>
+                <td class="cell-muted">{{ axe.description || '-' }}</td>
+                <td>
+                  @if (axe.responsable) {
+                    <div class="cell-user">
+                      <div class="mini-avatar">{{ axe.responsable.prenom[0] }}{{ axe.responsable.nom[0] }}</div>
+                      <span>{{ axe.responsable.prenom }} {{ axe.responsable.nom }}</span>
+                    </div>
+                  } @else {
+                    <span class="cell-muted">-</span>
+                  }
+                </td>
+                <td>
+                  <span class="badge-count">{{ axe.chercheurs?.length || 0 }}</span>
+                </td>
+                <td>
+                  <div class="actions-row">
+                    <button class="btn-action btn-edit" (click)="startEditAxe(axe)">Éditer</button>
+                    <button class="btn-action btn-delete" (click)="supprimerAxe(axe.id)">Suppr.</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (editingAxe()) {
+        <div class="form-card">
+          <h2>Modifier l'axe</h2>
+          <div class="form-grid">
+            <div class="field full">
+              <label>Nom de l'axe *</label>
+              <input [(ngModel)]="editingAxe().nom" placeholder="ex. Intelligence Artificielle" />
+            </div>
+            <div class="field full">
+              <label>Description</label>
+              <textarea [(ngModel)]="editingAxe().description" rows="3"></textarea>
+            </div>
+            <div class="field">
+              <label>Responsable</label>
+              <select [(ngModel)]="editingAxe().responsableId">
+                <option value="">Aucun</option>
+                @for (c of chercheurs(); track c.id) {
+                  <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-submit" (click)="saveEditAxe()">Enregistrer</button>
+            <button class="btn-cancel" (click)="cancelEditAxe()">Annuler</button>
+          </div>
+        </div>
+      }
+
+      <div class="section-card">
+        <h3>Associer des chercheurs aux axes</h3>
+        <p>Sélectionnez un axe et un chercheur pour les associer.</p>
+        <div class="assoc-grid">
+          @for (axe of axes(); track axe.id) {
+            <div class="assoc-item">
+              <strong>{{ axe.nom }}</strong>
+              <select (change)="setAssocChercheur(axe.id, $event)">
+                <option value="">Choisir un chercheur</option>
+                @for (c of chercheurs(); track c.id) {
+                  <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                }
+              </select>
+              <button class="btn-assoc" (click)="associerChercheur(axe.id)" [disabled]="!getAssocChercheur(axe.id)">Associer</button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- TAB: DOCTORANTS -->
+    @if (activeTab() === 'doctorants') {
+      <div class="tab-header-row">
+        <div>
+          <h1>Gestion des Doctorants</h1>
+          <p>{{ doctorants().length }} doctorant(s) enregistré(s)</p>
+        </div>
+        <button class="btn-add" (click)="showForm.set(showForm() === 'doc' ? '' : 'doc')">
+          {{ showForm() === 'doc' ? '✕ Fermer' : '➕ Nouveau doctorant' }}
+        </button>
+      </div>
+
+      @if (showForm() === 'doc') {
+        <div class="form-card">
+          <h2>Ajouter un doctorant</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label>Nom *</label>
+              <input [(ngModel)]="newDoctorant.nom" placeholder="Nom" />
+            </div>
+            <div class="field">
+              <label>Prénom *</label>
+              <input [(ngModel)]="newDoctorant.prenom" placeholder="Prénom" />
+            </div>
+            <div class="field full">
+              <label>Sujet de thèse</label>
+              <input [(ngModel)]="newDoctorant.sujetThese" placeholder="Sujet de thèse..." />
+            </div>
+            <div class="field">
+              <label>Directeur</label>
+              <select [(ngModel)]="newDoctorant.directeurId">
+                <option [value]="null">Aucun</option>
+                @for (c of chercheurs(); track c.id) {
+                  <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Date d'inscription</label>
+              <input type="date" [(ngModel)]="newDoctorant.dateInscription" />
+            </div>
+            <div class="field">
+              <label>Statut</label>
+              <select [(ngModel)]="newDoctorant.statut">
+                <option value="EN_COURS">En cours</option>
+                <option value="SOUTENU">Soutenu</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Mention (si soutenu)</label>
+              <input [(ngModel)]="newDoctorant.mention" placeholder="ex: Très Honorable" />
+            </div>
+            <div class="field">
+              <label>Photo URL</label>
+              <input [(ngModel)]="newDoctorant.photoUrl" placeholder="https://..." />
+            </div>
+          </div>
+          <button class="btn-submit" (click)="ajouterDoctorant()">Enregistrer</button>
+        </div>
+      }
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Doctorant</th>
+              <th>Sujet</th>
+              <th>Directeur</th>
+              <th>Inscription</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of doctorants(); track d.id) {
+              <tr>
+                <td>
+                  <div class="cell-user">
+                    <div class="mini-avatar">{{ d.prenom?.[0] }}{{ d.nom?.[0] }}</div>
+                    <span>{{ d.prenom }} {{ d.nom }}</span>
+                  </div>
+                </td>
+                <td class="cell-muted">{{ d.sujetThese || '-' }}</td>
+                <td class="cell-muted">
+                  {{ d.directeur ? d.directeur.prenom + ' ' + d.directeur.nom : '-' }}
+                </td>
+                <td class="cell-muted">{{ d.dateInscription || '-' }}</td>
+                <td>
+                  <span class="badge-status"
+                    [class.status-on]="d.statut === 'EN_COURS'"
+                    [class.status-off]="d.statut === 'SOUTENU'">
+                    {{ d.statut === 'EN_COURS' ? 'En cours' : 'Soutenu' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-row">
+                    <button class="btn-action btn-edit" (click)="startEditDoctorant(d)">Éditer</button>
+                    <button class="btn-action btn-delete" (click)="supprimerDoctorant(d.id)">Suppr.</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (editingDoctorant()) {
+        <div class="form-card">
+          <h2>Modifier le doctorant</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label>Nom *</label>
+              <input [(ngModel)]="editingDoctorant().nom" placeholder="Nom" />
+            </div>
+            <div class="field">
+              <label>Prénom *</label>
+              <input [(ngModel)]="editingDoctorant().prenom" placeholder="Prénom" />
+            </div>
+            <div class="field full">
+              <label>Sujet de thèse</label>
+              <input [(ngModel)]="editingDoctorant().sujetThese" placeholder="Sujet..." />
+            </div>
+            <div class="field">
+              <label>Directeur</label>
+              <select [(ngModel)]="editingDoctorant().directeurId">
+                <option [value]="null">Aucun</option>
+                @for (c of chercheurs(); track c.id) {
+                  <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Date d'inscription</label>
+              <input type="date" [(ngModel)]="editingDoctorant().dateInscription" />
+            </div>
+            <div class="field">
+              <label>Date de soutenance</label>
+              <input type="date" [(ngModel)]="editingDoctorant().dateSoutenance" />
+            </div>
+            <div class="field">
+              <label>Statut</label>
+              <select [(ngModel)]="editingDoctorant().statut">
+                <option value="EN_COURS">En cours</option>
+                <option value="SOUTENU">Soutenu</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Mention</label>
+              <input [(ngModel)]="editingDoctorant().mention" placeholder="ex: Très Honorable" />
+            </div>
+            <div class="field">
+              <label>Photo URL</label>
+              <input [(ngModel)]="editingDoctorant().photoUrl" placeholder="https://..." />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-submit" (click)="saveEditDoctorant()">Enregistrer</button>
+            <button class="btn-cancel" (click)="cancelEditDoctorant()">Annuler</button>
+          </div>
+        </div>
+      }
     }
 
   </main>
