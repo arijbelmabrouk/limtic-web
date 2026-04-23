@@ -41,7 +41,9 @@ export class DashboardChercheur implements OnInit {
 
   loadProfil() {
     const email = this.email();
-    fetch('http://localhost:8080/api/chercheurs')
+    fetch('http://localhost:8080/api/chercheurs', {
+      headers: this.api.authHeaders()
+    })
       .then(r => r.json())
       .then((data: any[]) => {
         const c = data.find(ch =>
@@ -51,12 +53,12 @@ export class DashboardChercheur implements OnInit {
           this.chercheurId.set(c.id);
           this.profil.set(c);
           this.editProfil = {
-            grade:        c.grade        || '',
-            specialite:   c.specialite   || '',
-            institution:  c.institution  || '',
-            bureau:       c.bureau       || '',
-            telephone:    c.telephone    || '',
-            biographie:   c.biographie   || '',
+            grade:         c.grade         || '',
+            specialite:    c.specialite    || '',
+            institution:   c.institution   || '',
+            bureau:        c.bureau        || '',
+            telephone:     c.telephone     || '',
+            biographie:    c.biographie    || '',
             googleScholar: c.googleScholar || '',
             researchGate:  c.researchGate  || '',
             orcid:         c.orcid         || '',
@@ -71,7 +73,7 @@ export class DashboardChercheur implements OnInit {
     if (!id) { this.message.set('Profil introuvable.'); return; }
     fetch(`http://localhost:8080/api/chercheurs/${id}/profil`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.api.authHeaders(),
       body: JSON.stringify(this.editProfil)
     }).then(() => {
       this.message.set('Profil mis à jour avec succès !');
@@ -82,7 +84,7 @@ export class DashboardChercheur implements OnInit {
   ajouterPublication() {
     fetch('http://localhost:8080/api/publications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.api.authHeaders(),
       body: JSON.stringify(this.newPub)
     }).then(() => {
       this.message.set('Publication ajoutée avec succès !');

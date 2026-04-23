@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Chercheur, Publication, Evenement, Outil } from '../models/chercheur.model';
 
@@ -9,6 +9,25 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
+  // ── Auth headers pour HttpClient ──────────────────────────
+  private getHttpHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
+  // ── Auth headers pour fetch() ─────────────────────────────
+  authHeaders(): HeadersInit {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  }
+
+  // ── GET publics ───────────────────────────────────────────
   getChercheurs(): Observable<Chercheur[]> {
     return this.http.get<Chercheur[]>(`${this.base}/chercheurs`);
   }
@@ -27,5 +46,12 @@ export class ApiService {
 
   getOutils(): Observable<Outil[]> {
     return this.http.get<Outil[]>(`${this.base}/outils`);
+  }
+
+  // ── GET protégés ──────────────────────────────────────────
+  getUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/users`, {
+      headers: this.getHttpHeaders()
+    });
   }
 }

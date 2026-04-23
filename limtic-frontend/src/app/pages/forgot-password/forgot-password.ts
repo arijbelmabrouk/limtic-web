@@ -1,0 +1,40 @@
+import { Component, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'app-forgot-password',
+  imports: [FormsModule, RouterLink],
+  templateUrl: './forgot-password.html',
+  styleUrl: './forgot-password.css'
+})
+export class ForgotPassword {
+  email = '';
+  message = signal('');
+  erreur = signal('');
+  loading = signal(false);
+
+  constructor(private router: Router) {}
+
+  onSubmit() {
+    if (!this.email) { this.erreur.set('Veuillez entrer votre email.'); return; }
+    this.loading.set(true);
+    this.erreur.set('');
+    this.message.set('');
+
+    fetch('http://localhost:8080/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: this.email })
+    })
+    .then(r => r.json())
+    .then(data => {
+      this.loading.set(false);
+      this.message.set(data.message || 'Lien envoyé.');
+    })
+    .catch(() => {
+      this.loading.set(false);
+      this.erreur.set('Impossible de contacter le serveur.');
+    });
+  }
+}

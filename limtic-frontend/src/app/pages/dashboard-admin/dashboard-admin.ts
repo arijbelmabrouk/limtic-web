@@ -68,7 +68,7 @@ export class DashboardAdmin implements OnInit {
   ajouterPublication() {
     fetch('http://localhost:8080/api/publications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.api.authHeaders(),
       body: JSON.stringify(this.newPub)
     }).then(() => {
       this.message.set('Publication ajoutée !');
@@ -80,18 +80,20 @@ export class DashboardAdmin implements OnInit {
 
   supprimerPublication(id: number) {
     if (!confirm('Supprimer cette publication ?')) return;
-    fetch(`http://localhost:8080/api/publications/${id}`, { method: 'DELETE' })
-      .then(() => {
-        this.message.set('Publication supprimée.');
-        this.api.getPublications().subscribe(data => this.publications.set(data));
-      });
+    fetch(`http://localhost:8080/api/publications/${id}`, {
+      method: 'DELETE',
+      headers: this.api.authHeaders()
+    }).then(() => {
+      this.message.set('Publication supprimée.');
+      this.api.getPublications().subscribe(data => this.publications.set(data));
+    });
   }
 
   // ── Événements ────────────────────────────────────────────
   ajouterEvenement() {
     fetch('http://localhost:8080/api/evenements', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.api.authHeaders(),
       body: JSON.stringify(this.newEvent)
     }).then(() => {
       this.message.set('Événement ajouté !');
@@ -103,28 +105,30 @@ export class DashboardAdmin implements OnInit {
 
   supprimerEvenement(id: number) {
     if (!confirm('Supprimer cet événement ?')) return;
-    fetch(`http://localhost:8080/api/evenements/${id}`, { method: 'DELETE' })
-      .then(() => {
-        this.message.set('Événement supprimé.');
-        this.api.getEvenements().subscribe(data => this.evenements.set(data));
-      });
+    fetch(`http://localhost:8080/api/evenements/${id}`, {
+      method: 'DELETE',
+      headers: this.api.authHeaders()
+    }).then(() => {
+      this.message.set('Événement supprimé.');
+      this.api.getEvenements().subscribe(data => this.evenements.set(data));
+    });
   }
 
   // ── Chercheurs ────────────────────────────────────────────
   supprimerChercheur(id: number) {
     if (!confirm('Supprimer ce chercheur ?')) return;
-    fetch(`http://localhost:8080/api/chercheurs/${id}`, { method: 'DELETE' })
-      .then(() => {
-        this.message.set('Chercheur supprimé.');
-        this.api.getChercheurs().subscribe(data => this.chercheurs.set(data));
-      });
+    fetch(`http://localhost:8080/api/chercheurs/${id}`, {
+      method: 'DELETE',
+      headers: this.api.authHeaders()
+    }).then(() => {
+      this.message.set('Chercheur supprimé.');
+      this.api.getChercheurs().subscribe(data => this.chercheurs.set(data));
+    });
   }
 
   // ── Comptes ───────────────────────────────────────────────
   loadUsers() {
-    fetch('http://localhost:8080/api/users')
-      .then(r => r.json())
-      .then(data => this.users.set(data));
+    this.api.getUsers().subscribe(data => this.users.set(data));
   }
 
   creerCompte() {
@@ -134,7 +138,7 @@ export class DashboardAdmin implements OnInit {
     }
     fetch('http://localhost:8080/api/users', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.api.authHeaders(),
       body: JSON.stringify(this.newUser)
     }).then(r => r.json()).then(res => {
       if (res.error) {
@@ -152,7 +156,7 @@ export class DashboardAdmin implements OnInit {
     const role = (event.target as HTMLSelectElement).value;
     fetch(`http://localhost:8080/api/users/${id}/role`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.api.authHeaders(),
       body: JSON.stringify({ role })
     }).then(() => {
       this.message.set('Rôle modifié.');
@@ -161,20 +165,24 @@ export class DashboardAdmin implements OnInit {
   }
 
   toggleActif(id: number) {
-    fetch(`http://localhost:8080/api/users/${id}/toggle`, { method: 'PATCH' })
-      .then(() => {
-        this.message.set('Statut du compte modifié.');
-        this.loadUsers();
-      });
+    fetch(`http://localhost:8080/api/users/${id}/toggle`, {
+      method: 'PATCH',
+      headers: this.api.authHeaders()
+    }).then(() => {
+      this.message.set('Statut du compte modifié.');
+      this.loadUsers();
+    });
   }
 
   supprimerUser(id: number) {
     if (!confirm('Supprimer ce compte définitivement ?')) return;
-    fetch(`http://localhost:8080/api/users/${id}`, { method: 'DELETE' })
-      .then(() => {
-        this.message.set('Compte supprimé.');
-        this.loadUsers();
-      });
+    fetch(`http://localhost:8080/api/users/${id}`, {
+      method: 'DELETE',
+      headers: this.api.authHeaders()
+    }).then(() => {
+      this.message.set('Compte supprimé.');
+      this.loadUsers();
+    });
   }
 
   // ── Auth ──────────────────────────────────────────────────

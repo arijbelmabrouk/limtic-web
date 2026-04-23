@@ -12,4 +12,6 @@ export const routes: Routes = [
   { path: 'signup', loadComponent: () => import('./pages/signup/signup').then(m => m.Signup) },
   { path: 'dashboard-admin', loadComponent: () => import('./pages/dashboard-admin/dashboard-admin').then(m => m.DashboardAdmin) },
   { path: 'dashboard-chercheur', loadComponent: () => import('./pages/dashboard-chercheur/dashboard-chercheur').then(m => m.DashboardChercheur) },
+  { path: 'forgot-password', loadComponent: () => import('./pages/forgot-password/forgot-password').then(m => m.ForgotPassword) },
+  { path: 'reset-password',  loadComponent: () => import('./pages/reset-password/reset-password').then(m => m.ResetPassword) },
 ];
