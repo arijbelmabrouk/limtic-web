@@ -561,3 +561,30 @@
   .main-content { padding: 1rem; }
   .sidebar-nav button { font-size: 0.72rem; padding: 0 0.75rem; }
 }
+
+/* Bouton logout visible en mobile dans la sidebar horizontale */
+.btn-logout-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .btn-logout-mobile {
+    display: flex;
+    align-items: center;
+    height: 52px;
+    padding: 0 1rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #f87171;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .btn-logout-mobile:hover {
+    background: rgba(248,113,113,0.08);
+  }
+}

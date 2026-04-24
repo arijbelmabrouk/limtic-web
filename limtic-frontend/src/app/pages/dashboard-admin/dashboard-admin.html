@@ -34,6 +34,7 @@
       <button [class.active]="activeTab() === 'masteriens'" (click)="setTab('masteriens')">
         📚 Mastériens
       </button>
+      <button class="btn-logout-mobile" (click)="logout()">⏻ Quitter</button>
     </nav>
     <div class="sidebar-footer">
       <span class="admin-email">{{ email() }}</span>
