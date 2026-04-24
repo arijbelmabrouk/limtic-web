@@ -1,31 +1,41 @@
 @if (showNavbar()) {
   <nav class="navbar">
-    <div class="nav-brand">
+
+    <!-- Brand -->
+    <div class="nav-brand" routerLink="/home" style="cursor:pointer">
       <span class="nav-logo">⬡</span>
       <span class="nav-title">LIMTIC</span>
     </div>
 
-    <div class="nav-links">
-      <a routerLink="/home" routerLinkActive="active" (click)="fermerDropdowns()">Accueil</a>
+    <!-- Hamburger (mobile) -->
+    <button class="nav-toggle" (click)="toggleMenu()" [attr.aria-expanded]="menuOuvert()" aria-label="Menu">
+      @if (menuOuvert()) { ✕ } @else { ☰ }
+    </button>
+
+    <!-- Liens -->
+    <div class="nav-links" [class.open]="menuOuvert()">
+
+      <a routerLink="/home" routerLinkActive="active" (click)="fermerTout()">Accueil</a>
 
       <!-- Équipe -->
       <div class="nav-dropdown">
-        <span class="nav-dropdown-trigger" [class.active]="dropdownOuvert() === 'equipe'"
+        <span class="nav-dropdown-trigger"
+              [class.active]="dropdownOuvert() === 'equipe'"
               (click)="toggleDropdown('equipe')">
-          Équipe <span class="arrow">▾</span>
+          Équipe <span class="arrow" [class.rotated]="dropdownOuvert() === 'equipe'">▾</span>
         </span>
         @if (dropdownOuvert() === 'equipe') {
           <div class="dropdown-menu">
-            <a routerLink="/directeur" routerLinkActive="active" (click)="fermerDropdowns()">
+            <a routerLink="/directeur"  routerLinkActive="active" (click)="fermerTout()">
               <span class="dd-icon">👤</span> Directeur
             </a>
-            <a routerLink="/chercheurs" routerLinkActive="active" (click)="fermerDropdowns()">
+            <a routerLink="/chercheurs" routerLinkActive="active" (click)="fermerTout()">
               <span class="dd-icon">🔬</span> Chercheurs
             </a>
-            <a routerLink="/doctorants" routerLinkActive="active" (click)="fermerDropdowns()">
+            <a routerLink="/doctorants" routerLinkActive="active" (click)="fermerTout()">
               <span class="dd-icon">🎓</span> Doctorants
             </a>
-            <a routerLink="/masteriens" routerLinkActive="active" (click)="fermerDropdowns()">
+            <a routerLink="/masteriens" routerLinkActive="active" (click)="fermerTout()">
               <span class="dd-icon">📚</span> Mastériens
             </a>
           </div>
@@ -34,19 +44,20 @@
 
       <!-- Recherche -->
       <div class="nav-dropdown">
-        <span class="nav-dropdown-trigger" [class.active]="dropdownOuvert() === 'recherche'"
+        <span class="nav-dropdown-trigger"
+              [class.active]="dropdownOuvert() === 'recherche'"
               (click)="toggleDropdown('recherche')">
-          Recherche <span class="arrow">▾</span>
+          Recherche <span class="arrow" [class.rotated]="dropdownOuvert() === 'recherche'">▾</span>
         </span>
         @if (dropdownOuvert() === 'recherche') {
           <div class="dropdown-menu">
-            <a routerLink="/publications" routerLinkActive="active" (click)="fermerDropdowns()">
+            <a routerLink="/publications" routerLinkActive="active" (click)="fermerTout()">
               <span class="dd-icon">📄</span> Publications
             </a>
-            <a routerLink="/axes" routerLinkActive="active" (click)="fermerDropdowns()">
+            <a routerLink="/axes"         routerLinkActive="active" (click)="fermerTout()">
               <span class="dd-icon">🧭</span> Axes de recherche
             </a>
-            <a routerLink="/outils" routerLinkActive="active" (click)="fermerDropdowns()">
+            <a routerLink="/outils"       routerLinkActive="active" (click)="fermerTout()">
               <span class="dd-icon">🛠️</span> Outils
             </a>
           </div>
@@ -55,22 +66,37 @@
 
       <!-- Activités -->
       <div class="nav-dropdown">
-        <span class="nav-dropdown-trigger" [class.active]="dropdownOuvert() === 'activites'"
+        <span class="nav-dropdown-trigger"
+              [class.active]="dropdownOuvert() === 'activites'"
               (click)="toggleDropdown('activites')">
-          Activités <span class="arrow">▾</span>
+          Activités <span class="arrow" [class.rotated]="dropdownOuvert() === 'activites'">▾</span>
         </span>
         @if (dropdownOuvert() === 'activites') {
           <div class="dropdown-menu">
-            <a routerLink="/evenements" routerLinkActive="active" (click)="fermerDropdowns()">
+            <a routerLink="/evenements" routerLinkActive="active" (click)="fermerTout()">
               <span class="dd-icon">📅</span> Événements
             </a>
           </div>
         }
       </div>
 
-      <a routerLink="/contact" routerLinkActive="active" (click)="fermerDropdowns()">Contact</a>
+      <a routerLink="/contact" routerLinkActive="active" (click)="fermerTout()">Contact</a>
+
+      <!-- Auth dans le menu mobile -->
+      <div class="nav-auth-mobile">
+        @if (isLoggedIn()) {
+          <div class="user-info-mobile">
+            <span class="user-badge">{{ userRole() }}</span>
+            <span class="user-email-mobile">{{ userEmail() }}</span>
+          </div>
+          <button class="btn-logout" (click)="logout()">⏻ Déconnexion</button>
+        } @else {
+          <a routerLink="/login" class="btn-signup-mobile" (click)="fermerTout()">Connexion</a>
+        }
+      </div>
     </div>
 
+    <!-- Auth desktop -->
     <div class="nav-auth">
       @if (isLoggedIn()) {
         <div class="user-info">
@@ -79,9 +105,11 @@
         </div>
         <button class="btn-logout" (click)="logout()">Déconnexion</button>
       } @else {
-        <a routerLink="/login" class="btn-signup">Connexion</a>
+        <a routerLink="/login" class="btn-signup" (click)="fermerTout()">Connexion</a>
       }
     </div>
+
   </nav>
 }
+
 <router-outlet />

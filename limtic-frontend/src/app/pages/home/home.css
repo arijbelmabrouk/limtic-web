@@ -229,3 +229,77 @@
   font-size: 0.85rem;
   letter-spacing: 0.5px;
 }
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — HOME
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1200px) {
+  .hero        { padding: 5rem 5rem; }
+  .hero-content h1 { font-size: 4.5rem; }
+  .sections    { padding: 3rem 4rem; grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .hero        { padding: 4rem 3rem; gap: 2rem; }
+  .hero-content h1 { font-size: 3.5rem; letter-spacing: 6px; }
+  .hex-grid    { grid-template-columns: repeat(3, 80px); gap: 10px; }
+  .hex         { width: 80px; height: 80px; font-size: 0.75rem; }
+  .sections    { padding: 2.5rem 3rem; gap: 1rem; }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    gap: 2.5rem;
+  }
+
+  .hero-content h1 {
+    font-size: 3rem;
+    letter-spacing: 4px;
+  }
+
+  .hero-sub { margin: 0 auto 2rem; font-size: 0.9rem; }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  /* Cache la grille hexagonale sur mobile */
+  .hex-grid { display: none; }
+
+  .stats-bar { flex-wrap: wrap; }
+  .stat {
+    flex: 1 1 50%;
+    padding: 1.5rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .stat:nth-child(odd)  { border-right: 1px solid rgba(255,255,255,0.05); }
+  .stat:last-child, .stat:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+  .stat-num   { font-size: 2.2rem; }
+
+  .sections {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 2rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .section-card { padding: 1.5rem; }
+  .section-card h3 { font-size: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .hero { padding: 2.5rem 1.25rem 2rem; }
+  .hero-content h1 { font-size: 2.5rem; letter-spacing: 2px; }
+
+  .hero-actions { flex-direction: column; width: 100%; }
+  .btn-primary, .btn-outline { text-align: center; width: 100%; }
+
+  .stat { flex: 1 1 100%; border-right: none; }
+  .stat:nth-child(odd) { border-right: none; }
+
+  .sections { grid-template-columns: 1fr; padding: 1.5rem 1.25rem; }
+}

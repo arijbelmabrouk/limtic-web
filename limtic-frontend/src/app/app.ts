@@ -10,11 +10,12 @@ import { CommonModule } from '@angular/common';
   styleUrl: './app.css'
 })
 export class App implements OnInit {
-  isLoggedIn = signal(false);
-  userEmail = signal('');
-  userRole = signal('');
-  showNavbar = signal(true);
+  isLoggedIn     = signal(false);
+  userEmail      = signal('');
+  userRole       = signal('');
+  showNavbar     = signal(true);
   dropdownOuvert = signal<string | null>(null);
+  menuOuvert     = signal(false); // hamburger mobile
 
   constructor(private router: Router) {}
 
@@ -27,22 +28,33 @@ export class App implements OnInit {
       this.showNavbar.set(!hiddenRoutes.some(r => e.url.startsWith(r)));
       this.checkAuth();
       this.dropdownOuvert.set(null);
+      this.menuOuvert.set(false); // ferme le menu mobile à chaque navigation
     });
 
+    // Ferme dropdown si clic en dehors
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.nav-dropdown')) {
+      if (!target.closest('.nav-dropdown') && !target.closest('.nav-toggle')) {
         this.dropdownOuvert.set(null);
       }
+      if (!target.closest('.navbar')) {
+        this.menuOuvert.set(false);
+      }
     });
+  }
+
+  toggleMenu() {
+    this.menuOuvert.set(!this.menuOuvert());
+    this.dropdownOuvert.set(null);
   }
 
   toggleDropdown(nom: string) {
     this.dropdownOuvert.set(this.dropdownOuvert() === nom ? null : nom);
   }
 
-  fermerDropdowns() {
+  fermerTout() {
     this.dropdownOuvert.set(null);
+    this.menuOuvert.set(false);
   }
 
   checkAuth() {
@@ -59,6 +71,7 @@ export class App implements OnInit {
   logout() {
     localStorage.clear();
     this.isLoggedIn.set(false);
+    this.fermerTout();
     this.router.navigate(['/home']);
   }
 }
