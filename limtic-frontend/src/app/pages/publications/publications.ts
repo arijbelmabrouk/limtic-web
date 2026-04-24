@@ -1,11 +1,12 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Publication } from '../../models/chercheur.model';
 
 @Component({
   selector: 'app-publications',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './publications.html',
   styleUrl: './publications.css'
 })

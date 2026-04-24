@@ -1,0 +1,55 @@
+<div class="evenement-detail-container">
+  <!-- Header avec bouton retour -->
+  <div class="detail-header">
+    <button class="btn-retour" (click)="retour()">
+      ← Retour aux événements
+    </button>
+  </div>
+
+  <!-- Contenu principal -->
+  @if (evenement(); as evt) {
+    <div class="evenement-content">
+      <!-- Titre et type -->
+      <div class="evenement-header">
+        <h1>{{ evt.titre }}</h1>
+        @if (evt.type) {
+          <span class="evenement-type">{{ evt.type }}</span>
+        }
+      </div>
+
+      <!-- Date et heure -->
+      @if (evt.dateEvenement) {
+        <div class="evenement-datetime">
+          <div class="datetime-icon">📅</div>
+          <div class="datetime-info">
+            <h3>{{ formatDate(evt.dateEvenement) }}</h3>
+          </div>
+        </div>
+      }
+
+      <!-- Lieu -->
+      @if (evt.lieu) {
+        <div class="evenement-lieu">
+          <div class="lieu-icon">📍</div>
+          <div class="lieu-info">
+            <h3>Lieu</h3>
+            <p>{{ evt.lieu }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Description -->
+      @if (evt.description) {
+        <div class="evenement-description">
+          <h3>Description</h3>
+          <p>{{ evt.description }}</p>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Loading state -->
+    <div class="loading">
+      <p>Chargement de l'événement...</p>
+    </div>
+  }
+</div>

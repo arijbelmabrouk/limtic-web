@@ -1,0 +1,179 @@
+<div class="doctorant-detail-container">
+  <!-- Header avec bouton retour -->
+  <div class="detail-header">
+    <button class="btn-retour" (click)="retour()">
+      ← Retour aux doctorants
+    </button>
+  </div>
+
+  <!-- Contenu principal -->
+  @if (doctorant(); as doc) {
+    <div class="doctorant-content">
+      <!-- Informations personnelles -->
+      <div class="doctorant-header">
+        <div class="doctorant-photo">
+          <div class="photo-placeholder">
+            <span>{{ doc.prenom?.charAt(0) }}{{ doc.nom?.charAt(0) }}</span>
+          </div>
+        </div>
+        <div class="doctorant-info">
+          <h1>{{ doc.prenom }} {{ doc.nom }}</h1>
+          <p class="doctorant-title">Doctorant</p>
+          @if (doc.email) {
+            <p class="doctorant-email">{{ doc.email }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Informations académiques -->
+      <div class="doctorant-details">
+        <h3>Informations académiques</h3>
+        <div class="details-grid">
+          @if (doc.dateNaissance) {
+            <div class="detail-item">
+              <label>Date de naissance :</label>
+              <span>{{ formatDate(doc.dateNaissance) }}</span>
+            </div>
+          }
+
+          @if (doc.nationalite) {
+            <div class="detail-item">
+              <label>Nationalité :</label>
+              <span>{{ doc.nationalite }}</span>
+            </div>
+          }
+
+          @if (doc.telephone) {
+            <div class="detail-item">
+              <label>Téléphone :</label>
+              <span>{{ doc.telephone }}</span>
+            </div>
+          }
+
+          @if (doc.adresse) {
+            <div class="detail-item">
+              <label>Adresse :</label>
+              <span>{{ doc.adresse }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Thèse -->
+      @if (doc.sujetThese || doc.dateDebutThese || doc.dateSoutenancePrevue) {
+        <div class="doctorant-these">
+          <h3>Thèse de doctorat</h3>
+          <div class="these-details">
+            @if (doc.sujetThese) {
+              <div class="these-item">
+                <label>Sujet de thèse :</label>
+                <p>{{ doc.sujetThese }}</p>
+              </div>
+            }
+
+            @if (doc.dateDebutThese) {
+              <div class="these-item">
+                <label>Date de début :</label>
+                <span>{{ formatDate(doc.dateDebutThese) }}</span>
+              </div>
+            }
+
+            @if (doc.dateSoutenancePrevue) {
+              <div class="these-item">
+                <label>Date de soutenance prévue :</label>
+                <span>{{ formatDate(doc.dateSoutenancePrevue) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Directeur de thèse -->
+      @if (doc.directeur) {
+        <div class="doctorant-directeur">
+          <h3>Directeur de thèse</h3>
+          <div class="directeur-card" (click)="navigateToChercheur(doc.directeur.id)">
+            <div class="directeur-info">
+              <h4>{{ doc.directeur.prenom }} {{ doc.directeur.nom }}</h4>
+              <p>{{ doc.directeur.grade }}</p>
+              @if (doc.directeur.email) {
+                <p class="email">{{ doc.directeur.email }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Axe de recherche -->
+      @if (doc.axeRecherche) {
+        <div class="doctorant-axe">
+          <h3>Axe de recherche</h3>
+          <div class="axe-card" (click)="navigateToAxe(doc.axeRecherche.id)">
+            <div class="axe-info">
+              <h4>{{ doc.axeRecherche.nom }}</h4>
+              @if (doc.axeRecherche.description) {
+                <p>{{ doc.axeRecherche.description }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Formation antérieure -->
+      @if (doc.diplome || doc.etablissement || doc.anneeObtention) {
+        <div class="doctorant-formation">
+          <h3>Formation antérieure</h3>
+          <div class="formation-details">
+            @if (doc.diplome) {
+              <div class="formation-item">
+                <label>Diplôme :</label>
+                <span>{{ doc.diplome }}</span>
+              </div>
+            }
+
+            @if (doc.etablissement) {
+              <div class="formation-item">
+                <label>Établissement :</label>
+                <span>{{ doc.etablissement }}</span>
+              </div>
+            }
+
+            @if (doc.anneeObtention) {
+              <div class="formation-item">
+                <label>Année d'obtention :</label>
+                <span>{{ doc.anneeObtention }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Publications -->
+      @if (doc.publications && doc.publications.length > 0) {
+        <div class="doctorant-publications">
+          <h3>Publications ({{ doc.publications.length }})</h3>
+          <div class="publications-list">
+            @for (pub of doc.publications; track pub.id) {
+              <div class="publication-item">
+                <h4>{{ pub.titre }}</h4>
+                <p class="publication-details">
+                  @if (pub.journal) {
+                    {{ pub.journal }}
+                  }
+                  @if (pub.annee) {
+                    · {{ pub.annee }}
+                  }
+                </p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Loading state -->
+    <div class="loading">
+      <p>Chargement du doctorant...</p>
+    </div>
+  }
+</div>

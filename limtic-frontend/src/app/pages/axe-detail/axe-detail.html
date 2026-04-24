@@ -1,0 +1,125 @@
+<div class="axe-detail-container">
+  <!-- Header avec bouton retour -->
+  <div class="detail-header">
+    <button class="btn-retour" (click)="retour()">
+      ← Retour aux axes de recherche
+    </button>
+  </div>
+
+  <!-- Contenu principal -->
+  @if (axe(); as axeData) {
+    <div class="axe-content">
+      <!-- Titre et description -->
+      <div class="axe-header">
+        <h1>{{ axeData.nom }}</h1>
+        @if (axeData.description) {
+          <p class="axe-description">{{ axeData.description }}</p>
+        }
+      </div>
+
+      <!-- Responsable -->
+      @if (axeData.responsable) {
+        <div class="axe-responsable">
+          <h3>Responsable</h3>
+          <div class="responsable-card" (click)="navigateToChercheur(axeData.responsable.id)">
+            <div class="responsable-info">
+              <h4>{{ axeData.responsable.nom }} {{ axeData.responsable.prenom }}</h4>
+              <p>{{ axeData.responsable.grade }}</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Chercheurs associés -->
+      @if (chercheurs().length > 0) {
+        <div class="axe-chercheurs">
+          <h3>Chercheurs associés ({{ chercheurs().length }})</h3>
+          <div class="chercheurs-grid">
+            @for (chercheur of chercheurs(); track chercheur.id) {
+              <div class="chercheur-card" (click)="navigateToChercheur(chercheur.id)">
+                <div class="chercheur-info">
+                  <h4>{{ chercheur.nom }} {{ chercheur.prenom }}</h4>
+                  <p>{{ chercheur.grade }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Publications -->
+      @if (publications().length > 0) {
+        <div class="axe-publications">
+          <h3>Publications ({{ publications().length }})</h3>
+          <div class="publications-list">
+            @for (pub of publications(); track pub.id) {
+              <div class="publication-item" (click)="navigateToPublication(pub.id)">
+                <div class="publication-info">
+                  <h4>{{ pub.titre }}</h4>
+                  <p class="publication-authors">
+                    @if (pub.chercheur) {
+                      {{ pub.chercheur.prenom }} {{ pub.chercheur.nom }}
+                    } @else {
+                      Auteur inconnu
+                    }
+                  </p>
+                  @if (pub.annee) {
+                    <p class="publication-date">{{ pub.annee }}</p>
+                  }
+                  @if (pub.journal) {
+                    <p class="publication-journal">{{ pub.journal }}</p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Doctorants -->
+      @if (doctorants().length > 0) {
+        <div class="axe-doctorants">
+          <h3>Doctorants ({{ doctorants().length }})</h3>
+          <div class="doctorants-list">
+            @for (doctorant of doctorants(); track doctorant.id) {
+              <div class="doctorant-item">
+                <h4>{{ doctorant.nom }} {{ doctorant.prenom }}</h4>
+                @if (doctorant.sujetThese) {
+                  <p class="sujet">{{ doctorant.sujetThese }}</p>
+                }
+                @if (doctorant.directeur) {
+                  <p class="directeur">Directeur: {{ doctorant.directeur.nom }} {{ doctorant.directeur.prenom }}</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Masteriens -->
+      @if (masteriens().length > 0) {
+        <div class="axe-masteriens">
+          <h3>Masteriens ({{ masteriens().length }})</h3>
+          <div class="masteriens-list">
+            @for (masterien of masteriens(); track masterien.id) {
+              <div class="masterien-item">
+                <h4>{{ masterien.nom }} {{ masterien.prenom }}</h4>
+                @if (masterien.sujetStage) {
+                  <p class="sujet">{{ masterien.sujetStage }}</p>
+                }
+                @if (masterien.encadrant) {
+                  <p class="encadrant">Encadrant: {{ masterien.encadrant.nom }} {{ masterien.encadrant.prenom }}</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Loading state -->
+    <div class="loading">
+      <p>Chargement de l'axe de recherche...</p>
+    </div>
+  }
+</div>

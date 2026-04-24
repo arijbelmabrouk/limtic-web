@@ -58,7 +58,7 @@
   <!-- Liste événements -->
   <div class="events-grid">
     @for (e of evenementsFiltres(); track e.id) {
-      <div class="event-card" [class.event-passe]="getStatut(e.dateEvenement) === 'passe'">
+      <div class="event-card" [class.event-passe]="getStatut(e.dateEvenement) === 'passe'" [routerLink]="['/evenements', e.id]">
 
         <!-- Badge statut -->
         <div class="statut-badge" [class]="getStatut(e.dateEvenement) === 'avenir' ? 'badge-avenir' : 'badge-passe'">

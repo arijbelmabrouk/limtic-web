@@ -1,0 +1,207 @@
+<div class="masterien-detail-container">
+  <!-- Header avec bouton retour -->
+  <div class="detail-header">
+    <button class="btn-retour" (click)="retour()">
+      ← Retour aux masteriens
+    </button>
+  </div>
+
+  <!-- Contenu principal -->
+  @if (masterien(); as mst) {
+    <div class="masterien-content">
+      <!-- Informations personnelles -->
+      <div class="masterien-header">
+        <div class="masterien-photo">
+          <div class="photo-placeholder">
+            <span>{{ mst.prenom?.charAt(0) }}{{ mst.nom?.charAt(0) }}</span>
+          </div>
+        </div>
+        <div class="masterien-info">
+          <h1>{{ mst.prenom }} {{ mst.nom }}</h1>
+          <p class="masterien-title">Masterien</p>
+          @if (mst.email) {
+            <p class="masterien-email">{{ mst.email }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Informations académiques -->
+      <div class="masterien-details">
+        <h3>Informations académiques</h3>
+        <div class="details-grid">
+          @if (mst.dateNaissance) {
+            <div class="detail-item">
+              <label>Date de naissance :</label>
+              <span>{{ formatDate(mst.dateNaissance) }}</span>
+            </div>
+          }
+
+          @if (mst.nationalite) {
+            <div class="detail-item">
+              <label>Nationalité :</label>
+              <span>{{ mst.nationalite }}</span>
+            </div>
+          }
+
+          @if (mst.telephone) {
+            <div class="detail-item">
+              <label>Téléphone :</label>
+              <span>{{ mst.telephone }}</span>
+            </div>
+          }
+
+          @if (mst.adresse) {
+            <div class="detail-item">
+              <label>Adresse :</label>
+              <span>{{ mst.adresse }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Stage -->
+      @if (mst.sujetStage || mst.dateDebutStage || mst.dateFinStage || mst.dureeStage) {
+        <div class="masterien-stage">
+          <h3>Stage de master</h3>
+          <div class="stage-details">
+            @if (mst.sujetStage) {
+              <div class="stage-item">
+                <label>Sujet du stage :</label>
+                <p>{{ mst.sujetStage }}</p>
+              </div>
+            }
+
+            @if (mst.dateDebutStage) {
+              <div class="stage-item">
+                <label>Date de début :</label>
+                <span>{{ formatDate(mst.dateDebutStage) }}</span>
+              </div>
+            }
+
+            @if (mst.dateFinStage) {
+              <div class="stage-item">
+                <label>Date de fin :</label>
+                <span>{{ formatDate(mst.dateFinStage) }}</span>
+              </div>
+            }
+
+            @if (mst.dureeStage) {
+              <div class="stage-item">
+                <label>Durée :</label>
+                <span>{{ mst.dureeStage }} mois</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Encadrant -->
+      @if (mst.encadrant) {
+        <div class="masterien-encadrant">
+          <h3>Encadrant</h3>
+          <div class="encadrant-card" (click)="navigateToChercheur(mst.encadrant.id)">
+            <div class="encadrant-info">
+              <h4>{{ mst.encadrant.prenom }} {{ mst.encadrant.nom }}</h4>
+              <p>{{ mst.encadrant.grade }}</p>
+              @if (mst.encadrant.email) {
+                <p class="email">{{ mst.encadrant.email }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Axe de recherche -->
+      @if (mst.axeRecherche) {
+        <div class="masterien-axe">
+          <h3>Axe de recherche</h3>
+          <div class="axe-card" (click)="navigateToAxe(mst.axeRecherche.id)">
+            <div class="axe-info">
+              <h4>{{ mst.axeRecherche.nom }}</h4>
+              @if (mst.axeRecherche.description) {
+                <p>{{ mst.axeRecherche.description }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Formation -->
+      @if (mst.diplome || mst.etablissement || mst.anneeObtention || mst.niveauEtudes) {
+        <div class="masterien-formation">
+          <h3>Formation</h3>
+          <div class="formation-details">
+            @if (mst.niveauEtudes) {
+              <div class="formation-item">
+                <label>Niveau d'études :</label>
+                <span>{{ mst.niveauEtudes }}</span>
+              </div>
+            }
+
+            @if (mst.diplome) {
+              <div class="formation-item">
+                <label>Diplôme préparé :</label>
+                <span>{{ mst.diplome }}</span>
+              </div>
+            }
+
+            @if (mst.etablissement) {
+              <div class="formation-item">
+                <label>Établissement :</label>
+                <span>{{ mst.etablissement }}</span>
+              </div>
+            }
+
+            @if (mst.anneeObtention) {
+              <div class="formation-item">
+                <label>Année d'obtention prévue :</label>
+                <span>{{ mst.anneeObtention }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Compétences -->
+      @if (mst.competences && mst.competences.length > 0) {
+        <div class="masterien-competences">
+          <h3>Compétences</h3>
+          <div class="competences-list">
+            @for (competence of mst.competences; track competence) {
+              <span class="competence-tag">{{ competence }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Projets -->
+      @if (mst.projets && mst.projets.length > 0) {
+        <div class="masterien-projets">
+          <h3>Projets ({{ mst.projets.length }})</h3>
+          <div class="projets-list">
+            @for (projet of mst.projets; track projet.id) {
+              <div class="projet-item">
+                <h4>{{ projet.titre }}</h4>
+                @if (projet.description) {
+                  <p>{{ projet.description }}</p>
+                }
+                @if (projet.technologies) {
+                  <div class="projet-tech">
+                    @for (tech of projet.technologies; track tech) {
+                      <span class="tech-tag">{{ tech }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Loading state -->
+    <div class="loading">
+      <p>Chargement du masterien...</p>
+    </div>
+  }
+</div>

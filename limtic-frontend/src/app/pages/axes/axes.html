@@ -12,7 +12,7 @@
   <div class="cards-grid">
 
     @for (axe of axes(); track axe.id) {
-      <div class="card">
+      <div class="card" [routerLink]="['/axes', axe.id]">
 
         <div class="card-header">
           <div class="card-icon">🔬</div>

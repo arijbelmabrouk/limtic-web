@@ -23,7 +23,7 @@
 
   <div class="cards-grid">
     @for (m of filtered(); track m.id) {
-      <div class="card" [class.diplome]="m.statut === 'DIPLOME'">
+      <div class="card" [class.diplome]="m.statut === 'DIPLOME'" [routerLink]="['/masteriens', m.id]">
 
         <div class="card-top">
           <div class="avatar-initials">{{ getInitials(m) }}</div>

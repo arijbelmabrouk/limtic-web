@@ -1,0 +1,235 @@
+.doctorant-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  min-height: 100vh;
+}
+
+.detail-header {
+  margin-bottom: 30px;
+}
+
+.btn-retour {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 10px 16px;
+  color: #495057;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.btn-retour:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.doctorant-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+.doctorant-header {
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f8f9fa;
+  padding-bottom: 20px;
+}
+
+.doctorant-header h1 {
+  color: #2c3e50;
+  font-size: 2.2rem;
+  margin: 0 0 15px 0;
+  line-height: 1.3;
+}
+
+.doctorant-meta {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.doctorant-title {
+  background: #007bff;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.doctorant-email {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.doctorant-details,
+.doctorant-these,
+.doctorant-directeur,
+.doctorant-axe,
+.doctorant-formation,
+.doctorant-publications {
+  margin-bottom: 30px;
+}
+
+.doctorant-details h3,
+.doctorant-these h3,
+.doctorant-directeur h3,
+.doctorant-axe h3,
+.doctorant-formation h3,
+.doctorant-publications h3 {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  margin: 0 0 15px 0;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-item label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-item span {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+/* Thèse */
+.these-details {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.these-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.these-item label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.these-item p {
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.these-item span {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+/* Directeur */
+.directeur-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #e9ecef;
+}
+
+.directeur-card:hover {
+  background: #e9ecef;
+  border-color: #dee2e6;
+  transform: translateY(-2px);
+}
+
+.directeur-info h4 {
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+}
+
+.directeur-info p {
+  color: #6c757d;
+  margin: 0;
+}
+
+/* Axe */
+.axe-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #e9ecef;
+}
+
+.axe-card:hover {
+  background: #e9ecef;
+  border-color: #dee2e6;
+  transform: translateY(-2px);
+}
+
+.axe-info h4 {
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+}
+
+.axe-info p {
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .doctorant-detail-container {
+    padding: 15px;
+  }
+
+  .doctorant-content {
+    padding: 20px;
+  }
+
+  .doctorant-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .doctorant-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}

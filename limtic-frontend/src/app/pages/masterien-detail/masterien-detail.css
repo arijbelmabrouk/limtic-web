@@ -1,0 +1,263 @@
+.masterien-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  min-height: 100vh;
+}
+
+.detail-header {
+  margin-bottom: 30px;
+}
+
+.btn-retour {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 10px 16px;
+  color: #495057;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.btn-retour:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.masterien-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+.masterien-header {
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f8f9fa;
+  padding-bottom: 20px;
+}
+
+.masterien-header h1 {
+  color: #2c3e50;
+  font-size: 2.2rem;
+  margin: 0 0 15px 0;
+  line-height: 1.3;
+}
+
+.masterien-meta {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.masterien-title {
+  background: #007bff;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.masterien-email {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.masterien-details,
+.masterien-stage,
+.masterien-encadrant,
+.masterien-axe,
+.masterien-formation,
+.masterien-competences,
+.masterien-projets {
+  margin-bottom: 30px;
+}
+
+.masterien-details h3,
+.masterien-stage h3,
+.masterien-encadrant h3,
+.masterien-axe h3,
+.masterien-formation h3,
+.masterien-competences h3,
+.masterien-projets h3 {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  margin: 0 0 15px 0;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-item label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-item span {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+/* Stage */
+.stage-details {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stage-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stage-item label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stage-item p {
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.stage-item span {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+/* Encadrant */
+.encadrant-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #e9ecef;
+}
+
+.encadrant-card:hover {
+  background: #e9ecef;
+  border-color: #dee2e6;
+  transform: translateY(-2px);
+}
+
+.encadrant-info h4 {
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+}
+
+.encadrant-info p {
+  color: #6c757d;
+  margin: 0;
+}
+
+/* Axe */
+.axe-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #e9ecef;
+}
+
+.axe-card:hover {
+  background: #e9ecef;
+  border-color: #dee2e6;
+  transform: translateY(-2px);
+}
+
+.axe-info h4 {
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+}
+
+.axe-info p {
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Formation */
+.formation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.formation-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formation-item label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formation-item span {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .masterien-detail-container {
+    padding: 15px;
+  }
+
+  .masterien-content {
+    padding: 20px;
+  }
+
+  .masterien-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .masterien-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}

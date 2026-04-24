@@ -57,7 +57,7 @@
   <!-- Liste publications -->
   <div class="pub-list">
     @for (p of publicationsFiltrees(); track p.id) {
-      <div class="pub-card">
+      <div class="pub-card" [routerLink]="['/publications', p.id]">
         <div class="pub-left">
           <div class="pub-type" [class]="p.type === 'Journal' ? 'type-journal' : 'type-conf'">
             {{ p.type }}

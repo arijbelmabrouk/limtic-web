@@ -24,7 +24,7 @@
 
   <div class="cards-grid">
     @for (d of filtered(); track d.id) {
-      <div class="card" [class.soutenu]="d.statut === 'SOUTENU'">
+      <div class="card" [class.soutenu]="d.statut === 'SOUTENU'" [routerLink]="['/doctorants', d.id]">
 
         <div class="card-top">
           @if (d.photoUrl) {

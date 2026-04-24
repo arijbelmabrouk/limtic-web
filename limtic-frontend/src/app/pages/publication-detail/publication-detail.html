@@ -1,0 +1,76 @@
+<div class="publication-detail-container">
+  <!-- Header avec bouton retour -->
+  <div class="detail-header">
+    <button class="btn-retour" (click)="retour()">
+      ← Retour aux publications
+    </button>
+  </div>
+
+  <!-- Contenu principal -->
+  @if (publication(); as pub) {
+    <div class="publication-content">
+      <!-- Titre -->
+      <div class="publication-title">
+        <h1>{{ pub.titre }}</h1>
+        <div class="publication-meta">
+          <span class="publication-date">{{ pub.annee }}</span>
+          @if (pub.type) {
+            <span class="publication-type">{{ pub.type }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Auteurs -->
+      <div class="publication-authors">
+        <h3>Auteurs</h3>
+        <p>{{ getAuthorsString(pub) }}</p>
+      </div>
+
+      <!-- Résumé -->
+      @if (pub.resume) {
+        <div class="publication-abstract">
+          <h3>Résumé</h3>
+          <p>{{ pub.resume }}</p>
+        </div>
+      }
+
+      <!-- Détails -->
+      <div class="publication-details">
+        <h3>Détails de publication</h3>
+        <div class="details-grid">
+          @if (pub.journal) {
+            <div class="detail-item">
+              <label>Revue/Journal :</label>
+              <span>{{ pub.journal }}</span>
+            </div>
+          }
+
+          @if (pub.lienUrl) {
+            <div class="detail-item">
+              <label>Lien :</label>
+              <a [href]="pub.lienUrl" target="_blank" rel="noopener">
+                Accéder à la publication
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Axe de recherche -->
+      @if (pub.axe) {
+        <div class="publication-axe">
+          <h3>Axe de recherche</h3>
+          <p>{{ pub.axe.nom }}</p>
+          @if (pub.axe.description) {
+            <p class="axe-description">{{ pub.axe.description }}</p>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Loading state -->
+    <div class="loading">
+      <p>Chargement de la publication...</p>
+    </div>
+  }
+</div>
