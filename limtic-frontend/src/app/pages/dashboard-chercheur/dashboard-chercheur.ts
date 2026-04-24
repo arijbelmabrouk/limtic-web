@@ -1,24 +1,33 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { Publication } from '../../models/chercheur.model';
 
 @Component({
   selector: 'app-dashboard-chercheur',
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './dashboard-chercheur.html',
   styleUrl: './dashboard-chercheur.css'
 })
 export class DashboardChercheur implements OnInit {
-  email = signal('');
-  role = signal('');
-  activeTab = signal('publications');
+  email        = signal('');
+  role         = signal('');
+  activeTab    = signal('publications');
+  encTab       = signal('doctorants'); // Onglet actif pour ajouter des encadrements
   publications = signal<Publication[]>([]);
-  message = signal('');
-  chercheurId = signal<number | null>(null);
+  message      = signal('');
+  chercheurId  = signal<number | null>(null);
+  profil       = signal<any>({});
 
-  profil = signal<any>({});
+  // ── Encadrements ────────────────────────────────────────
+  mesDoctorants    = signal<any[]>([]);
+  mesMasteriens    = signal<any[]>([]);
+  doctorantsDispos = signal<any[]>([]);
+  masteriensDispos = signal<any[]>([]);
+  encMsg           = signal('');
+
   editProfil = {
     grade: '', specialite: '', institution: '',
     bureau: '', telephone: '', biographie: '',
@@ -32,7 +41,6 @@ export class DashboardChercheur implements OnInit {
     statut: 'BROUILLON'
   };
 
-  // Stats computed
   pubBrouillons = computed(() => this.publications().filter(p => p.statut === 'BROUILLON' || !p.statut).length);
   pubSoumises   = computed(() => this.publications().filter(p => p.statut === 'SOUMIS').length);
   pubPubliees   = computed(() => this.publications().filter(p => p.statut === 'PUBLIE').length);
@@ -70,10 +78,61 @@ export class DashboardChercheur implements OnInit {
             orcid:         c.orcid         || '',
             linkedin:      c.linkedin      || ''
           };
-          // Charger les publications du chercheur
           this.publications.set(c.publications || []);
+          this.chargerEncadrements(c.id);
         }
       });
+  }
+
+  chargerEncadrements(cid: number) {
+    this.api.getDoctorants().subscribe((data: any[]) => {
+      this.mesDoctorants.set(data.filter(d => d.directeur?.id === cid));
+      this.doctorantsDispos.set(data.filter(d => !d.directeur));
+    });
+    this.api.getMasteriens().subscribe((data: any[]) => {
+      this.mesMasteriens.set(data.filter(m => m.encadrant?.id === cid));
+      this.masteriensDispos.set(data.filter(m => !m.encadrant));
+    });
+  }
+
+  assignerDoctorant(doctorantId: number) {
+    const cid = this.chercheurId();
+    if (!cid) return;
+    this.api.updateDoctorant(doctorantId, { directeurId: cid }).subscribe(() => {
+      this.encMsg.set('Doctorant assigné avec succès !');
+      this.chargerEncadrements(cid);
+      setTimeout(() => this.encMsg.set(''), 3000);
+    });
+  }
+
+  retirerDoctorant(doctorantId: number) {
+    const cid = this.chercheurId();
+    if (!cid) return;
+    this.api.updateDoctorant(doctorantId, { directeurId: null }).subscribe(() => {
+      this.encMsg.set('Doctorant retiré.');
+      this.chargerEncadrements(cid);
+      setTimeout(() => this.encMsg.set(''), 3000);
+    });
+  }
+
+  assignerMasterien(masterienId: number) {
+    const cid = this.chercheurId();
+    if (!cid) return;
+    this.api.updateMasterien(masterienId, { encadrantId: cid }).subscribe(() => {
+      this.encMsg.set('Mastérien assigné avec succès !');
+      this.chargerEncadrements(cid);
+      setTimeout(() => this.encMsg.set(''), 3000);
+    });
+  }
+
+  retirerMasterien(masterienId: number) {
+    const cid = this.chercheurId();
+    if (!cid) return;
+    this.api.updateMasterien(masterienId, { encadrantId: null }).subscribe(() => {
+      this.encMsg.set('Mastérien retiré.');
+      this.chargerEncadrements(cid);
+      setTimeout(() => this.encMsg.set(''), 3000);
+    });
   }
 
   sauvegarderProfil() {
@@ -133,14 +192,14 @@ export class DashboardChercheur implements OnInit {
   }
 
   getStatutClass(statut: string): string {
-    if (statut === 'PUBLIE')    return 'statut-publie';
-    if (statut === 'SOUMIS')    return 'statut-soumis';
+    if (statut === 'PUBLIE') return 'statut-publie';
+    if (statut === 'SOUMIS') return 'statut-soumis';
     return 'statut-brouillon';
   }
 
   getStatutLabel(statut: string): string {
-    if (statut === 'PUBLIE')    return '✅ Publié';
-    if (statut === 'SOUMIS')    return '⏳ En attente';
+    if (statut === 'PUBLIE') return '✅ Publié';
+    if (statut === 'SOUMIS') return '⏳ En attente';
     return '📝 Brouillon';
   }
 

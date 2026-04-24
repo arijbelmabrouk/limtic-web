@@ -1,6 +1,6 @@
 <div class="page">
   <button class="btn-retour" (click)="retour()">
-    ← {{ isAdmin ? 'Retour au dashboard' : 'Retour aux chercheurs' }}
+    ← {{ getRetourText() }}
   </button>
 
   @if (chercheur()) {
@@ -17,6 +17,7 @@
       </div>
     </div>
 
+    <!-- ── Publications ──────────────────────────────────── -->
     <div class="section">
       <h2>Publications <span class="count">{{ chercheur()!.publications.length || 0 }}</span></h2>
       <div class="pub-list">
@@ -39,6 +40,70 @@
         }
       </div>
     </div>
+
+    <!-- ── Encadrements ──────────────────────────────────── -->
+    @if (doctorants().length > 0 || masteriens().length > 0) {
+      <div class="section">
+        <h2>
+          Encadrements
+          <span class="count">{{ doctorants().length + masteriens().length }}</span>
+        </h2>
+
+        @if (doctorants().length > 0) {
+          <p class="enc-sous-titre">Doctorants</p>
+          <div class="enc-list">
+            @for (d of doctorants(); track d.id) {
+              <div class="enc-card">
+                <div class="enc-avatar">{{ d.prenom?.[0] }}{{ d.nom?.[0] }}</div>
+                <div class="enc-body">
+                  <strong>{{ d.prenom }} {{ d.nom }}</strong>
+                  <p>{{ d.sujetThese || 'Sujet non renseigné' }}</p>
+                  <div class="enc-meta">
+                    <span class="enc-badge"
+                          [class.enc-cours]="d.statut === 'EN_COURS'"
+                          [class.enc-soutenu]="d.statut === 'SOUTENU'">
+                      {{ d.statut === 'EN_COURS' ? 'En cours' : 'Soutenu' }}
+                    </span>
+                    @if (d.dateInscription) {
+                      <span class="enc-date">Inscrit : {{ d.dateInscription }}</span>
+                    }
+                    @if (d.mention) {
+                      <span class="enc-mention">{{ d.mention }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (masteriens().length > 0) {
+          <p class="enc-sous-titre" style="margin-top: 1.5rem">Mastériens</p>
+          <div class="enc-list">
+            @for (m of masteriens(); track m.id) {
+              <div class="enc-card">
+                <div class="enc-avatar">{{ m.prenom?.[0] }}{{ m.nom?.[0] }}</div>
+                <div class="enc-body">
+                  <strong>{{ m.prenom }} {{ m.nom }}</strong>
+                  <p>{{ m.sujetMemoire || 'Sujet non renseigné' }}</p>
+                  <div class="enc-meta">
+                    <span class="enc-badge"
+                          [class.enc-cours]="m.statut === 'EN_COURS'"
+                          [class.enc-diplome]="m.statut === 'DIPLOME'">
+                      {{ m.statut === 'EN_COURS' ? 'En cours' : 'Diplômé' }}
+                    </span>
+                    @if (m.promotion) {
+                      <span class="enc-date">Promotion {{ m.promotion }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
   } @else {
     <div class="loading">Chargement...</div>
   }

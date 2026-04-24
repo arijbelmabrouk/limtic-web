@@ -62,9 +62,13 @@ public class MasterienController {
         if (body.get("sujetMemoire") != null) m.setSujetMemoire((String) body.get("sujetMemoire"));
         if (body.get("promotion") != null)   m.setPromotion((String) body.get("promotion"));
         if (body.get("statut") != null)      m.setStatut((String) body.get("statut"));
-        if (body.get("encadrantId") != null) {
-            Long eid = Long.valueOf(body.get("encadrantId").toString());
-            chercheurRepo.findById(eid).ifPresent(m::setEncadrant);
+        if (body.containsKey("encadrantId")) {
+            if (body.get("encadrantId") != null) {
+                Long eid = Long.valueOf(body.get("encadrantId").toString());
+                chercheurRepo.findById(eid).ifPresent(m::setEncadrant);
+            } else {
+                m.setEncadrant(null);
+            }
         }
         return ResponseEntity.ok(masterienRepo.save(m));
     }

@@ -196,3 +196,69 @@
   .page { padding: 1rem; }
   .profile-info h1 { font-size: 1.3rem; }
 }
+
+/* ── ENCADREMENTS ─────────────────────────────────────────── */
+.enc-sous-titre {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 0.75rem;
+}
+
+.enc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.enc-card {
+  background: #1f2937;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: border-color 0.2s;
+}
+.enc-card:hover { border-color: rgba(0,210,255,0.15); }
+
+.enc-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.enc-body { flex: 1; }
+.enc-body strong { color: white; font-size: 0.9rem; display: block; margin-bottom: 3px; }
+.enc-body p { color: rgba(255,255,255,0.45); font-size: 0.82rem; margin-bottom: 0.4rem; }
+
+.enc-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.enc-badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.enc-cours   { background: rgba(0,210,255,0.12);  color: #00d2ff; }
+.enc-soutenu { background: rgba(52,211,153,0.12); color: #34d399; }
+.enc-diplome { background: rgba(240,192,64,0.12); color: #f0c040; }
+
+.enc-date    { color: rgba(255,255,255,0.3); font-size: 0.75rem; }
+.enc-mention { color: #f0c040; font-size: 0.75rem; font-weight: 600; }

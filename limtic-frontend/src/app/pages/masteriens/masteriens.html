@@ -42,7 +42,7 @@
         @if (m.encadrant) {
           <div class="encadrant">
             <span class="label">Encadrant :</span>
-            <a [routerLink]="['/chercheurs', m.encadrant.id]" class="link">
+            <a [routerLink]="['/chercheurs', m.encadrant.id]" [queryParams]="{from: 'masteriens'}" class="link">
               {{ m.encadrant.prenom }} {{ m.encadrant.nom }}
             </a>
           </div>
@@ -51,7 +51,6 @@
         @if (m.promotion) {
           <div class="meta">🎓 Promotion : {{ m.promotion }}</div>
         }
-
       </div>
     }
 

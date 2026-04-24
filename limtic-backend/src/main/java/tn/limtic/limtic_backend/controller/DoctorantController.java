@@ -72,9 +72,13 @@ public class DoctorantController {
             d.setDateInscription(java.time.LocalDate.parse(body.get("dateInscription").toString()));
         if (body.get("dateSoutenance") != null)
             d.setDateSoutenance(java.time.LocalDate.parse(body.get("dateSoutenance").toString()));
-        if (body.get("directeurId") != null) {
-            Long did = Long.valueOf(body.get("directeurId").toString());
-            chercheurRepo.findById(did).ifPresent(d::setDirecteur);
+        if (body.containsKey("directeurId")) {
+            if (body.get("directeurId") != null) {
+                Long did = Long.valueOf(body.get("directeurId").toString());
+                chercheurRepo.findById(did).ifPresent(d::setDirecteur);
+            } else {
+                d.setDirecteur(null);
+            }
         }
         return ResponseEntity.ok(doctorantRepo.save(d));
     }

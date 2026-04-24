@@ -114,3 +114,15 @@
 .meta { font-size: 0.85rem; color: rgba(255,255,255,0.4); }
 
 .mention { font-size: 0.88rem; color: #f0c040; }
+
+.doc-directeur {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 6px;
+}
+.doc-directeur a {
+  color: #00d2ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.doc-directeur a:hover { text-decoration: underline; }

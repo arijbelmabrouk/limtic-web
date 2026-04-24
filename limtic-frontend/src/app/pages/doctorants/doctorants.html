@@ -45,8 +45,8 @@
 
         @if (d.directeur) {
           <div class="directeur">
-            <span class="label">Directeur :</span>
-            <a [routerLink]="['/chercheurs', d.directeur.id]" class="link">
+            <span class="label">Encadreur :</span>
+            <a [routerLink]="['/chercheurs', d.directeur.id]" [queryParams]="{from: 'doctorants'}" class="link">
               {{ d.directeur.prenom }} {{ d.directeur.nom }}
             </a>
           </div>
@@ -63,7 +63,6 @@
         @if (d.statut === 'SOUTENU' && d.mention) {
           <div class="mention">Mention : <strong>{{ d.mention }}</strong></div>
         }
-
       </div>
     }
 

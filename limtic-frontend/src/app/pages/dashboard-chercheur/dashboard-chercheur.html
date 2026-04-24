@@ -1,5 +1,7 @@
 <div class="dashboard">
 
+  <button class="btn-logout-fixed" (click)="logout()">⏻</button>
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-brand">
@@ -10,17 +12,24 @@
       </div>
     </div>
     <nav class="sidebar-nav">
-      <button [class.active]="activeTab() === 'profil'" (click)="activeTab.set('profil')">
+      <button [class.active]="activeTab() === 'profil'"
+              (click)="activeTab.set('profil')">
         👤 Mon Profil
       </button>
-      <button [class.active]="activeTab() === 'publications'" (click)="activeTab.set('publications')">
+      <button [class.active]="activeTab() === 'publications'"
+              (click)="activeTab.set('publications')">
         📄 Mes Publications
         @if (pubSoumises() > 0) {
           <span class="nav-badge-orange">{{ pubSoumises() }}</span>
         }
       </button>
-      <button [class.active]="activeTab() === 'ajouter'" (click)="activeTab.set('ajouter')">
+      <button [class.active]="activeTab() === 'ajouter'"
+              (click)="activeTab.set('ajouter')">
         ➕ Ajouter publication
+      </button>
+      <button [class.active]="activeTab() === 'encadrements'"
+              (click)="activeTab.set('encadrements')">
+        🎓 Mes encadrements
       </button>
       <button class="btn-logout-mobile" (click)="logout()">⏻ Quitter</button>
     </nav>
@@ -38,7 +47,6 @@
       <div class="alert-success">✅ {{ message() }}</div>
     }
 
-    <!-- Stats header -->
     <div class="dash-header">
       <div>
         <h1>Mon Espace Chercheur</h1>
@@ -66,7 +74,7 @@
       </div>
     </div>
 
-    <!-- TAB: PROFIL -->
+    <!-- ── TAB : PROFIL ─────────────────────────────────── -->
     @if (activeTab() === 'profil') {
       <div class="tab-header">
         <h1>Mon Profil</h1>
@@ -103,7 +111,7 @@
           </div>
         </div>
 
-        <h2 style="margin-top: 1.5rem; margin-bottom: 1rem;">Liens externes</h2>
+        <h2 style="margin-top: 1.5rem; margin-bottom: 1rem">Liens externes</h2>
         <div class="form-grid">
           <div class="field">
             <label>🎓 Google Scholar</label>
@@ -122,12 +130,11 @@
             <input [(ngModel)]="editProfil.linkedin" placeholder="https://linkedin.com/in/..." />
           </div>
         </div>
-
         <button class="btn-submit" (click)="sauvegarderProfil()">💾 Sauvegarder le profil</button>
       </div>
     }
 
-    <!-- TAB: AJOUTER -->
+    <!-- ── TAB : AJOUTER PUBLICATION ────────────────────── -->
     @if (activeTab() === 'ajouter') {
       <div class="form-card">
         <h2>Nouvelle Publication</h2>
@@ -158,21 +165,18 @@
           </div>
         </div>
 
-        <!-- Choix du statut initial -->
         <div class="statut-choix">
           <p class="statut-choix-label">Que voulez-vous faire ?</p>
           <div class="statut-choix-btns">
-            <button
-              class="btn-choix"
-              [class.selected]="newPub.statut === 'BROUILLON'"
-              (click)="newPub.statut = 'BROUILLON'">
+            <button class="btn-choix"
+                    [class.selected]="newPub.statut === 'BROUILLON'"
+                    (click)="newPub.statut = 'BROUILLON'">
               📝 Enregistrer en brouillon
               <span>Vous pourrez soumettre plus tard</span>
             </button>
-            <button
-              class="btn-choix btn-choix-submit"
-              [class.selected]="newPub.statut === 'SOUMIS'"
-              (click)="newPub.statut = 'SOUMIS'">
+            <button class="btn-choix btn-choix-submit"
+                    [class.selected]="newPub.statut === 'SOUMIS'"
+                    (click)="newPub.statut = 'SOUMIS'">
               🚀 Soumettre à validation
               <span>L'admin devra valider</span>
             </button>
@@ -185,14 +189,13 @@
       </div>
     }
 
-    <!-- TAB: PUBLICATIONS -->
+    <!-- ── TAB : MES PUBLICATIONS ──────────────────────── -->
     @if (activeTab() === 'publications') {
       <div class="tab-header">
         <h2>Mes Publications</h2>
         <p>{{ publications().length }} publication(s) enregistrée(s)</p>
       </div>
 
-      <!-- Workflow info -->
       <div class="workflow-info">
         <div class="workflow-step">
           <span class="wf-badge statut-brouillon">📝 Brouillon</span>
@@ -263,5 +266,153 @@
       </div>
     }
 
+    <!-- ── TAB : MES ENCADREMENTS ─────────────────────── -->
+@if (activeTab() === 'encadrements') {
+
+  <div class="tab-header">
+    <h1>🎓 Mes Encadrements</h1>
+    <p>Gérez vos doctorants et mastériens</p>
+  </div>
+
+  @if (encMsg()) {
+    <div class="alert-success">✅ {{ encMsg() }}</div>
+  }
+
+  <div class="encadrements-layout">
+    <!-- Colonne gauche : Mes encadrements actuels -->
+    <div class="enc-col enc-col-current">
+      <h2>📚 Mes Encadrements Actuels</h2>
+
+      <!-- Doctorants encadrés -->
+      <div class="enc-section">
+        <h3>Doctorants ({{ mesDoctorants().length }})</h3>
+        @if (mesDoctorants().length === 0) {
+          <p class="empty-msg">Aucun doctorant encadré</p>
+        } @else {
+          <div class="enc-list">
+            @for (d of mesDoctorants(); track d.id) {
+              <div class="enc-item">
+                <div class="enc-avatar">{{ d.prenom?.[0] }}{{ d.nom?.[0] }}</div>
+                <div class="enc-info">
+                  <strong>{{ d.prenom }} {{ d.nom }}</strong>
+                  <p>{{ d.sujetThese || 'Sujet non spécifié' }}</p>
+                  <span class="enc-statut" [class.enc-en-cours]="d.statut === 'EN_COURS'"
+                        [class.enc-soutenu]="d.statut === 'SOUTENU'">
+                    {{ d.statut === 'EN_COURS' ? 'En cours' : 'Soutenu' }}
+                  </span>
+                </div>
+                <button class="btn-remove" (click)="retirerDoctorant(d.id)">✕</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Mastériens encadrés -->
+      <div class="enc-section">
+        <h3>Mastériens ({{ mesMasteriens().length }})</h3>
+        @if (mesMasteriens().length === 0) {
+          <p class="empty-msg">Aucun mastérien encadré</p>
+        } @else {
+          <div class="enc-list">
+            @for (m of mesMasteriens(); track m.id) {
+              <div class="enc-item">
+                <div class="enc-avatar" style="background: linear-gradient(135deg, #34d399, #059669)">
+                  {{ m.prenom?.[0] }}{{ m.nom?.[0] }}
+                </div>
+                <div class="enc-info">
+                  <strong>{{ m.prenom }} {{ m.nom }}</strong>
+                  <p>{{ m.sujetMemoire || 'Sujet non spécifié' }}</p>
+                  @if (m.promotion) {
+                    <span class="enc-promo">Promotion {{ m.promotion }}</span>
+                  }
+                  <span class="enc-statut" [class.enc-en-cours]="m.statut === 'EN_COURS'"
+                        [class.enc-diplome]="m.statut === 'DIPLOME'">
+                    {{ m.statut === 'EN_COURS' ? 'En cours' : 'Diplômé' }}
+                  </span>
+                </div>
+                <button class="btn-remove" (click)="retirerMasterien(m.id)">✕</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Colonne droite : Ajouter des encadrements -->
+    <div class="enc-col enc-col-add">
+      <h2>➕ Ajouter un Encadrement</h2>
+
+      <!-- Onglets pour choisir le type -->
+      <div class="enc-tabs">
+        <button [class.active]="encTab() === 'doctorants'"
+                (click)="encTab.set('doctorants')">
+          🎓 Doctorants
+        </button>
+        <button [class.active]="encTab() === 'masteriens'"
+                (click)="encTab.set('masteriens')">
+          📚 Mastériens
+        </button>
+      </div>
+
+      <!-- Contenu des onglets -->
+      <div class="enc-tab-content">
+        @if (encTab() === 'doctorants') {
+          <div class="enc-add-section">
+            <h3>Doctorants Disponibles</h3>
+            <p class="enc-desc">Sélectionnez un doctorant sans directeur pour l'encadrer</p>
+
+            @if (doctorantsDispos().length === 0) {
+              <p class="empty-msg">Aucun doctorant disponible</p>
+            } @else {
+              <div class="enc-available-list">
+                @for (d of doctorantsDispos(); track d.id) {
+                  <div class="enc-available-item">
+                    <div class="enc-avatar">{{ d.prenom?.[0] }}{{ d.nom?.[0] }}</div>
+                    <div class="enc-info">
+                      <strong>{{ d.prenom }} {{ d.nom }}</strong>
+                      <p>{{ d.sujetThese || 'Sujet non spécifié' }}</p>
+                      @if (d.dateInscription) {
+                        <span class="enc-date">Inscrit en {{ d.dateInscription }}</span>
+                      }
+                    </div>
+                    <button class="btn-assign" (click)="assignerDoctorant(d.id)">➕ Assigner</button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (encTab() === 'masteriens') {
+          <div class="enc-add-section">
+            <h3>Mastériens Disponibles</h3>
+            <p class="enc-desc">Sélectionnez un mastérien sans encadrant pour l'encadrer</p>
+
+            @if (masteriensDispos().length === 0) {
+              <p class="empty-msg">Aucun mastérien disponible</p>
+            } @else {
+              <div class="enc-available-list">
+                @for (m of masteriensDispos(); track m.id) {
+                  <div class="enc-avatar" style="background: linear-gradient(135deg, #34d399, #059669)">
+                    {{ m.prenom?.[0] }}{{ m.nom?.[0] }}
+                  </div>
+                  <div class="enc-info">
+                    <strong>{{ m.prenom }} {{ m.nom }}</strong>
+                    <p>{{ m.sujetMemoire || 'Sujet non spécifié' }}</p>
+                    @if (m.promotion) {
+                      <span class="enc-promo">Promotion {{ m.promotion }}</span>
+                    }
+                  </div>
+                  <button class="btn-assign" (click)="assignerMasterien(m.id)">➕ Assigner</button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
   </main>
 </div>

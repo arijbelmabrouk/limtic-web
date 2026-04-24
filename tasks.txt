@@ -1,0 +1,106 @@
+admin@limtic.tn → rôle ADMIN → redirige vers /dashboard-admin (admin123)
+ben.ali@limtic.tn → rôle CHERCHEUR → redirige vers /dashboard-chercheur (pass1)
+
+🔴 Priorité 1 — Authentification réelle (CDC 4.1)
+
+Vérification mot de passe bcrypt dans AuthController
+Vrai JWT avec expiration (actuellement fake token)
+Réinitialisation mot de passe par email
+
+
+🔴 Priorité 2 — Gestion comptes admin (CDC 4.2 + 4.3.2)
+
+Onglet "Comptes" dans dashboard admin :
+
+Créer un utilisateur (email + mot de passe + rôle)
+Liste tous les users avec leur rôle
+Activer / désactiver un compte
+Changer le rôle d'un user
+
+
+🔴 Priorité 3 — Profil chercheur (CDC 3.3.2)
+
+Modifier ses infos : grade, spécialité, bureau, téléphone
+Liens externes : Google Scholar, ResearchGate, ORCID, LinkedIn
+Biographie (texte libre)
+Onglet "Mon Profil" dans dashboard chercheur
+
+
+🟠 Priorité 4 — Axes de recherche (CDC 3.6 + 4.3.5)
+
+Page publique /axes listant tous les axes
+Chaque axe : intitulé, description, responsable, chercheurs membres
+Lien vers publications par axe
+Onglet "Axes" dans dashboard admin : CRUD axes + associer chercheurs
+
+
+🟠 Priorité 5 — Page contact (CDC 3.9)
+
+Formulaire : nom, email, sujet, message
+Adresse postale + téléphone
+Carte Google Maps intégrée
+Lien dans la navbar
+
+
+🟠 Priorité 6 — Doctorants (CDC 3.4)
+
+Page publique /doctorants
+Fiche : photo, nom, sujet de thèse, directeur, date inscription, statut (en cours / soutenu)
+Filtres par directeur, axe, année
+Onglet "Doctorants" dans dashboard admin : CRUD complet
+
+
+🟠 Priorité 7 — Mastériens (CDC 3.5)
+
+Page publique /masteriens
+Fiche : nom, sujet mémoire, encadrant, promotion, statut
+Onglet "Mastériens" dans dashboard admin : CRUD complet
+
+
+🟡 Priorité 8 — Améliorations pages publiques
+Publications (CDC 3.7.3) :
+
+Tri par année, type, auteur, axe
+Recherche plein texte
+Badge classement coloré (Q1 vert, CORE A* or)
+Export BibTeX + CSV
+
+Chercheurs (CDC 3.3.1) :
+
+Filtres par axe, grade, statut (actif/retraité)
+
+Événements (CDC 3.8) :
+
+Statut à venir / passé automatique selon date
+Programme scientifique
+
+
+🟡 Priorité 9 — Page directeur (CDC 3.2)
+
+Photo, titre, coordonnées
+Message de bienvenue
+Liens Google Scholar, ResearchGate, ORCID
+Publications récentes
+
+
+🟡 Priorité 10 — Workflow publications (CDC 4.3.3)
+
+Statut : brouillon → soumis → publié
+Admin valide les publications soumises
+Alerte dans le dashboard admin pour publications en attente
+
+
+🟢 Priorité 11 — Améliorations dashboard admin (CDC 4.3.1)
+
+Alertes pour contenus en attente de validation
+Journal d'audit (log des actions : ajout, modif, suppression)
+Paramètres généraux : nom labo, logo, SMTP (CDC 4.3.6)
+
+
+🟢 Priorité 12 — Non-fonctionnel (CDC 5.2)
+
+Responsive mobile (dashboards)
+Protection CSRF 
+Rate limiting sur les routes auth
+Pagination des listes
+écurité navigation par URL
