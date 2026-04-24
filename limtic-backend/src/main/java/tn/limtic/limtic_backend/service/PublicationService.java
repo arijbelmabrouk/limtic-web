@@ -1,5 +1,7 @@
 package tn.limtic.limtic_backend.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import tn.limtic.limtic_backend.model.Publication;
 import tn.limtic.limtic_backend.repository.PublicationRepository;
@@ -36,5 +38,15 @@ public class PublicationService {
 
     public void delete(Long id) {
         publicationRepository.deleteById(id);
+    }
+
+    public Publication updateStatut(Long id, String statut) {
+        Publication pub = getById(id);
+        pub.setStatut(statut);
+        return publicationRepository.save(pub);
+    }
+
+    public Page<Publication> getPaged(Pageable pageable) {
+        return publicationRepository.findAll(pageable);
     }
 }

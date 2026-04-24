@@ -31,6 +31,8 @@ export interface Publication {
   resume: string;
   lienUrl: string;
   axe: AxeRecherche;
+  statut?: 'BROUILLON' | 'SOUMIS' | 'PUBLIE';
+  chercheur?: { id: number; nom: string; prenom: string };
 }
 
 export interface Chercheur {

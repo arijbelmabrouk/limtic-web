@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -16,7 +16,6 @@ export class DashboardChercheur implements OnInit {
   activeTab = signal('publications');
   publications = signal<Publication[]>([]);
   message = signal('');
-
   chercheurId = signal<number | null>(null);
 
   profil = signal<any>({});
@@ -26,7 +25,17 @@ export class DashboardChercheur implements OnInit {
     googleScholar: '', researchGate: '', orcid: '', linkedin: ''
   };
 
-  newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '' };
+  newPub = {
+    titre: '', type: 'Journal',
+    annee: new Date().getFullYear(),
+    journal: '', resume: '',
+    statut: 'BROUILLON'
+  };
+
+  // Stats computed
+  pubBrouillons = computed(() => this.publications().filter(p => p.statut === 'BROUILLON' || !p.statut).length);
+  pubSoumises   = computed(() => this.publications().filter(p => p.statut === 'SOUMIS').length);
+  pubPubliees   = computed(() => this.publications().filter(p => p.statut === 'PUBLIE').length);
 
   constructor(private router: Router, private api: ApiService) {}
 
@@ -35,7 +44,6 @@ export class DashboardChercheur implements OnInit {
     if (!token) { this.router.navigate(['/login']); return; }
     this.email.set(localStorage.getItem('email') || '');
     this.role.set(localStorage.getItem('role') || '');
-    this.api.getPublications().subscribe(data => this.publications.set(data));
     this.loadProfil();
   }
 
@@ -46,9 +54,7 @@ export class DashboardChercheur implements OnInit {
     })
       .then(r => r.json())
       .then((data: any[]) => {
-        const c = data.find(ch =>
-          ch.user?.email === email || ch.email === email
-        );
+        const c = data.find(ch => ch.user?.email === email || ch.email === email);
         if (c) {
           this.chercheurId.set(c.id);
           this.profil.set(c);
@@ -64,6 +70,8 @@ export class DashboardChercheur implements OnInit {
             orcid:         c.orcid         || '',
             linkedin:      c.linkedin      || ''
           };
+          // Charger les publications du chercheur
+          this.publications.set(c.publications || []);
         }
       });
   }
@@ -82,16 +90,58 @@ export class DashboardChercheur implements OnInit {
   }
 
   ajouterPublication() {
+    if (!this.newPub.titre.trim()) {
+      this.message.set('Le titre est obligatoire.');
+      return;
+    }
     fetch('http://localhost:8080/api/publications', {
       method: 'POST',
       headers: this.api.authHeaders(),
       body: JSON.stringify(this.newPub)
     }).then(() => {
-      this.message.set('Publication ajoutée avec succès !');
+      this.message.set(
+        this.newPub.statut === 'SOUMIS'
+          ? 'Publication soumise à validation !'
+          : 'Publication enregistrée en brouillon !'
+      );
       this.activeTab.set('publications');
-      this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '' };
-      this.api.getPublications().subscribe(data => this.publications.set(data));
+      this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'BROUILLON' };
+      this.loadProfil();
     });
+  }
+
+  soumettre(id: number) {
+    fetch(`http://localhost:8080/api/publications/${id}/statut`, {
+      method: 'PATCH',
+      headers: this.api.authHeaders(),
+      body: JSON.stringify({ statut: 'SOUMIS' })
+    }).then(() => {
+      this.message.set('Publication soumise à validation !');
+      this.loadProfil();
+    });
+  }
+
+  retirerSoumission(id: number) {
+    fetch(`http://localhost:8080/api/publications/${id}/statut`, {
+      method: 'PATCH',
+      headers: this.api.authHeaders(),
+      body: JSON.stringify({ statut: 'BROUILLON' })
+    }).then(() => {
+      this.message.set('Publication remise en brouillon.');
+      this.loadProfil();
+    });
+  }
+
+  getStatutClass(statut: string): string {
+    if (statut === 'PUBLIE')    return 'statut-publie';
+    if (statut === 'SOUMIS')    return 'statut-soumis';
+    return 'statut-brouillon';
+  }
+
+  getStatutLabel(statut: string): string {
+    if (statut === 'PUBLIE')    return '✅ Publié';
+    if (statut === 'SOUMIS')    return '⏳ En attente';
+    return '📝 Brouillon';
   }
 
   logout() {

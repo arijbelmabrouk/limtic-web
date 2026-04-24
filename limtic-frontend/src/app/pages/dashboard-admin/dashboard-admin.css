@@ -617,3 +617,252 @@
   font-size: 0.78rem;
   font-style: italic;
 }
+
+/* Badge nav publications en attente */
+.nav-badge {
+  background: #f59e0b;
+  color: #111;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+}
+
+/* Alerte dashboard */
+.alert-pending {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.alert-pending:hover { background: rgba(245,158,11,0.18); }
+.alert-icon { font-size: 1.5rem; }
+.alert-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.alert-text strong { color: #f59e0b; font-size: 0.95rem; }
+.alert-text span { color: rgba(255,255,255,0.5); font-size: 0.82rem; }
+.alert-arrow { color: #f59e0b; font-size: 1.2rem; }
+
+/* Stat pending */
+.stat-pending {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* Section publications en attente */
+.pending-section {
+  background: rgba(245,158,11,0.05);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.pending-title {
+  color: #f59e0b;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.pending-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.pending-card {
+  background: #1f2937;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.pending-body { flex: 1; }
+.pending-body h4 { color: white; font-size: 0.9rem; font-weight: 600; margin: 4px 0; }
+.pending-meta { color: rgba(255,255,255,0.4); font-size: 0.8rem; }
+.pending-author { color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 2px; }
+.pending-resume { color: rgba(255,255,255,0.35); font-size: 0.78rem; margin-top: 4px; }
+
+.pending-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.btn-valider {
+  background: rgba(52,211,153,0.15);
+  color: #34d399;
+  border: 1px solid rgba(52,211,153,0.3);
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-valider:hover { background: rgba(52,211,153,0.25); }
+
+.btn-rejeter {
+  background: rgba(248,113,113,0.1);
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,0.2);
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-rejeter:hover { background: rgba(248,113,113,0.2); }
+
+/* Petits boutons dans le tableau */
+.btn-valider-sm {
+  background: rgba(52,211,153,0.15);
+  color: #34d399;
+  border: 1px solid rgba(52,211,153,0.3);
+}
+.btn-rejeter-sm {
+  background: rgba(248,113,113,0.1);
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,0.2);
+}
+
+/* Badges statut publication */
+.badge-statut-pub {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.statut-publie {
+  background: rgba(52,211,153,0.15);
+  color: #34d399;
+  border: 1px solid rgba(52,211,153,0.3);
+}
+.statut-soumis {
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.3);
+}
+.statut-brouillon {
+  background: rgba(156,163,175,0.1);
+  color: #9ca3af;
+  border: 1px solid rgba(156,163,175,0.2);
+}
+
+/* ── RESPONSIVE MOBILE ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    padding: 0.5rem 1rem;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .sidebar-brand { display: none; }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    flex: 1;
+  }
+
+  .sidebar-nav button {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field.full { grid-column: span 1; }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 600px;
+  }
+
+  .tab-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .quick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pending-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pending-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .statut-choix-btns {
+    flex-direction: column;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .workflow-info {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .assoc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid,
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+}

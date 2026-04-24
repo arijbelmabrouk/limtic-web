@@ -289,3 +289,254 @@
 .tab-header h2 {
   color: white;
 }
+
+/* Stats couleurs statut */
+.statut-brouillon-num { color: #9ca3af; }
+.statut-soumis-num    { color: #f59e0b; }
+.statut-publie-num    { color: #34d399; }
+
+/* Nav badge */
+.nav-badge-orange {
+  background: #f59e0b;
+  color: #111;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+}
+
+/* Choix statut à la création */
+.statut-choix {
+  margin: 1.5rem 0 1rem;
+}
+.statut-choix-label {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.75rem;
+}
+.statut-choix-btns {
+  display: flex;
+  gap: 1rem;
+}
+.btn-choix {
+  flex: 1;
+  background: #111827;
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 1rem;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.btn-choix span {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.3);
+}
+.btn-choix:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: white;
+}
+.btn-choix.selected {
+  border-color: #9ca3af;
+  color: white;
+  background: rgba(156,163,175,0.08);
+}
+.btn-choix-submit.selected {
+  border-color: #f59e0b;
+  background: rgba(245,158,11,0.08);
+  color: #f59e0b;
+}
+.btn-choix-submit.selected span { color: rgba(245,158,11,0.6); }
+
+/* Workflow info */
+.workflow-info {
+  display: flex;
+  gap: 1.5rem;
+  background: #1f2937;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.workflow-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+.wf-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.wf-arrow { color: rgba(255,255,255,0.2); font-size: 1rem; }
+.wf-desc  { color: rgba(255,255,255,0.35); }
+
+/* Badges statut */
+.badge-statut-pub {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.statut-publie {
+  background: rgba(52,211,153,0.15);
+  color: #34d399;
+  border: 1px solid rgba(52,211,153,0.3);
+}
+.statut-soumis {
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.3);
+}
+.statut-brouillon {
+  background: rgba(156,163,175,0.1);
+  color: #9ca3af;
+  border: 1px solid rgba(156,163,175,0.2);
+}
+
+/* Boutons actions */
+.btn-soumettre {
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.3);
+  font-size: 0.8rem;
+}
+.btn-retirer {
+  background: rgba(156,163,175,0.1);
+  color: #9ca3af;
+  border: 1px solid rgba(156,163,175,0.2);
+  font-size: 0.8rem;
+}
+.pub-ok {
+  color: #34d399;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ── RESPONSIVE MOBILE ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    padding: 0.5rem 1rem;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .sidebar-brand { display: none; }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    flex: 1;
+  }
+
+  .sidebar-nav button {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field.full { grid-column: span 1; }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 600px;
+  }
+
+  .tab-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .quick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pending-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pending-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .statut-choix-btns {
+    flex-direction: column;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .workflow-info {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .assoc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid,
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+}

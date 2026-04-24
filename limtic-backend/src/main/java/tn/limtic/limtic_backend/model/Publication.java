@@ -3,7 +3,6 @@ package tn.limtic.limtic_backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
@@ -26,7 +25,10 @@ public class Publication {
     private String resume;
     private String lienUrl;
 
-   @ManyToOne
+    @Column(nullable = false)
+    private String statut = "BROUILLON";
+
+    @ManyToOne
     @JoinColumn(name = "axe_id")
     @JsonIgnoreProperties("publications")
     private AxeRecherche axe;

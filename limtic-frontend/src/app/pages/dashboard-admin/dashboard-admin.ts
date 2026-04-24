@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -22,14 +22,18 @@ export class DashboardAdmin implements OnInit {
   users        = signal<any[]>([]);
   doctorants   = signal<any[]>([]);
   masteriens   = signal<any[]>([]);
-  // ── Axes ──────────────────────────────────────────────────
-  axes       = signal<any[]>([]);
-  editingAxe = signal<any | null>(null);
-  assocMap   = signal<Record<number, number | null>>({});
+  axes         = signal<any[]>([]);
+  editingAxe   = signal<any | null>(null);
+  assocMap     = signal<Record<number, number | null>>({});
+
+  // Publications en attente
+  publicationsEnAttente = computed(() =>
+    this.publications().filter(p => p.statut === 'SOUMIS')
+  );
 
   newAxe       = { nom: '', description: '', responsableId: null as number | null };
   newChercheur = { nom: '', prenom: '', grade: '', institution: '', specialite: '' };
-  newPub       = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '' };
+  newPub       = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE' };
   newEvent     = { titre: '', type: 'Séminaire', dateEvenement: '', lieu: '', description: '' };
   newUser      = { email: '', motDePasse: '', role: 'CHERCHEUR' };
   newDoctorant = {
@@ -38,13 +42,12 @@ export class DashboardAdmin implements OnInit {
     dateInscription: '', statut: 'EN_COURS',
     mention: '', photoUrl: ''
   };
-
   newMasterien = {
     nom: '', prenom: '', sujetMemoire: '',
     encadrantId: null as number | null,
     promotion: '', statut: 'EN_COURS'
   };
-  
+
   editingDoctorant = signal<any | null>(null);
   editingMasterien = signal<any | null>(null);
 
@@ -102,7 +105,29 @@ export class DashboardAdmin implements OnInit {
     }).then(() => {
       this.message.set('Publication ajoutée !');
       this.showForm.set('');
-      this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '' };
+      this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE' };
+      this.api.getPublications().subscribe(data => this.publications.set(data));
+    });
+  }
+
+  validerPublication(id: number) {
+    fetch(`http://localhost:8080/api/publications/${id}/statut`, {
+      method: 'PATCH',
+      headers: this.api.authHeaders(),
+      body: JSON.stringify({ statut: 'PUBLIE' })
+    }).then(() => {
+      this.message.set('Publication validée et publiée !');
+      this.api.getPublications().subscribe(data => this.publications.set(data));
+    });
+  }
+
+  rejeterPublication(id: number) {
+    fetch(`http://localhost:8080/api/publications/${id}/statut`, {
+      method: 'PATCH',
+      headers: this.api.authHeaders(),
+      body: JSON.stringify({ statut: 'BROUILLON' })
+    }).then(() => {
+      this.message.set('Publication renvoyée en brouillon.');
       this.api.getPublications().subscribe(data => this.publications.set(data));
     });
   }
@@ -115,6 +140,20 @@ export class DashboardAdmin implements OnInit {
       this.message.set('Publication supprimée.');
       this.api.getPublications().subscribe(data => this.publications.set(data));
     });
+  }
+
+  getStatutClass(statut: string): string {
+    if (statut === 'PUBLIE')    return 'statut-publie';
+    if (statut === 'SOUMIS')    return 'statut-soumis';
+    if (statut === 'BROUILLON') return 'statut-brouillon';
+    return '';
+  }
+
+  getStatutLabel(statut: string): string {
+    if (statut === 'PUBLIE')    return '✅ Publié';
+    if (statut === 'SOUMIS')    return '⏳ Soumis';
+    if (statut === 'BROUILLON') return '📝 Brouillon';
+    return statut || '-';
   }
 
   // ── Événements ────────────────────────────────────────────
@@ -319,7 +358,7 @@ export class DashboardAdmin implements OnInit {
     });
   }
 
-    // ── Masteriens ────────────────────────────────────────────
+  // ── Masteriens ────────────────────────────────────────────
   loadMasteriens() {
     this.api.getMasteriens().subscribe(data => {
       this.masteriens.set(data);

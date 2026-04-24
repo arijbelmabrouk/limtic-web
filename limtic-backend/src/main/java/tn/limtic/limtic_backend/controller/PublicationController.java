@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.*;
 import tn.limtic.limtic_backend.model.Publication;
 import tn.limtic.limtic_backend.service.PublicationService;
 import java.util.List;
+import java.util.Map;
+import org.springframework.data.domain.*;
 
 @RestController
 @RequestMapping("/api/publications")
@@ -38,6 +40,9 @@ public class PublicationController {
 
     @PostMapping
     public Publication create(@RequestBody Publication publication) {
+        if (publication.getStatut() == null || publication.getStatut().isEmpty()) {
+            publication.setStatut("BROUILLON");
+        }
         return publicationService.save(publication);
     }
 
@@ -47,8 +52,26 @@ public class PublicationController {
         return publicationService.save(publication);
     }
 
+    
+    @PatchMapping("/{id}/statut")
+    public Publication updateStatut(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return publicationService.updateStatut(id, body.get("statut"));
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         publicationService.delete(id);
+    }
+
+    @GetMapping("/page")
+    public Page<Publication> getPaged(
+        @RequestParam(defaultValue = "0")  int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "annee") String sort,
+        @RequestParam(defaultValue = "desc") String dir
+    ) {
+        Sort.Direction direction = dir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort));
+        return publicationService.getPaged(pageable);
     }
 }

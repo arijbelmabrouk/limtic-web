@@ -3,11 +3,11 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-        <span class="brand-logo">⬡</span>
-        <div class="brand-text">
-            <span class="brand-name">LIMTIC</span>
-            <span class="brand-role">Chercheur</span>
-        </div>
+      <span class="brand-logo">⬡</span>
+      <div class="brand-text">
+        <span class="brand-name">LIMTIC</span>
+        <span class="brand-role">Chercheur</span>
+      </div>
     </div>
     <nav class="sidebar-nav">
       <button [class.active]="activeTab() === 'profil'" (click)="activeTab.set('profil')">
@@ -15,6 +15,9 @@
       </button>
       <button [class.active]="activeTab() === 'publications'" (click)="activeTab.set('publications')">
         📄 Mes Publications
+        @if (pubSoumises() > 0) {
+          <span class="nav-badge-orange">{{ pubSoumises() }}</span>
+        }
       </button>
       <button [class.active]="activeTab() === 'ajouter'" (click)="activeTab.set('ajouter')">
         ➕ Ajouter publication
@@ -48,13 +51,17 @@
         <div class="stat-num">{{ publications().length }}</div>
         <div class="stat-label">Publications totales</div>
       </div>
-      <div class="stat-card clickable" (click)="activeTab.set('ajouter')">
-        <div class="stat-icon">➕</div>
-        <div class="stat-label">Ajouter une publication</div>
+      <div class="stat-card">
+        <div class="stat-num statut-brouillon-num">{{ pubBrouillons() }}</div>
+        <div class="stat-label">Brouillons</div>
       </div>
-      <div class="stat-card clickable" (click)="activeTab.set('profil')">
-        <div class="stat-icon">👤</div>
-        <div class="stat-label">Mon Profil</div>
+      <div class="stat-card">
+        <div class="stat-num statut-soumis-num">{{ pubSoumises() }}</div>
+        <div class="stat-label">En attente</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num statut-publie-num">{{ pubPubliees() }}</div>
+        <div class="stat-label">Publiées</div>
       </div>
     </div>
 
@@ -149,15 +156,58 @@
             <textarea [(ngModel)]="newPub.resume" placeholder="Résumé de la publication..." rows="3"></textarea>
           </div>
         </div>
-        <button class="btn-submit" (click)="ajouterPublication()">Publier</button>
+
+        <!-- Choix du statut initial -->
+        <div class="statut-choix">
+          <p class="statut-choix-label">Que voulez-vous faire ?</p>
+          <div class="statut-choix-btns">
+            <button
+              class="btn-choix"
+              [class.selected]="newPub.statut === 'BROUILLON'"
+              (click)="newPub.statut = 'BROUILLON'">
+              📝 Enregistrer en brouillon
+              <span>Vous pourrez soumettre plus tard</span>
+            </button>
+            <button
+              class="btn-choix btn-choix-submit"
+              [class.selected]="newPub.statut === 'SOUMIS'"
+              (click)="newPub.statut = 'SOUMIS'">
+              🚀 Soumettre à validation
+              <span>L'admin devra valider</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-submit" (click)="ajouterPublication()">
+          {{ newPub.statut === 'SOUMIS' ? '🚀 Soumettre' : '💾 Enregistrer' }}
+        </button>
       </div>
     }
 
     <!-- TAB: PUBLICATIONS -->
     @if (activeTab() === 'publications') {
       <div class="tab-header">
-        <h2>Toutes les Publications</h2>
+        <h2>Mes Publications</h2>
         <p>{{ publications().length }} publication(s) enregistrée(s)</p>
+      </div>
+
+      <!-- Workflow info -->
+      <div class="workflow-info">
+        <div class="workflow-step">
+          <span class="wf-badge statut-brouillon">📝 Brouillon</span>
+          <span class="wf-arrow">→</span>
+          <span class="wf-desc">Soumettez pour validation</span>
+        </div>
+        <div class="workflow-step">
+          <span class="wf-badge statut-soumis">⏳ Soumis</span>
+          <span class="wf-arrow">→</span>
+          <span class="wf-desc">En attente de l'admin</span>
+        </div>
+        <div class="workflow-step">
+          <span class="wf-badge statut-publie">✅ Publié</span>
+          <span class="wf-arrow">→</span>
+          <span class="wf-desc">Visible publiquement</span>
+        </div>
       </div>
 
       <div class="table-container">
@@ -168,6 +218,8 @@
               <th>Type</th>
               <th>Journal / Conf.</th>
               <th>Année</th>
+              <th>Statut</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -181,6 +233,28 @@
                 </td>
                 <td class="cell-muted">{{ p.journal }}</td>
                 <td class="cell-muted">{{ p.annee }}</td>
+                <td>
+                  <span class="badge-statut-pub" [class]="getStatutClass(p.statut || 'BROUILLON')">
+                    {{ getStatutLabel(p.statut || 'BROUILLON') }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-row">
+                    @if (p.statut === 'BROUILLON' || !p.statut) {
+                      <button class="btn-action btn-soumettre" (click)="soumettre(p.id)">
+                        🚀 Soumettre
+                      </button>
+                    }
+                    @if (p.statut === 'SOUMIS') {
+                      <button class="btn-action btn-retirer" (click)="retirerSoumission(p.id)">
+                        ↩ Retirer
+                      </button>
+                    }
+                    @if (p.statut === 'PUBLIE') {
+                      <span class="pub-ok">✅ Publié</span>
+                    }
+                  </div>
+                </td>
               </tr>
             }
           </tbody>

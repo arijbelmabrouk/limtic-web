@@ -18,6 +18,9 @@
       </button>
       <button [class.active]="activeTab() === 'publications'" (click)="setTab('publications')">
         📄 Publications
+        @if (publicationsEnAttente().length > 0) {
+          <span class="nav-badge">{{ publicationsEnAttente().length }}</span>
+        }
       </button>
       <button [class.active]="activeTab() === 'evenements'" (click)="setTab('evenements')">
         📅 Événements
@@ -53,6 +56,18 @@
         <p>Vue d'ensemble du laboratoire LIMTIC</p>
       </div>
 
+      <!-- Alerte publications en attente -->
+      @if (publicationsEnAttente().length > 0) {
+        <div class="alert-pending" (click)="setTab('publications')">
+          <span class="alert-icon">⏳</span>
+          <div class="alert-text">
+            <strong>{{ publicationsEnAttente().length }} publication(s) en attente de validation</strong>
+            <span>Cliquez pour examiner et valider</span>
+          </div>
+          <span class="alert-arrow">→</span>
+        </div>
+      }
+
       <div class="stats-grid">
         <div class="stat-card" (click)="setTab('membres')">
           <div class="stat-icon">👨‍🔬</div>
@@ -64,7 +79,11 @@
           <div class="stat-icon">📄</div>
           <div class="stat-num">{{ stats().publications }}</div>
           <div class="stat-label">Publications</div>
-          <div class="stat-action">Gérer →</div>
+          @if (publicationsEnAttente().length > 0) {
+            <div class="stat-pending">{{ publicationsEnAttente().length }} en attente</div>
+          } @else {
+            <div class="stat-action">Gérer →</div>
+          }
         </div>
         <div class="stat-card" (click)="setTab('evenements')">
           <div class="stat-icon">📅</div>
@@ -132,17 +151,12 @@
         <h1>Gestion des Membres</h1>
         <p>Chercheurs permanents du laboratoire</p>
       </div>
-
       <div class="table-container">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Chercheur</th>
-              <th>Grade</th>
-              <th>Spécialité</th>
-              <th>Institution</th>
-              <th>Publications</th>
-              <th>Actions</th>
+              <th>Chercheur</th><th>Grade</th><th>Spécialité</th>
+              <th>Institution</th><th>Publications</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -157,9 +171,7 @@
                 <td><span class="badge-grade">{{ c.grade }}</span></td>
                 <td class="cell-muted">{{ c.specialite }}</td>
                 <td class="cell-muted">{{ c.institution }}</td>
-                <td>
-                  <span class="badge-count">{{ c.publications?.length || 0 }}</span>
-                </td>
+                <td><span class="badge-count">{{ c.publications?.length || 0 }}</span></td>
                 <td>
                   <div class="actions-row">
                     <button class="btn-action btn-view" [routerLink]="['/chercheurs', c.id]">Voir</button>
@@ -213,12 +225,7 @@
       <div class="table-container">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Email</th>
-              <th>Rôle</th>
-              <th>Statut</th>
-              <th>Actions</th>
-            </tr>
+            <tr><th>Email</th><th>Rôle</th><th>Statut</th><th>Actions</th></tr>
           </thead>
           <tbody>
             @for (u of users(); track u.id) {
@@ -232,9 +239,7 @@
                   </select>
                 </td>
                 <td>
-                  <span class="badge-status"
-                    [class.status-on]="u.actif"
-                    [class.status-off]="!u.actif">
+                  <span class="badge-status" [class.status-on]="u.actif" [class.status-off]="!u.actif">
                     {{ u.actif ? 'Actif' : 'Désactivé' }}
                   </span>
                 </td>
@@ -264,6 +269,34 @@
           {{ showForm() === 'pub' ? '✕ Fermer' : '➕ Nouvelle publication' }}
         </button>
       </div>
+
+      <!-- Section publications en attente -->
+      @if (publicationsEnAttente().length > 0) {
+        <div class="pending-section">
+          <h2 class="pending-title">⏳ Publications en attente de validation ({{ publicationsEnAttente().length }})</h2>
+          <div class="pending-list">
+            @for (p of publicationsEnAttente(); track p.id) {
+              <div class="pending-card">
+                <div class="pending-body">
+                  <span class="badge-type" [class]="p.type === 'Journal' ? 'type-j' : 'type-c'">{{ p.type }}</span>
+                  <h4>{{ p.titre }}</h4>
+                  <p class="pending-meta">{{ p.journal || '-' }} — {{ p.annee }}</p>
+                  @if (p.chercheur) {
+                    <p class="pending-author">👤 {{ p.chercheur.prenom }} {{ p.chercheur.nom }}</p>
+                  }
+                  @if (p.resume) {
+                    <p class="pending-resume">{{ p.resume }}</p>
+                  }
+                </div>
+                <div class="pending-actions">
+                  <button class="btn-valider" (click)="validerPublication(p.id)">✅ Valider</button>
+                  <button class="btn-rejeter" (click)="rejeterPublication(p.id)">❌ Rejeter</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
 
       @if (showForm() === 'pub') {
         <div class="form-card">
@@ -303,11 +336,8 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Titre</th>
-              <th>Type</th>
-              <th>Journal / Conf.</th>
-              <th>Année</th>
-              <th>Actions</th>
+              <th>Titre</th><th>Type</th><th>Journal / Conf.</th>
+              <th>Année</th><th>Statut</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -322,7 +352,18 @@
                 <td class="cell-muted">{{ p.journal }}</td>
                 <td class="cell-muted">{{ p.annee }}</td>
                 <td>
-                  <button class="btn-action btn-delete" (click)="supprimerPublication(p.id)">Suppr.</button>
+                  <span class="badge-statut-pub" [class]="getStatutClass(p.statut)">
+                    {{ getStatutLabel(p.statut) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-row">
+                    @if (p.statut === 'SOUMIS') {
+                      <button class="btn-action btn-valider-sm" (click)="validerPublication(p.id)">✅</button>
+                      <button class="btn-action btn-rejeter-sm" (click)="rejeterPublication(p.id)">❌</button>
+                    }
+                    <button class="btn-action btn-delete" (click)="supprimerPublication(p.id)">Suppr.</button>
+                  </div>
                 </td>
               </tr>
             }
@@ -381,13 +422,7 @@
       <div class="table-container">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Titre</th>
-              <th>Type</th>
-              <th>Date</th>
-              <th>Lieu</th>
-              <th>Actions</th>
-            </tr>
+            <tr><th>Titre</th><th>Type</th><th>Date</th><th>Lieu</th><th>Actions</th></tr>
           </thead>
           <tbody>
             @for (e of evenements(); track e.id) {
@@ -447,13 +482,7 @@
       <div class="table-container">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Description</th>
-              <th>Responsable</th>
-              <th>Membres</th>
-              <th>Actions</th>
-            </tr>
+            <tr><th>Nom</th><th>Description</th><th>Responsable</th><th>Membres</th><th>Actions</th></tr>
           </thead>
           <tbody>
             @for (axe of axes(); track axe.id) {
@@ -470,9 +499,7 @@
                     <span class="cell-muted">-</span>
                   }
                 </td>
-                <td>
-                  <span class="badge-count">{{ axe.chercheurs?.length || 0 }}</span>
-                </td>
+                <td><span class="badge-count">{{ axe.chercheurs?.length || 0 }}</span></td>
                 <td>
                   <div class="actions-row">
                     <button class="btn-action btn-edit" (click)="startEditAxe(axe)">Éditer</button>
@@ -491,7 +518,7 @@
           <div class="form-grid">
             <div class="field full">
               <label>Nom de l'axe *</label>
-              <input [(ngModel)]="editingAxe().nom" placeholder="ex. Intelligence Artificielle" />
+              <input [(ngModel)]="editingAxe().nom" />
             </div>
             <div class="field full">
               <label>Description</label>
@@ -516,7 +543,6 @@
 
       <div class="section-card">
         <h3>Associer des chercheurs aux axes</h3>
-        <p>Sélectionnez un axe et un chercheur pour les associer.</p>
         <div class="assoc-grid">
           @for (axe of axes(); track axe.id) {
             <div class="assoc-item">
@@ -550,18 +576,9 @@
         <div class="form-card">
           <h2>Ajouter un doctorant</h2>
           <div class="form-grid">
-            <div class="field">
-              <label>Nom *</label>
-              <input [(ngModel)]="newDoctorant.nom" placeholder="Nom" />
-            </div>
-            <div class="field">
-              <label>Prénom *</label>
-              <input [(ngModel)]="newDoctorant.prenom" placeholder="Prénom" />
-            </div>
-            <div class="field full">
-              <label>Sujet de thèse</label>
-              <input [(ngModel)]="newDoctorant.sujetThese" placeholder="Sujet de thèse..." />
-            </div>
+            <div class="field"><label>Nom *</label><input [(ngModel)]="newDoctorant.nom" /></div>
+            <div class="field"><label>Prénom *</label><input [(ngModel)]="newDoctorant.prenom" /></div>
+            <div class="field full"><label>Sujet de thèse</label><input [(ngModel)]="newDoctorant.sujetThese" /></div>
             <div class="field">
               <label>Directeur</label>
               <select [(ngModel)]="newDoctorant.directeurId">
@@ -571,10 +588,7 @@
                 }
               </select>
             </div>
-            <div class="field">
-              <label>Date d'inscription</label>
-              <input type="date" [(ngModel)]="newDoctorant.dateInscription" />
-            </div>
+            <div class="field"><label>Date d'inscription</label><input type="date" [(ngModel)]="newDoctorant.dateInscription" /></div>
             <div class="field">
               <label>Statut</label>
               <select [(ngModel)]="newDoctorant.statut">
@@ -582,14 +596,8 @@
                 <option value="SOUTENU">Soutenu</option>
               </select>
             </div>
-            <div class="field">
-              <label>Mention (si soutenu)</label>
-              <input [(ngModel)]="newDoctorant.mention" placeholder="ex: Très Honorable" />
-            </div>
-            <div class="field">
-              <label>Photo URL</label>
-              <input [(ngModel)]="newDoctorant.photoUrl" placeholder="https://..." />
-            </div>
+            <div class="field"><label>Mention</label><input [(ngModel)]="newDoctorant.mention" /></div>
+            <div class="field"><label>Photo URL</label><input [(ngModel)]="newDoctorant.photoUrl" /></div>
           </div>
           <button class="btn-submit" (click)="ajouterDoctorant()">Enregistrer</button>
         </div>
@@ -598,14 +606,7 @@
       <div class="table-container">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Doctorant</th>
-              <th>Sujet</th>
-              <th>Directeur</th>
-              <th>Inscription</th>
-              <th>Statut</th>
-              <th>Actions</th>
-            </tr>
+            <tr><th>Doctorant</th><th>Sujet</th><th>Directeur</th><th>Inscription</th><th>Statut</th><th>Actions</th></tr>
           </thead>
           <tbody>
             @for (d of doctorants(); track d.id) {
@@ -617,14 +618,10 @@
                   </div>
                 </td>
                 <td class="cell-muted">{{ d.sujetThese || '-' }}</td>
-                <td class="cell-muted">
-                  {{ d.directeur ? d.directeur.prenom + ' ' + d.directeur.nom : '-' }}
-                </td>
+                <td class="cell-muted">{{ d.directeur ? d.directeur.prenom + ' ' + d.directeur.nom : '-' }}</td>
                 <td class="cell-muted">{{ d.dateInscription || '-' }}</td>
                 <td>
-                  <span class="badge-status"
-                    [class.status-on]="d.statut === 'EN_COURS'"
-                    [class.status-off]="d.statut === 'SOUTENU'">
+                  <span class="badge-status" [class.status-on]="d.statut === 'EN_COURS'" [class.status-off]="d.statut === 'SOUTENU'">
                     {{ d.statut === 'EN_COURS' ? 'En cours' : 'Soutenu' }}
                   </span>
                 </td>
@@ -639,22 +636,14 @@
           </tbody>
         </table>
       </div>
+
       @if (editingDoctorant()) {
         <div class="form-card">
           <h2>Modifier le doctorant</h2>
           <div class="form-grid">
-            <div class="field">
-              <label>Nom *</label>
-              <input [(ngModel)]="editingDoctorant().nom" placeholder="Nom" />
-            </div>
-            <div class="field">
-              <label>Prénom *</label>
-              <input [(ngModel)]="editingDoctorant().prenom" placeholder="Prénom" />
-            </div>
-            <div class="field full">
-              <label>Sujet de thèse</label>
-              <input [(ngModel)]="editingDoctorant().sujetThese" placeholder="Sujet..." />
-            </div>
+            <div class="field"><label>Nom *</label><input [(ngModel)]="editingDoctorant().nom" /></div>
+            <div class="field"><label>Prénom *</label><input [(ngModel)]="editingDoctorant().prenom" /></div>
+            <div class="field full"><label>Sujet de thèse</label><input [(ngModel)]="editingDoctorant().sujetThese" /></div>
             <div class="field">
               <label>Directeur</label>
               <select [(ngModel)]="editingDoctorant().directeurId">
@@ -664,14 +653,8 @@
                 }
               </select>
             </div>
-            <div class="field">
-              <label>Date d'inscription</label>
-              <input type="date" [(ngModel)]="editingDoctorant().dateInscription" />
-            </div>
-            <div class="field">
-              <label>Date de soutenance</label>
-              <input type="date" [(ngModel)]="editingDoctorant().dateSoutenance" />
-            </div>
+            <div class="field"><label>Date d'inscription</label><input type="date" [(ngModel)]="editingDoctorant().dateInscription" /></div>
+            <div class="field"><label>Date de soutenance</label><input type="date" [(ngModel)]="editingDoctorant().dateSoutenance" /></div>
             <div class="field">
               <label>Statut</label>
               <select [(ngModel)]="editingDoctorant().statut">
@@ -679,14 +662,8 @@
                 <option value="SOUTENU">Soutenu</option>
               </select>
             </div>
-            <div class="field">
-              <label>Mention</label>
-              <input [(ngModel)]="editingDoctorant().mention" placeholder="ex: Très Honorable" />
-            </div>
-            <div class="field">
-              <label>Photo URL</label>
-              <input [(ngModel)]="editingDoctorant().photoUrl" placeholder="https://..." />
-            </div>
+            <div class="field"><label>Mention</label><input [(ngModel)]="editingDoctorant().mention" /></div>
+            <div class="field"><label>Photo URL</label><input [(ngModel)]="editingDoctorant().photoUrl" /></div>
           </div>
           <div class="form-actions">
             <button class="btn-submit" (click)="saveEditDoctorant()">Enregistrer</button>
@@ -697,147 +674,112 @@
     }
 
     <!-- TAB: MASTERIENS -->
-      @if (activeTab() === 'masteriens') {
-        <div class="tab-header-row">
-          <div>
-            <h1>Gestion des Mastériens</h1>
-            <p>{{ masteriens().length }} mastérien(s) enregistré(s)</p>
-          </div>
-          <button class="btn-add" (click)="showForm.set(showForm() === 'master' ? '' : 'master')">
-            {{ showForm() === 'master' ? '✕ Fermer' : '➕ Nouveau mastérien' }}
-          </button>
+    @if (activeTab() === 'masteriens') {
+      <div class="tab-header-row">
+        <div>
+          <h1>Gestion des Mastériens</h1>
+          <p>{{ masteriens().length }} mastérien(s) enregistré(s)</p>
         </div>
+        <button class="btn-add" (click)="showForm.set(showForm() === 'master' ? '' : 'master')">
+          {{ showForm() === 'master' ? '✕ Fermer' : '➕ Nouveau mastérien' }}
+        </button>
+      </div>
 
-        @if (showForm() === 'master') {
-          <div class="form-card">
-            <h2>Ajouter un mastérien</h2>
-            <div class="form-grid">
-              <div class="field">
-                <label>Nom *</label>
-                <input [(ngModel)]="newMasterien.nom" placeholder="Nom" />
-              </div>
-              <div class="field">
-                <label>Prénom *</label>
-                <input [(ngModel)]="newMasterien.prenom" placeholder="Prénom" />
-              </div>
-              <div class="field full">
-                <label>Sujet de mémoire</label>
-                <input [(ngModel)]="newMasterien.sujetMemoire" placeholder="Sujet du mémoire..." />
-              </div>
-              <div class="field">
-                <label>Encadrant</label>
-                <select [(ngModel)]="newMasterien.encadrantId">
-                  <option [value]="null">Aucun</option>
-                  @for (c of chercheurs(); track c.id) {
-                    <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
-                  }
-                </select>
-              </div>
-              <div class="field">
-                <label>Promotion</label>
-                <input [(ngModel)]="newMasterien.promotion" placeholder="ex: 2023-2024" />
-              </div>
-              <div class="field">
-                <label>Statut</label>
-                <select [(ngModel)]="newMasterien.statut">
-                  <option value="EN_COURS">En cours</option>
-                  <option value="DIPLOME">Diplômé</option>
-                </select>
-              </div>
+      @if (showForm() === 'master') {
+        <div class="form-card">
+          <h2>Ajouter un mastérien</h2>
+          <div class="form-grid">
+            <div class="field"><label>Nom *</label><input [(ngModel)]="newMasterien.nom" /></div>
+            <div class="field"><label>Prénom *</label><input [(ngModel)]="newMasterien.prenom" /></div>
+            <div class="field full"><label>Sujet de mémoire</label><input [(ngModel)]="newMasterien.sujetMemoire" /></div>
+            <div class="field">
+              <label>Encadrant</label>
+              <select [(ngModel)]="newMasterien.encadrantId">
+                <option [value]="null">Aucun</option>
+                @for (c of chercheurs(); track c.id) {
+                  <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                }
+              </select>
             </div>
-            <button class="btn-submit" (click)="ajouterMasterien()">Enregistrer</button>
+            <div class="field"><label>Promotion</label><input [(ngModel)]="newMasterien.promotion" /></div>
+            <div class="field">
+              <label>Statut</label>
+              <select [(ngModel)]="newMasterien.statut">
+                <option value="EN_COURS">En cours</option>
+                <option value="DIPLOME">Diplômé</option>
+              </select>
+            </div>
           </div>
-        }
-
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Mastérien</th>
-                <th>Sujet</th>
-                <th>Encadrant</th>
-                <th>Promotion</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (m of masteriens(); track m.id) {
-                <tr>
-                  <td>
-                    <div class="cell-user">
-                      <div class="mini-avatar">{{ m.prenom?.[0] }}{{ m.nom?.[0] }}</div>
-                      <span>{{ m.prenom }} {{ m.nom }}</span>
-                    </div>
-                  </td>
-                  <td class="cell-muted">{{ m.sujetMemoire || '-' }}</td>
-                  <td class="cell-muted">
-                    {{ m.encadrant ? m.encadrant.prenom + ' ' + m.encadrant.nom : '-' }}
-                  </td>
-                  <td class="cell-muted">{{ m.promotion || '-' }}</td>
-                  <td>
-                    <span class="badge-status"
-                      [class.status-on]="m.statut === 'EN_COURS'"
-                      [class.status-off]="m.statut === 'DIPLOME'">
-                      {{ m.statut === 'EN_COURS' ? 'En cours' : 'Diplômé' }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="actions-row">
-                      <button class="btn-action btn-edit" (click)="startEditMasterien(m)">Éditer</button>
-                      <button class="btn-action btn-delete" (click)="supprimerMasterien(m.id)">Suppr.</button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+          <button class="btn-submit" (click)="ajouterMasterien()">Enregistrer</button>
         </div>
-
-        @if (editingMasterien()) {
-          <div class="form-card">
-            <h2>Modifier le mastérien</h2>
-            <div class="form-grid">
-              <div class="field">
-                <label>Nom *</label>
-                <input [(ngModel)]="editingMasterien().nom" placeholder="Nom" />
-              </div>
-              <div class="field">
-                <label>Prénom *</label>
-                <input [(ngModel)]="editingMasterien().prenom" placeholder="Prénom" />
-              </div>
-              <div class="field full">
-                <label>Sujet de mémoire</label>
-                <input [(ngModel)]="editingMasterien().sujetMemoire" placeholder="Sujet..." />
-              </div>
-              <div class="field">
-                <label>Encadrant</label>
-                <select [(ngModel)]="editingMasterien().encadrantId">
-                  <option [value]="null">Aucun</option>
-                  @for (c of chercheurs(); track c.id) {
-                    <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
-                  }
-                </select>
-              </div>
-              <div class="field">
-                <label>Promotion</label>
-                <input [(ngModel)]="editingMasterien().promotion" placeholder="ex: 2023-2024" />
-              </div>
-              <div class="field">
-                <label>Statut</label>
-                <select [(ngModel)]="editingMasterien().statut">
-                  <option value="EN_COURS">En cours</option>
-                  <option value="DIPLOME">Diplômé</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn-submit" (click)="saveEditMasterien()">Enregistrer</button>
-              <button class="btn-cancel" (click)="cancelEditMasterien()">Annuler</button>
-            </div>
-          </div>
-        }
       }
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr><th>Mastérien</th><th>Sujet</th><th>Encadrant</th><th>Promotion</th><th>Statut</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            @for (m of masteriens(); track m.id) {
+              <tr>
+                <td>
+                  <div class="cell-user">
+                    <div class="mini-avatar">{{ m.prenom?.[0] }}{{ m.nom?.[0] }}</div>
+                    <span>{{ m.prenom }} {{ m.nom }}</span>
+                  </div>
+                </td>
+                <td class="cell-muted">{{ m.sujetMemoire || '-' }}</td>
+                <td class="cell-muted">{{ m.encadrant ? m.encadrant.prenom + ' ' + m.encadrant.nom : '-' }}</td>
+                <td class="cell-muted">{{ m.promotion || '-' }}</td>
+                <td>
+                  <span class="badge-status" [class.status-on]="m.statut === 'EN_COURS'" [class.status-off]="m.statut === 'DIPLOME'">
+                    {{ m.statut === 'EN_COURS' ? 'En cours' : 'Diplômé' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-row">
+                    <button class="btn-action btn-edit" (click)="startEditMasterien(m)">Éditer</button>
+                    <button class="btn-action btn-delete" (click)="supprimerMasterien(m.id)">Suppr.</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (editingMasterien()) {
+        <div class="form-card">
+          <h2>Modifier le mastérien</h2>
+          <div class="form-grid">
+            <div class="field"><label>Nom *</label><input [(ngModel)]="editingMasterien().nom" /></div>
+            <div class="field"><label>Prénom *</label><input [(ngModel)]="editingMasterien().prenom" /></div>
+            <div class="field full"><label>Sujet de mémoire</label><input [(ngModel)]="editingMasterien().sujetMemoire" /></div>
+            <div class="field">
+              <label>Encadrant</label>
+              <select [(ngModel)]="editingMasterien().encadrantId">
+                <option [value]="null">Aucun</option>
+                @for (c of chercheurs(); track c.id) {
+                  <option [value]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+                }
+              </select>
+            </div>
+            <div class="field"><label>Promotion</label><input [(ngModel)]="editingMasterien().promotion" /></div>
+            <div class="field">
+              <label>Statut</label>
+              <select [(ngModel)]="editingMasterien().statut">
+                <option value="EN_COURS">En cours</option>
+                <option value="DIPLOME">Diplômé</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-submit" (click)="saveEditMasterien()">Enregistrer</button>
+            <button class="btn-cancel" (click)="cancelEditMasterien()">Annuler</button>
+          </div>
+        </div>
+      }
+    }
 
   </main>
 </div>
