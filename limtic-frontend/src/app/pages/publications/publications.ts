@@ -29,7 +29,7 @@ export class Publications implements OnInit {
   axes = computed(() => {
     const a = this.publications()
       .filter(p => p.axe)
-      .map(p => p.axe.nom);
+      .filter(p => p.axe?.nom).map(p => p.axe!.nom);
     return [...new Set(a)];
   });
 

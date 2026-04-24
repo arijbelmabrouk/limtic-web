@@ -1,11 +1,12 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
-import { AxeRecherche, Chercheur, Publication } from '../../models/chercheur.model';
+import { AxeRecherche, Chercheur, Publication, Doctorant, Masterien } from '../../models/chercheur.model';
 
 @Component({
   selector: 'app-axe-detail',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './axe-detail.html',
   styleUrl: './axe-detail.css'
 })
@@ -13,9 +14,8 @@ export class AxeDetail implements OnInit {
   axe = signal<AxeRecherche | null>(null);
   chercheurs = signal<Chercheur[]>([]);
   publications = signal<Publication[]>([]);
-  doctorants = signal<any[]>([]);
-  masteriens = signal<any[]>([]);
-  isAdmin = false;
+  doctorants = signal<Doctorant[]>([]);
+  masteriens = signal<Masterien[]>([]);
 
   constructor(
     private api: ApiService,
@@ -25,44 +25,50 @@ export class AxeDetail implements OnInit {
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.isAdmin = localStorage.getItem('role') === 'ADMIN';
 
-    // Charger l'axe
     this.api.getAxe(id).subscribe(data => {
       this.axe.set(data);
+    });
 
-      // Charger les chercheurs associés
-      this.api.getChercheurs().subscribe((chercheurs: Chercheur[]) => {
-        this.chercheurs.set(chercheurs.filter(c => c.axes?.some((a: any) => a.id === id)));
-      });
+    this.api.getChercheurs().subscribe((chercheurs: Chercheur[]) => {
+      this.chercheurs.set(chercheurs.filter(c => c.axes?.some(a => a.id === id)));
+    });
 
-      // Charger les publications de cet axe
-      this.api.getPublicationsByAxe(id).subscribe((publications: Publication[]) => {
-        this.publications.set(publications);
-      });
+    this.api.getPublicationsByAxe(id).subscribe((pubs: Publication[]) => {
+      this.publications.set(pubs);
+    });
 
-      // Charger doctorants et masteriens associés à cet axe
-      this.api.getDoctorants().subscribe((doctorants: any[]) => {
-        this.doctorants.set(doctorants.filter(d => d.axeRecherche?.id === id));
-      });
+    this.api.getDoctorants().subscribe((doctorants: Doctorant[]) => {
+      this.doctorants.set(doctorants.filter(d => d.axeRecherche?.id === id));
+    });
 
-      this.api.getMasteriens().subscribe((masteriens: any[]) => {
-        this.masteriens.set(masteriens.filter(m => m.axeRecherche?.id === id));
-      });
+    this.api.getMasteriens().subscribe((masteriens: Masterien[]) => {
+      this.masteriens.set(masteriens.filter(m => m.axeRecherche?.id === id));
     });
   }
 
-  retour() {
-    this.router.navigate(['/axes']);
+  retour() { this.router.navigate(['/axes']); }
+
+  navigateToChercheur(id: number) {
+    this.router.navigate(['/chercheurs', id], { queryParams: { from: 'axe-detail' } });
   }
 
-  navigateToChercheur(chercheurId: number) {
-    this.router.navigate(['/chercheurs', chercheurId], {
-      queryParams: { from: 'axe-detail' }
+  navigateToPublication(id: number) {
+    this.router.navigate(['/publications', id]);
+  }
+
+  navigateToDoctorant(id: number) {
+    this.router.navigate(['/doctorants', id]);
+  }
+
+  navigateToMasterien(id: number) {
+    this.router.navigate(['/masteriens', id]);
+  }
+
+  formatDate(date: string | Date): string {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('fr-FR', {
+      year: 'numeric', month: 'long', day: 'numeric'
     });
-  }
-
-  navigateToPublication(publicationId: number) {
-    this.router.navigate(['/publications', publicationId]);
   }
 }

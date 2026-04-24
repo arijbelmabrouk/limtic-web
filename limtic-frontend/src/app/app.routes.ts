@@ -61,7 +61,7 @@ export const routes: Routes = [
     canActivate: [chercheurGuard],
     loadComponent: () => import('./pages/dashboard-chercheur/dashboard-chercheur').then(m => m.DashboardChercheur)
   },
-
+  { path: 'doctorants/:id', loadComponent: () => import('./pages/doctorant-detail/doctorant-detail').then(m => m.DoctorantDetail) },
   // ── 404 ──────────────────────────────────────────────────
   { path: '**', redirectTo: 'home' }
 ];

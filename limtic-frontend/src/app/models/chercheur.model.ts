@@ -8,17 +8,21 @@ export interface AxeRecherche {
   id: number;
   nom: string;
   description: string;
-  responsable?: {               // le chercheur responsable (optionnel)
+  responsable?: {
     id: number;
     nom: string;
     prenom: string;
     grade: string;
+    institution?: string;
+    specialite?: string;
   };
-  chercheurs?: {                // liste des membres (optionnel)
+  chercheurs?: {
     id: number;
     nom: string;
     prenom: string;
     grade: string;
+    institution?: string;
+    specialite?: string;
   }[];
 }
 
@@ -27,36 +31,96 @@ export interface Publication {
   titre: string;
   type: string;
   annee: number;
-  journal: string;
-  resume: string;
-  lienUrl: string;
-  axe: AxeRecherche;
+  journal?: string;
+  resume?: string;
+  lienUrl?: string;
+  doi?: string;
+  classement?: string;
+  sourceClassement?: string;
   statut?: 'BROUILLON' | 'SOUMIS' | 'PUBLIE';
-  chercheur?: { id: number; nom: string; prenom: string };
+  axe?: AxeRecherche;
+  chercheur?: { id: number; nom: string; prenom: string; grade?: string };
 }
 
 export interface Chercheur {
   id: number;
-  user: User;
+  user?: User;
   nom: string;
   prenom: string;
-  grade: string;
-  institution: string;
-  specialite: string;
-  photoUrl: string;
-  cvUrl: string;
-  statut?: string; 
-  publications: Publication[];
-  axes: AxeRecherche[];
+  grade?: string;
+  institution?: string;
+  specialite?: string;
+  photoUrl?: string;
+  cvUrl?: string;
+  bureau?: string;
+  telephone?: string;
+  biographie?: string;
+  googleScholar?: string;
+  researchGate?: string;
+  orcid?: string;
+  linkedin?: string;
+  statut?: string;
+  publications?: Publication[];
+  axes?: AxeRecherche[];
+}
+
+export interface Photo {
+  id: number;
+  url: string;
+  legende?: string;
+  ordre?: number;
 }
 
 export interface Evenement {
   id: number;
   titre: string;
   dateEvenement: string;
-  lieu: string;
-  description: string;
-  type: string;
+  dateFin?: string;
+  lieu?: string;
+  description?: string;
+  type?: string;
+  statut?: string;
+  photos?: Photo[];
+}
+
+export interface Doctorant {
+  id: number;
+  nom: string;
+  prenom: string;
+  sujetThese?: string;
+  directeur?: {
+    id: number;
+    nom: string;
+    prenom: string;
+    grade?: string;
+    institution?: string;
+    specialite?: string;
+  };
+  dateInscription?: string;
+  dateSoutenance?: string;
+  statut?: string;
+  mention?: string;
+  photoUrl?: string;
+  axeRecherche?: AxeRecherche;
+  publications?: Publication[];
+}
+
+export interface Masterien {
+  id: number;
+  nom: string;
+  prenom: string;
+  sujetMemoire?: string;
+  encadrant?: {
+    id: number;
+    nom: string;
+    prenom: string;
+    grade?: string;
+    institution?: string;
+    specialite?: string;
+  };
+  promotion?: string;
+  statut?: string;
+  axeRecherche?: AxeRecherche;
 }
 
 export interface Outil {

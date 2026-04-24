@@ -1,16 +1,17 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
+import { Masterien } from '../../models/chercheur.model';
 
 @Component({
   selector: 'app-masterien-detail',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './masterien-detail.html',
   styleUrl: './masterien-detail.css'
 })
 export class MasterienDetail implements OnInit {
-  masterien = signal<any | null>(null);
-  isAdmin = false;
+  masterien = signal<Masterien | null>(null);
 
   constructor(
     private api: ApiService,
@@ -20,43 +21,31 @@ export class MasterienDetail implements OnInit {
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.isAdmin = localStorage.getItem('role') === 'ADMIN';
 
-    // Pour l'instant, on charge tous les masteriens et on filtre
-    // TODO: Ajouter une méthode getMasterien(id) dans l'API
-    this.api.getMasteriens().subscribe((masteriens: any[]) => {
+    this.api.getMasteriens().subscribe((masteriens: Masterien[]) => {
       const mst = masteriens.find(m => m.id === id);
       if (mst) {
         this.masterien.set(mst);
       } else {
-        // Masterien non trouvé
         this.router.navigate(['/masteriens']);
       }
     });
   }
 
-  retour() {
-    this.router.navigate(['/masteriens']);
+  retour() { this.router.navigate(['/masteriens']); }
+
+  navigateToChercheur(id: number) {
+    this.router.navigate(['/chercheurs', id], { queryParams: { from: 'masterien-detail' } });
   }
 
-  navigateToChercheur(chercheurId: number) {
-    this.router.navigate(['/chercheurs', chercheurId], {
-      queryParams: { from: 'masterien-detail' }
-    });
+  navigateToAxe(id: number) {
+    this.router.navigate(['/axes', id]);
   }
 
-  navigateToAxe(axeId: number) {
-    this.router.navigate(['/axes', axeId]);
-  }
-
-  // Méthodes utilitaires pour l'affichage
   formatDate(date: string | Date): string {
     if (!date) return '';
-    const d = new Date(date);
-    return d.toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(date).toLocaleDateString('fr-FR', {
+      year: 'numeric', month: 'long', day: 'numeric'
     });
   }
 }

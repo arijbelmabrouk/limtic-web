@@ -1,42 +1,45 @@
 <div class="evenement-detail-container">
-  <!-- Header avec bouton retour -->
-  <div class="detail-header">
-    <button class="btn-retour" (click)="retour()">
-      ← Retour aux événements
-    </button>
-  </div>
+  <button class="btn-retour" (click)="retour()">← Retour aux événements</button>
 
-  <!-- Contenu principal -->
   @if (evenement(); as evt) {
     <div class="evenement-content">
-      <!-- Titre et type -->
+
+      <!-- En-tête -->
       <div class="evenement-header">
         <h1>{{ evt.titre }}</h1>
-        @if (evt.type) {
-          <span class="evenement-type">{{ evt.type }}</span>
-        }
+        <div class="evenement-meta">
+          @if (evt.type) {
+            <span class="evenement-type">{{ evt.type }}</span>
+          }
+          <span class="statut-badge" [class]="evt.statut === 'A_VENIR' ? 'badge-avenir' : 'badge-passe'">
+            {{ evt.statut === 'A_VENIR' ? '🟢 À venir' : '⌛ Passé' }}
+          </span>
+        </div>
       </div>
 
-      <!-- Date et heure -->
-      @if (evt.dateEvenement) {
-        <div class="evenement-datetime">
-          <div class="datetime-icon">📅</div>
-          <div class="datetime-info">
-            <h3>{{ formatDate(evt.dateEvenement) }}</h3>
-          </div>
+      <!-- Bloc date + lieu -->
+      <div class="evenement-date-block">
+        <div class="date-badge">
+          <span class="day">{{ getDay(evt.dateEvenement) }}</span>
+          <span class="month">{{ getMonth(evt.dateEvenement) }}</span>
+          <span class="year">{{ getYear(evt.dateEvenement) }}</span>
         </div>
-      }
-
-      <!-- Lieu -->
-      @if (evt.lieu) {
-        <div class="evenement-lieu">
-          <div class="lieu-icon">📍</div>
-          <div class="lieu-info">
-            <h3>Lieu</h3>
-            <p>{{ evt.lieu }}</p>
-          </div>
+        <div class="date-info">
+          @if (evt.dateEvenement) {
+            <p class="evenement-datetime">
+              <span>📅</span> {{ formatDate(evt.dateEvenement) }}
+              @if (evt.dateFin) {
+                → {{ formatDate(evt.dateFin) }}
+              }
+            </p>
+          }
+          @if (evt.lieu) {
+            <p class="evenement-lieu">
+              <span>📍</span> {{ evt.lieu }}
+            </p>
+          }
         </div>
-      }
+      </div>
 
       <!-- Description -->
       @if (evt.description) {
@@ -45,11 +48,26 @@
           <p>{{ evt.description }}</p>
         </div>
       }
+
+      <!-- Photos -->
+      @if (evt.photos && evt.photos.length > 0) {
+        <div class="evenement-photos">
+          <h3>Photos ({{ evt.photos.length }})</h3>
+          <div class="photos-grid">
+            @for (photo of evt.photos; track photo.id) {
+              <div class="photo-item">
+                <img [src]="photo.url" [alt]="photo.legende || evt.titre" loading="lazy" />
+                @if (photo.legende) {
+                  <p class="photo-legende">{{ photo.legende }}</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
     </div>
   } @else {
-    <!-- Loading state -->
-    <div class="loading">
-      <p>Chargement de l'événement...</p>
-    </div>
+    <div class="loading"><p>Chargement de l'événement...</p></div>
   }
 </div>

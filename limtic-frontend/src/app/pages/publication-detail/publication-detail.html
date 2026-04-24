@@ -1,30 +1,54 @@
 <div class="publication-detail-container">
-  <!-- Header avec bouton retour -->
-  <div class="detail-header">
-    <button class="btn-retour" (click)="retour()">
-      ← Retour aux publications
-    </button>
-  </div>
+  <button class="btn-retour" (click)="retour()">← Retour aux publications</button>
 
-  <!-- Contenu principal -->
   @if (publication(); as pub) {
     <div class="publication-content">
-      <!-- Titre -->
+
+      <!-- Titre + meta -->
       <div class="publication-title">
         <h1>{{ pub.titre }}</h1>
         <div class="publication-meta">
           <span class="publication-date">{{ pub.annee }}</span>
           @if (pub.type) {
-            <span class="publication-type">{{ pub.type }}</span>
+            <span class="publication-type" [class]="pub.type === 'JOURNAL' ? 'type-journal' : 'type-conf'">
+              {{ pub.type }}
+            </span>
+          }
+          @if (pub.classement) {
+            <span class="badge-classement badge-{{ pub.classement!.toLowerCase() }}">
+              {{ pub.classement }}
+            </span>
+          }
+          @if (pub.sourceClassement) {
+            <span class="source-classement">{{ pub.sourceClassement }}</span>
+          }
+          @if (pub.statut === 'PUBLIE') {
+            <span class="statut-publie">✅ Publié</span>
+          } @else if (pub.statut === 'BROUILLON') {
+            <span class="statut-brouillon">📝 Brouillon</span>
           }
         </div>
       </div>
 
-      <!-- Auteurs -->
-      <div class="publication-authors">
-        <h3>Auteurs</h3>
-        <p>{{ getAuthorsString(pub) }}</p>
-      </div>
+      <!-- Auteur -->
+      @if (pub.chercheur) {
+        <div class="publication-authors">
+          <h3>Auteur</h3>
+          <div class="authors-list">
+            <div class="author-chip" (click)="navigateToChercheur(pub.chercheur.id)">
+              <div class="author-avatar">
+                {{ pub.chercheur.prenom.charAt(0) }}{{ pub.chercheur.nom.charAt(0) }}
+              </div>
+              <div class="author-info">
+                <span class="author-name">{{ pub.chercheur.prenom }} {{ pub.chercheur.nom }}</span>
+                @if (pub.chercheur.grade) {
+                  <span class="author-grade">{{ pub.chercheur.grade }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
 
       <!-- Résumé -->
       @if (pub.resume) {
@@ -40,17 +64,40 @@
         <div class="details-grid">
           @if (pub.journal) {
             <div class="detail-item">
-              <label>Revue/Journal :</label>
+              <label>Revue / Journal</label>
               <span>{{ pub.journal }}</span>
             </div>
           }
-
+          @if (pub.annee) {
+            <div class="detail-item">
+              <label>Année</label>
+              <span>{{ pub.annee }}</span>
+            </div>
+          }
+          @if (pub.classement) {
+            <div class="detail-item">
+              <label>Classement</label>
+              <span>{{ pub.classement }}</span>
+            </div>
+          }
+          @if (pub.sourceClassement) {
+            <div class="detail-item">
+              <label>Source classement</label>
+              <span>{{ pub.sourceClassement }}</span>
+            </div>
+          }
+          @if (pub.doi) {
+            <div class="detail-item">
+              <label>DOI</label>
+              <a [href]="'https://doi.org/' + pub.doi" target="_blank" rel="noopener">
+                {{ pub.doi }}
+              </a>
+            </div>
+          }
           @if (pub.lienUrl) {
             <div class="detail-item">
-              <label>Lien :</label>
-              <a [href]="pub.lienUrl" target="_blank" rel="noopener">
-                Accéder à la publication
-              </a>
+              <label>Lien externe</label>
+              <a [href]="pub.lienUrl" target="_blank" rel="noopener">Accéder à la publication →</a>
             </div>
           }
         </div>
@@ -60,17 +107,19 @@
       @if (pub.axe) {
         <div class="publication-axe">
           <h3>Axe de recherche</h3>
-          <p>{{ pub.axe.nom }}</p>
-          @if (pub.axe.description) {
-            <p class="axe-description">{{ pub.axe.description }}</p>
-          }
+          <div class="axe-card" (click)="navigateToAxe(pub.axe.id)">
+            <div class="axe-info">
+              <h4>{{ pub.axe.nom }}</h4>
+              @if (pub.axe.description) {
+                <p class="axe-description">{{ pub.axe.description }}</p>
+              }
+            </div>
+          </div>
         </div>
       }
+
     </div>
   } @else {
-    <!-- Loading state -->
-    <div class="loading">
-      <p>Chargement de la publication...</p>
-    </div>
+    <div class="loading"><p>Chargement de la publication...</p></div>
   }
 </div>

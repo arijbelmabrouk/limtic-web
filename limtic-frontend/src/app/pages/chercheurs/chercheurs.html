@@ -58,7 +58,7 @@
               }
             </div>
           }
-          <div class="pub-count">{{ c.publications.length }} publication(s)</div>
+          <div class="pub-count">{{ c.publications?.length || 0 }} publication(s)</div>
         </div>
         @if (c.statut === 'retraité') {
           <span class="statut-badge retraite">Retraité</span>

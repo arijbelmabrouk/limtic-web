@@ -12,17 +12,20 @@
         <span class="institution">🏛️ {{ chercheur()!.institution }}</span>
         <span class="specialite">🔬 {{ chercheur()!.specialite }}</span>
         @if (chercheur()!.user) {
-          <span class="email">✉️ {{ chercheur()!.user.email }}</span>
+          <span class="email">✉️ {{ chercheur()!.user?.email }}</span>
         }
       </div>
     </div>
 
     <!-- ── Publications ──────────────────────────────────── -->
     <div class="section">
-      <h2>Publications <span class="count">{{ chercheur()!.publications.length || 0 }}</span></h2>
+      <h2>Publications <span class="count">{{ chercheur()!.publications?.length ?? 0 }}</span></h2>
       <div class="pub-list">
         @for (p of chercheur()!.publications; track p.id) {
-          <div class="pub-card">
+          <div class="pub-card clickable" (click)="navigateToPublication(p.id)"
+               style="cursor:pointer; transition: all 0.2s;"
+               onmouseenter="this.style.borderColor='rgba(0,210,255,0.3)';this.style.transform='translateX(4px)'"
+               onmouseleave="this.style.borderColor='';this.style.transform=''">
             <span class="pub-type" [class]="p.type === 'Journal' ? 'type-journal' : 'type-conf'">
               {{ p.type }}
             </span>
@@ -33,6 +36,7 @@
                 <span class="axe-tag">{{ p.axe.nom }}</span>
               }
             </div>
+            <span style="color:rgba(255,255,255,0.2); font-size:1.2rem; align-self:center;">→</span>
           </div>
         }
         @empty {
@@ -53,7 +57,10 @@
           <p class="enc-sous-titre">Doctorants</p>
           <div class="enc-list">
             @for (d of doctorants(); track d.id) {
-              <div class="enc-card">
+              <div class="enc-card" (click)="navigateToDoctorant(d.id)"
+                   style="cursor:pointer; transition: all 0.2s;"
+                   onmouseenter="this.style.borderColor='rgba(0,210,255,0.3)';this.style.transform='translateX(4px)'"
+                   onmouseleave="this.style.borderColor='';this.style.transform=''">
                 <div class="enc-avatar">{{ d.prenom?.[0] }}{{ d.nom?.[0] }}</div>
                 <div class="enc-body">
                   <strong>{{ d.prenom }} {{ d.nom }}</strong>
@@ -72,6 +79,7 @@
                     }
                   </div>
                 </div>
+                <span style="color:rgba(255,255,255,0.2); font-size:1.2rem; align-self:center;">→</span>
               </div>
             }
           </div>
@@ -81,7 +89,10 @@
           <p class="enc-sous-titre" style="margin-top: 1.5rem">Mastériens</p>
           <div class="enc-list">
             @for (m of masteriens(); track m.id) {
-              <div class="enc-card">
+              <div class="enc-card" (click)="navigateToMasterien(m.id)"
+                   style="cursor:pointer; transition: all 0.2s;"
+                   onmouseenter="this.style.borderColor='rgba(0,210,255,0.3)';this.style.transform='translateX(4px)'"
+                   onmouseleave="this.style.borderColor='';this.style.transform=''">
                 <div class="enc-avatar">{{ m.prenom?.[0] }}{{ m.nom?.[0] }}</div>
                 <div class="enc-body">
                   <strong>{{ m.prenom }} {{ m.nom }}</strong>
@@ -97,6 +108,7 @@
                     }
                   </div>
                 </div>
+                <span style="color:rgba(255,255,255,0.2); font-size:1.2rem; align-self:center;">→</span>
               </div>
             }
           </div>

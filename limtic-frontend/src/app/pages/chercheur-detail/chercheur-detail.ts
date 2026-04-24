@@ -28,7 +28,6 @@ export class ChercheurDetail implements OnInit {
     this.api.getChercheur(id).subscribe(data => {
       this.chercheur.set(data);
 
-      // Charger les encadrements filtrés sur ce chercheur
       this.api.getDoctorants().subscribe((list: any[]) => {
         this.doctorants.set(list.filter(d => d.directeur?.id === id));
       });
@@ -40,23 +39,27 @@ export class ChercheurDetail implements OnInit {
 
   retour() {
     const from = this.route.snapshot.queryParamMap.get('from');
-    if (from === 'doctorants') {
-      this.router.navigate(['/doctorants']);
-    } else if (from === 'masteriens') {
-      this.router.navigate(['/masteriens']);
-    } else {
-      this.router.navigate(this.isAdmin ? ['/dashboard-admin'] : ['/chercheurs']);
-    }
+    if (from === 'doctorant-detail') this.router.navigate(['/doctorants']);
+    else if (from === 'masterien-detail') this.router.navigate(['/masteriens']);
+    else this.router.navigate(this.isAdmin ? ['/dashboard-admin'] : ['/chercheurs']);
   }
 
   getRetourText(): string {
     const from = this.route.snapshot.queryParamMap.get('from');
-    if (from === 'doctorants') {
-      return 'Retour aux doctorants';
-    } else if (from === 'masteriens') {
-      return 'Retour aux mastériens';
-    } else {
-      return this.isAdmin ? 'Retour au dashboard' : 'Retour aux chercheurs';
-    }
+    if (from === 'doctorant-detail') return 'Retour aux doctorants';
+    if (from === 'masterien-detail') return 'Retour aux mastériens';
+    return this.isAdmin ? 'Retour au dashboard' : 'Retour aux chercheurs';
+  }
+
+  navigateToPublication(id: number) {
+    this.router.navigate(['/publications', id]);
+  }
+
+  navigateToDoctorant(id: number) {
+    this.router.navigate(['/doctorants', id]);
+  }
+
+  navigateToMasterien(id: number) {
+    this.router.navigate(['/masteriens', id]);
   }
 }
