@@ -17,6 +17,7 @@ import tn.limtic.limtic_backend.model.PasswordResetToken;
 import tn.limtic.limtic_backend.model.User;
 import tn.limtic.limtic_backend.repository.PasswordResetTokenRepository;
 import tn.limtic.limtic_backend.repository.UserRepository;
+import tn.limtic.limtic_backend.service.AuditService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,15 +33,17 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
     private final PasswordResetTokenRepository resetTokenRepository;
+    private final AuditService auditService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    // On supprime JwtUtil — on n'en a plus besoin
     public AuthController(UserRepository userRepository,
                           JavaMailSender mailSender,
-                          PasswordResetTokenRepository resetTokenRepository) {
+                          PasswordResetTokenRepository resetTokenRepository,
+                          AuditService auditService) {
         this.userRepository = userRepository;
         this.mailSender = mailSender;
         this.resetTokenRepository = resetTokenRepository;
+        this.auditService = auditService;
     }
 
     @PostMapping("/login")
@@ -54,37 +57,50 @@ public class AuthController {
 
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
+            // Audit : tentative de login avec email inexistant
+            auditService.log(request, "LOGIN", "User", null,
+                "Tentative login échouée — email introuvable : " + email, false);
             return ResponseEntity.status(401).body(Map.of("error", "Email introuvable"));
         }
 
         User user = userOpt.get();
         if (!encoder.matches(motDePasse, user.getMotDePasse())) {
+            // Audit : mauvais mot de passe
+            auditService.log(request, "LOGIN", "User", user.getId(),
+                "Tentative login échouée — mot de passe incorrect pour : " + email, false);
             return ResponseEntity.status(401).body(Map.of("error", "Mot de passe incorrect"));
         }
 
-        // ── Créer la session Spring Security ──────────────────────
-        // 1. On crée un objet Authentication avec l'email et le rôle
+        if (!user.isActif()) {
+            auditService.log(request, "LOGIN", "User", user.getId(),
+                "Tentative login — compte désactivé : " + email, false);
+            return ResponseEntity.status(403).body(Map.of("error", "Compte désactivé"));
+        }
+
+        // Créer la session Spring Security
         UsernamePasswordAuthenticationToken auth =
             new UsernamePasswordAuthenticationToken(
                 user.getEmail(),
-                null, // pas besoin du mot de passe ici
+                null,
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().toString()))
             );
 
-        // 2. On met cet objet dans le SecurityContext
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
 
-        // 3. On sauvegarde le SecurityContext dans la session HTTP
-        // Spring va créer automatiquement un cookie LIMTIC_SESSION
         HttpSession session = request.getSession(true);
         session.setAttribute(
             HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
             context
         );
+        // Stocker l'email dans la session pour l'AuditService
+        session.setAttribute("userEmail", user.getEmail());
 
-        // On retourne juste le rôle et l'email — plus de token JWT
+        // Audit : connexion réussie
+        auditService.log(request, "LOGIN", "User", user.getId(),
+            "Connexion réussie : " + email + " [" + user.getRole() + "]", true);
+
         return ResponseEntity.ok(Map.of(
             "role", user.getRole().toString(),
             "email", user.getEmail(),
@@ -94,20 +110,17 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        // Invalider la session côté serveur
+        auditService.log(request, "LOGOUT", "User", null, "Déconnexion", true);
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
-        // Vider le SecurityContext
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(Map.of("message", "Déconnecté avec succès"));
     }
 
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
-        // Vérifie si l'utilisateur est connecté
-        // Spring lit automatiquement la session depuis le cookie
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() ||
             auth.getPrincipal().equals("anonymousUser")) {
@@ -121,7 +134,8 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> signup(@RequestBody Map<String, String> body,
+                                     HttpServletRequest request) {
         String email = body.get("email");
         if (userRepository.findByEmail(email).isPresent()) {
             return ResponseEntity.status(400).body(Map.of("error", "Email déjà utilisé"));
@@ -131,11 +145,16 @@ public class AuthController {
         user.setMotDePasse(encoder.encode(body.get("motDePasse")));
         user.setRole(User.Role.VISITEUR);
         userRepository.save(user);
+
+        auditService.log(request, "SIGNUP", "User", user.getId(),
+            "Nouveau compte créé : " + email, true);
+
         return ResponseEntity.ok(Map.of("message", "Compte créé avec succès"));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body,
+                                             HttpServletRequest request) {
         String email = body.get("email");
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
@@ -155,11 +174,15 @@ public class AuthController {
             + "\n\nCe lien expire dans 1 heure.");
         mailSender.send(mail);
 
+        auditService.log(request, "FORGOT_PASSWORD", "User", userOpt.get().getId(),
+            "Demande de réinitialisation mot de passe : " + email, true);
+
         return ResponseEntity.ok(Map.of("message", "Si cet email existe, un lien a été envoyé."));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body,
+                                            HttpServletRequest request) {
         String token = body.get("token");
         String newPassword = body.get("motDePasse");
         Optional<PasswordResetToken> tokenOpt = resetTokenRepository.findByToken(token);
@@ -175,6 +198,10 @@ public class AuthController {
         user.setMotDePasse(encoder.encode(newPassword));
         userRepository.save(user);
         resetTokenRepository.delete(tokenOpt.get());
+
+        auditService.log(request, "RESET_PASSWORD", "User", user.getId(),
+            "Mot de passe réinitialisé : " + email, true);
+
         return ResponseEntity.ok(Map.of("message", "Mot de passe réinitialisé avec succès"));
     }
 }

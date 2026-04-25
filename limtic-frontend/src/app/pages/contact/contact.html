@@ -1,88 +1,146 @@
-<div class="contact-page">
+<div class="page contact-page">
+  <div class="page-header">
+    <h1>Contact</h1>
+    <p>Écrivez-nous, nous répondons dans les meilleurs délais.</p>
+  </div>
 
-  <!-- Hero -->
-  <section class="contact-hero">
-    <h1>Contactez-nous</h1>
-    <p>Laboratoire LIMTIC — Nous sommes à votre disposition</p>
-  </section>
+  <div class="contact-grid">
 
-  <div class="contact-body">
+    <!-- ── Formulaire de contact ─────────────────────────────── -->
+    <div class="contact-form-col">
 
-    <!-- Infos + Carte -->
-    <div class="contact-left">
-      <div class="info-card">
-        <h2>Informations</h2>
-        <div class="info-item">
-          <span class="info-icon">📍</span>
-          <div>
-            <strong>Adresse</strong>
-            <p>Institut Supérieur d'Informatique<br>2 Rue Abou Rayhane Bayrouni, Ariana 2080, Tunisie</p>
-          </div>
+      @if (envoi() === 'ok') {
+        <div class="success-banner">
+          ✅ Votre message a bien été envoyé. Nous vous répondrons prochainement.
         </div>
-        <div class="info-item">
-          <span class="info-icon">📞</span>
-          <div>
-            <strong>Téléphone</strong>
-            <p>+216 71 000 000</p>
+      }
+
+      @if (envoi() !== 'ok') {
+        <form class="contact-form" (ngSubmit)="soumettre()" #f="ngForm" novalidate>
+
+          <div class="form-group">
+            <label for="nom">Nom complet <span class="required">*</span></label>
+            <input
+              id="nom" type="text" name="nom"
+              [ngModel]="nom()" (ngModelChange)="nom.set($event)"
+              required minlength="2"
+              placeholder="Votre nom"
+              #nomCtrl="ngModel"
+            />
+            @if (nomCtrl.invalid && nomCtrl.touched) {
+              <span class="field-error">Nom requis (min 2 caractères).</span>
+            }
           </div>
-        </div>
+
+          <div class="form-group">
+            <label for="email">Adresse email <span class="required">*</span></label>
+            <input
+              id="email" type="email" name="email"
+              [ngModel]="email()" (ngModelChange)="email.set($event)"
+              required email
+              placeholder="vous@exemple.tn"
+              #emailCtrl="ngModel"
+            />
+            @if (emailCtrl.invalid && emailCtrl.touched) {
+              <span class="field-error">Email invalide.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="sujet">Sujet</label>
+            <input
+              id="sujet" type="text" name="sujet"
+              [ngModel]="sujet()" (ngModelChange)="sujet.set($event)"
+              placeholder="Objet de votre message"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message <span class="required">*</span></label>
+            <textarea
+              id="message" name="message"
+              [ngModel]="message()" (ngModelChange)="message.set($event)"
+              required minlength="10" maxlength="5000"
+              rows="6"
+              placeholder="Votre message..."
+              #msgCtrl="ngModel"
+            ></textarea>
+            <div class="char-count">{{ message().length }}/5000</div>
+            @if (msgCtrl.invalid && msgCtrl.touched) {
+              <span class="field-error">Message requis (min 10 caractères).</span>
+            }
+          </div>
+
+          <!-- ── §3.9 CDC — Widget hCaptcha ── -->
+          <div class="form-group captcha-group">
+            <div id="hcaptcha-container"></div>
+            @if (!captchaToken() && envoi() === 'error') {
+              <span class="field-error">Veuillez compléter le captcha.</span>
+            }
+          </div>
+
+          @if (erreurMsg()) {
+            <div class="error-banner">⚠️ {{ erreurMsg() }}</div>
+          }
+
+          <button
+            type="submit"
+            class="btn-envoyer"
+            [disabled]="f.invalid || envoi() === 'loading' || !captchaToken()"
+          >
+            @if (envoi() === 'loading') {
+              <span class="spinner"></span> Envoi en cours...
+            } @else {
+              Envoyer le message ✉️
+            }
+          </button>
+
+        </form>
+      }
+    </div>
+
+    <!-- ── Informations de contact + Google Maps ─────────────── -->
+    <div class="contact-info-col">
+
+      <div class="info-block">
+        <h3>Coordonnées</h3>
+
+        @if (adresse()) {
+          <div class="info-item">
+            <span class="info-icon">📍</span>
+            <span>{{ adresse() }}</span>
+          </div>
+        }
+
+        @if (telephone()) {
+          <div class="info-item">
+            <span class="info-icon">📞</span>
+            <a [href]="'tel:' + telephone()">{{ telephone() }}</a>
+          </div>
+        }
+
         <div class="info-item">
           <span class="info-icon">✉️</span>
-          <div>
-            <strong>Email</strong>
-            <p>contact@limtic.tn</p>
-          </div>
+          <a [href]="'mailto:' + emailContact()">{{ emailContact() }}</a>
         </div>
       </div>
 
-      <!-- Google Maps embed -->
-      <div class="map-container">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3193.4!2d10.1658!3d36.8978!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDUzJzUyLjEiTiAxMMKwMDknNTYuOSJF!5e0!3m2!1sfr!2stn!4v1600000000000!5m2!1sfr!2stn"
-          width="100%"
-          height="300"
-          style="border:0;"
-          allowfullscreen=""
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
-      </div>
+      <!-- ── Google Maps (§3.9 CDC) ── -->
+      @if (googleMapsUrl()) {
+        <div class="maps-container">
+          <iframe
+            [src]="googleMapsUrl()"
+            width="100%"
+            height="300"
+            style="border:0; border-radius:10px;"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Localisation LIMTIC"
+          ></iframe>
+        </div>
+      }
+
     </div>
-
-    <!-- Formulaire -->
-    <div class="contact-right">
-      <div class="form-card">
-        <h2>Envoyer un message</h2>
-
-        @if (erreur()) {
-          <div class="error-msg">⚠️ {{ erreur() }}</div>
-        }
-        @if (success()) {
-          <div class="success-msg">{{ success() }}</div>
-        }
-
-        <div class="field">
-          <label>Nom complet *</label>
-          <input [(ngModel)]="form.nom" placeholder="Votre nom" />
-        </div>
-        <div class="field">
-          <label>Email *</label>
-          <input type="email" [(ngModel)]="form.email" placeholder="votre@email.com" />
-        </div>
-        <div class="field">
-          <label>Sujet *</label>
-          <input [(ngModel)]="form.sujet" placeholder="Objet de votre message" />
-        </div>
-        <div class="field">
-          <label>Message *</label>
-          <textarea [(ngModel)]="form.message" rows="6" placeholder="Votre message..."></textarea>
-        </div>
-
-        <button class="btn-submit" (click)="onSubmit()" [disabled]="loading()">
-          {{ loading() ? 'Envoi en cours...' : 'Envoyer le message' }}
-        </button>
-      </div>
-    </div>
-
   </div>
 </div>

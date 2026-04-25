@@ -1,8 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
-import { Evenement } from '../../models/chercheur.model';
+import { Evenement, PhotoEvenement } from '../../models/chercheur.model';
 
 @Component({
   selector: 'app-evenement-detail',
@@ -11,48 +11,144 @@ import { Evenement } from '../../models/chercheur.model';
   styleUrl: './evenement-detail.css'
 })
 export class EvenementDetail implements OnInit {
-  evenement = signal<Evenement | null>(null);
+  private api    = inject(ApiService);
+  private route  = inject(ActivatedRoute);
+  private router = inject(Router);
 
-  constructor(
-    private api: ApiService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
+  evenement       = signal<Evenement | null>(null);
+  isAdmin         = false;
+
+  // Galerie
+  photoActive     = signal<PhotoEvenement | null>(null);
+  photoActiveIdx  = signal(0);
+  uploading       = signal(false);
+  uploadErreur    = signal('');
+
+  // Drag-drop ordre photos
+  dragIndex       = signal<number | null>(null);
 
   ngOnInit() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    const id    = Number(this.route.snapshot.paramMap.get('id'));
+    this.isAdmin = localStorage.getItem('role') === 'ADMIN';
+    this.chargerEvenement(id);
+  }
 
-    this.api.getEvenements().subscribe((evenements: Evenement[]) => {
-      const evt = evenements.find(e => e.id === id);
-      if (evt) {
-        this.evenement.set(evt);
-      } else {
-        this.router.navigate(['/evenements']);
+  private chargerEvenement(id: number) {
+    this.api.getEvenement(id).subscribe(data => {
+      this.evenement.set(data);
+      if (data.photos?.length) {
+        this.photoActive.set(data.photos[0]);
+        this.photoActiveIdx.set(0);
       }
     });
   }
 
-  retour() { this.router.navigate(['/evenements']); }
+  // ── Lightbox ───────────────────────────────────────────────────────────────
+  ouvrirPhoto(idx: number) {
+    const photos = this.evenement()?.photos ?? [];
+    this.photoActive.set(photos[idx]);
+    this.photoActiveIdx.set(idx);
+  }
 
-  formatDate(date: string | Date): string {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('fr-FR', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  photoSuivante() {
+    const photos = this.evenement()?.photos ?? [];
+    const next   = (this.photoActiveIdx() + 1) % photos.length;
+    this.photoActive.set(photos[next]);
+    this.photoActiveIdx.set(next);
+  }
+
+  photoPrecedente() {
+    const photos = this.evenement()?.photos ?? [];
+    const prev   = (this.photoActiveIdx() - 1 + photos.length) % photos.length;
+    this.photoActive.set(photos[prev]);
+    this.photoActiveIdx.set(prev);
+  }
+
+  fermerLightbox() {
+    this.photoActive.set(null);
+  }
+
+  // ── Upload multiple photos ─────────────────────────────────────────────────
+  onFichiersSelectionnes(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const files = Array.from(input.files);
+    this.uploadPhotos(files);
+    input.value = '';
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer?.files ?? []);
+    if (files.length) this.uploadPhotos(files);
+  }
+
+  onDragOver(event: DragEvent) { event.preventDefault(); }
+
+  private uploadPhotos(files: File[]) {
+    const id = this.evenement()?.id;
+    if (!id) return;
+
+    // Valider côté client avant l'envoi
+    const exts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    for (const f of files) {
+      const ext = f.name.split('.').pop()?.toLowerCase() ?? '';
+      if (!exts.includes(ext)) {
+        this.uploadErreur.set(`Format non supporté : ${f.name}. Formats acceptés : JPG, PNG, WebP, GIF`);
+        return;
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        this.uploadErreur.set(`Fichier trop lourd (max 5 Mo) : ${f.name}`);
+        return;
+      }
+    }
+
+    this.uploading.set(true);
+    this.uploadErreur.set('');
+
+    this.api.uploadPhotosEvenement(id, files).subscribe({
+      next: () => {
+        this.chargerEvenement(id);
+        this.uploading.set(false);
+      },
+      error: err => {
+        this.uploadErreur.set(err?.error?.error ?? 'Erreur lors de l\'upload.');
+        this.uploading.set(false);
+      }
     });
   }
 
-  getDay(date: string | Date): string {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit' });
+  // ── Suppression photo ──────────────────────────────────────────────────────
+  supprimerPhoto(photo: PhotoEvenement) {
+    if (!confirm('Supprimer cette photo ?')) return;
+    const evtId = this.evenement()?.id!;
+    this.api.deletePhotoEvenement(evtId, photo.id).subscribe({
+      next: () => {
+        this.chargerEvenement(evtId);
+        this.fermerLightbox();
+      }
+    });
   }
 
-  getMonth(date: string | Date): string {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase();
+  // ── Drag-drop réordonnancement ─────────────────────────────────────────────
+  onDragStartPhoto(idx: number) { this.dragIndex.set(idx); }
+
+  onDropPhoto(event: DragEvent, targetIdx: number) {
+    event.preventDefault();
+    const fromIdx = this.dragIndex();
+    if (fromIdx === null || fromIdx === targetIdx) return;
+
+    const photos = [...(this.evenement()?.photos ?? [])];
+    const [moved] = photos.splice(fromIdx, 1);
+    photos.splice(targetIdx, 0, moved);
+
+    // Mettre à jour les ordres
+    const ordres = photos.map((p, i) => ({ id: p.id, ordre: i }));
+    this.api.updateOrdrePhotos(this.evenement()!.id, ordres).subscribe({
+      next: () => this.chargerEvenement(this.evenement()!.id)
+    });
+    this.dragIndex.set(null);
   }
 
-  getYear(date: string | Date): string {
-    if (!date) return '';
-    return new Date(date).getFullYear().toString();
-  }
+  retour() { this.router.navigate(['/evenements']); }
 }

@@ -37,7 +37,7 @@ export class Axes implements OnInit {
     this.expandedAxeId.set(axeId);
     // Charger les publications seulement si pas encore chargées
     if (!this.publicationsByAxe()[axeId]) {
-      this.api.getPublicationsByAxe(axeId).subscribe(pubs => {
+      this.api.getPublicationsByAxe(axeId).subscribe((pubs: Publication[]) => {
         this.publicationsByAxe.update(map => ({ ...map, [axeId]: pubs }));
       });
     }
