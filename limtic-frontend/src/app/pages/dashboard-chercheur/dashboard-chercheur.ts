@@ -47,41 +47,44 @@ export class DashboardChercheur implements OnInit {
 
   constructor(private router: Router, private api: ApiService) {}
 
+  private handleError(error: any) {
+    const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
+    this.message.set('Erreur : ' + message);
+  }
+
   ngOnInit() {
-    const token = localStorage.getItem('token');
-    if (!token) { this.router.navigate(['/login']); return; }
     this.email.set(localStorage.getItem('email') || '');
     this.role.set(localStorage.getItem('role') || '');
     this.loadProfil();
   }
 
+  viewPublication(id: number) {
+    this.router.navigate(['/publications', id]);
+  }
+
   loadProfil() {
     const email = this.email();
-    fetch('http://localhost:8080/api/chercheurs', {
-      headers: this.api.authHeaders()
-    })
-      .then(r => r.json())
-      .then((data: any[]) => {
-        const c = data.find(ch => ch.user?.email === email || ch.email === email);
-        if (c) {
-          this.chercheurId.set(c.id);
-          this.profil.set(c);
-          this.editProfil = {
-            grade:         c.grade         || '',
-            specialite:    c.specialite    || '',
-            institution:   c.institution   || '',
-            bureau:        c.bureau        || '',
-            telephone:     c.telephone     || '',
-            biographie:    c.biographie    || '',
-            googleScholar: c.googleScholar || '',
-            researchGate:  c.researchGate  || '',
-            orcid:         c.orcid         || '',
-            linkedin:      c.linkedin      || ''
-          };
-          this.publications.set(c.publications || []);
-          this.chargerEncadrements(c.id);
-        }
-      });
+    this.api.getChercheurs().subscribe((data: any[]) => {
+      const c = data.find(ch => ch.user?.email === email || ch.email === email);
+      if (c) {
+        this.chercheurId.set(c.id);
+        this.profil.set(c);
+        this.editProfil = {
+          grade:         c.grade         || '',
+          specialite:    c.specialite    || '',
+          institution:   c.institution   || '',
+          bureau:        c.bureau        || '',
+          telephone:     c.telephone     || '',
+          biographie:    c.biographie    || '',
+          googleScholar: c.googleScholar || '',
+          researchGate:  c.researchGate  || '',
+          orcid:         c.orcid         || '',
+          linkedin:      c.linkedin      || ''
+        };
+        this.publications.set(c.publications || []);
+        this.chargerEncadrements(c.id);
+      }
+    });
   }
 
   chargerEncadrements(cid: number) {
@@ -98,53 +101,64 @@ export class DashboardChercheur implements OnInit {
   assignerDoctorant(doctorantId: number) {
     const cid = this.chercheurId();
     if (!cid) return;
-    this.api.updateDoctorant(doctorantId, { directeurId: cid }).subscribe(() => {
-      this.encMsg.set('Doctorant assigné avec succès !');
-      this.chargerEncadrements(cid);
-      setTimeout(() => this.encMsg.set(''), 3000);
+    this.api.updateDoctorant(doctorantId, { directeurId: cid }).subscribe({
+      next: () => {
+        this.encMsg.set('Doctorant assigné avec succès !');
+        this.chargerEncadrements(cid);
+        setTimeout(() => this.encMsg.set(''), 3000);
+      },
+      error: err => this.handleError(err)
     });
   }
 
   retirerDoctorant(doctorantId: number) {
     const cid = this.chercheurId();
     if (!cid) return;
-    this.api.updateDoctorant(doctorantId, { directeurId: null }).subscribe(() => {
-      this.encMsg.set('Doctorant retiré.');
-      this.chargerEncadrements(cid);
-      setTimeout(() => this.encMsg.set(''), 3000);
+    this.api.updateDoctorant(doctorantId, { directeurId: null }).subscribe({
+      next: () => {
+        this.encMsg.set('Doctorant retiré.');
+        this.chargerEncadrements(cid);
+        setTimeout(() => this.encMsg.set(''), 3000);
+      },
+      error: err => this.handleError(err)
     });
   }
 
   assignerMasterien(masterienId: number) {
     const cid = this.chercheurId();
     if (!cid) return;
-    this.api.updateMasterien(masterienId, { encadrantId: cid }).subscribe(() => {
-      this.encMsg.set('Mastérien assigné avec succès !');
-      this.chargerEncadrements(cid);
-      setTimeout(() => this.encMsg.set(''), 3000);
+    this.api.updateMasterien(masterienId, { encadrantId: cid }).subscribe({
+      next: () => {
+        this.encMsg.set('Mastérien assigné avec succès !');
+        this.chargerEncadrements(cid);
+        setTimeout(() => this.encMsg.set(''), 3000);
+      },
+      error: err => this.handleError(err)
     });
   }
 
   retirerMasterien(masterienId: number) {
     const cid = this.chercheurId();
     if (!cid) return;
-    this.api.updateMasterien(masterienId, { encadrantId: null }).subscribe(() => {
-      this.encMsg.set('Mastérien retiré.');
-      this.chargerEncadrements(cid);
-      setTimeout(() => this.encMsg.set(''), 3000);
+    this.api.updateMasterien(masterienId, { encadrantId: null }).subscribe({
+      next: () => {
+        this.encMsg.set('Mastérien retiré.');
+        this.chargerEncadrements(cid);
+        setTimeout(() => this.encMsg.set(''), 3000);
+      },
+      error: err => this.handleError(err)
     });
   }
 
   sauvegarderProfil() {
     const id = this.chercheurId();
     if (!id) { this.message.set('Profil introuvable.'); return; }
-    fetch(`http://localhost:8080/api/chercheurs/${id}/profil`, {
-      method: 'PATCH',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify(this.editProfil)
-    }).then(() => {
-      this.message.set('Profil mis à jour avec succès !');
-      this.loadProfil();
+    this.api.patch(`chercheurs/${id}/profil`, this.editProfil).subscribe({
+      next: () => {
+        this.message.set('Profil mis à jour avec succès !');
+        this.loadProfil();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -153,41 +167,38 @@ export class DashboardChercheur implements OnInit {
       this.message.set('Le titre est obligatoire.');
       return;
     }
-    fetch('http://localhost:8080/api/publications', {
-      method: 'POST',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify(this.newPub)
-    }).then(() => {
-      this.message.set(
-        this.newPub.statut === 'SOUMIS'
-          ? 'Publication soumise à validation !'
-          : 'Publication enregistrée en brouillon !'
-      );
-      this.activeTab.set('publications');
-      this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'BROUILLON' };
-      this.loadProfil();
+    this.api.post('publications', this.newPub).subscribe({
+      next: () => {
+        this.message.set(
+          this.newPub.statut === 'SOUMIS'
+            ? 'Publication soumise à validation !'
+            : 'Publication enregistrée en brouillon !'
+        );
+        this.activeTab.set('publications');
+        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'BROUILLON' };
+        this.loadProfil();
+      },
+      error: err => this.handleError(err)
     });
   }
 
   soumettre(id: number) {
-    fetch(`http://localhost:8080/api/publications/${id}/statut`, {
-      method: 'PATCH',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify({ statut: 'SOUMIS' })
-    }).then(() => {
-      this.message.set('Publication soumise à validation !');
-      this.loadProfil();
+    this.api.patch(`publications/${id}/statut`, { statut: 'SOUMIS' }).subscribe({
+      next: () => {
+        this.message.set('Publication soumise à validation !');
+        this.loadProfil();
+      },
+      error: err => this.handleError(err)
     });
   }
 
   retirerSoumission(id: number) {
-    fetch(`http://localhost:8080/api/publications/${id}/statut`, {
-      method: 'PATCH',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify({ statut: 'BROUILLON' })
-    }).then(() => {
-      this.message.set('Publication remise en brouillon.');
-      this.loadProfil();
+    this.api.patch(`publications/${id}/statut`, { statut: 'BROUILLON' }).subscribe({
+      next: () => {
+        this.message.set('Publication remise en brouillon.');
+        this.loadProfil();
+      },
+      error: err => this.handleError(err)
     });
   }
 

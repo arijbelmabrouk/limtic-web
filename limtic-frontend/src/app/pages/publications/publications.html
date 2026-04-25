@@ -69,11 +69,19 @@
 
         <div class="pub-body">
           <h3>{{ p.titre }}</h3>
-          <p class="pub-meta">{{ p.journal }} — {{ p.annee }}</p>
+          <p class="pub-meta">
+            {{ p.journal }} · {{ p.annee }}
+            @if (p.chercheur) {
+              · Auteur : <strong class="pub-author" [routerLink]="['/chercheurs', p.chercheur.id]">{{ p.chercheur.prenom }} {{ p.chercheur.nom }}</strong>
+            }
+          </p>
           <p class="pub-resume">{{ p.resume }}</p>
           <div class="pub-tags">
             @if (p.axe) {
               <span class="pub-axe">🔬 {{ p.axe.nom }}</span>
+            }
+            @if (p.statut) {
+              <span class="pub-status {{ p.statut.toLowerCase() }}">{{ p.statut === 'PUBLIE' ? 'Publié' : p.statut === 'SOUMIS' ? 'Soumis' : 'Brouillon' }}</span>
             }
           </div>
         </div>

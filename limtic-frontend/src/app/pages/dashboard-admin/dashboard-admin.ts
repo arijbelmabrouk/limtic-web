@@ -26,27 +26,16 @@ export class DashboardAdmin implements OnInit {
   editingAxe   = signal<any | null>(null);
   assocMap     = signal<Record<number, number | null>>({});
 
-  // Publications en attente
   publicationsEnAttente = computed(() =>
     this.publications().filter(p => p.statut === 'SOUMIS')
   );
 
   newAxe       = { nom: '', description: '', responsableId: null as number | null };
-  newChercheur = { nom: '', prenom: '', grade: '', institution: '', specialite: '' };
   newPub       = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE' };
   newEvent     = { titre: '', type: 'Séminaire', dateEvenement: '', lieu: '', description: '' };
   newUser      = { email: '', motDePasse: '', role: 'CHERCHEUR' };
-  newDoctorant = {
-    nom: '', prenom: '', sujetThese: '',
-    directeurId: null as number | null,
-    dateInscription: '', statut: 'EN_COURS',
-    mention: '', photoUrl: ''
-  };
-  newMasterien = {
-    nom: '', prenom: '', sujetMemoire: '',
-    encadrantId: null as number | null,
-    promotion: '', statut: 'EN_COURS'
-  };
+  newDoctorant = { nom: '', prenom: '', sujetThese: '', directeurId: null as number | null, dateInscription: '', statut: 'EN_COURS', mention: '', photoUrl: '' };
+  newMasterien = { nom: '', prenom: '', sujetMemoire: '', encadrantId: null as number | null, promotion: '', statut: 'EN_COURS' };
 
   editingDoctorant = signal<any | null>(null);
   editingMasterien = signal<any | null>(null);
@@ -57,10 +46,14 @@ export class DashboardAdmin implements OnInit {
 
   constructor(private router: Router, private api: ApiService) {}
 
+  private handleError(error: any) {
+    const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
+    this.message.set('Erreur : ' + message);
+  }
+
   ngOnInit() {
-    const token = localStorage.getItem('token');
-    const role  = localStorage.getItem('role');
-    if (!token || role !== 'ADMIN') {
+    const role = localStorage.getItem('role');
+    if (!role || role !== 'ADMIN') {
       this.router.navigate(['/login']);
       return;
     }
@@ -98,47 +91,45 @@ export class DashboardAdmin implements OnInit {
 
   // ── Publications ──────────────────────────────────────────
   ajouterPublication() {
-    fetch('http://localhost:8080/api/publications', {
-      method: 'POST',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify(this.newPub)
-    }).then(() => {
-      this.message.set('Publication ajoutée !');
-      this.showForm.set('');
-      this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE' };
-      this.api.getPublications().subscribe(data => this.publications.set(data));
+    this.api.post('publications', this.newPub).subscribe({
+      next: () => {
+        this.message.set('Publication ajoutée !');
+        this.showForm.set('');
+        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE' };
+        this.api.getPublications().subscribe(data => this.publications.set(data));
+      },
+      error: err => this.handleError(err)
     });
   }
 
   validerPublication(id: number) {
-    fetch(`http://localhost:8080/api/publications/${id}/statut`, {
-      method: 'PATCH',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify({ statut: 'PUBLIE' })
-    }).then(() => {
-      this.message.set('Publication validée et publiée !');
-      this.api.getPublications().subscribe(data => this.publications.set(data));
+    this.api.patch(`publications/${id}/statut`, { statut: 'PUBLIE' }).subscribe({
+      next: () => {
+        this.message.set('Publication validée !');
+        this.api.getPublications().subscribe(data => this.publications.set(data));
+      },
+      error: err => this.handleError(err)
     });
   }
 
   rejeterPublication(id: number) {
-    fetch(`http://localhost:8080/api/publications/${id}/statut`, {
-      method: 'PATCH',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify({ statut: 'BROUILLON' })
-    }).then(() => {
-      this.message.set('Publication renvoyée en brouillon.');
-      this.api.getPublications().subscribe(data => this.publications.set(data));
+    this.api.patch(`publications/${id}/statut`, { statut: 'BROUILLON' }).subscribe({
+      next: () => {
+        this.message.set('Publication renvoyée en brouillon.');
+        this.api.getPublications().subscribe(data => this.publications.set(data));
+      },
+      error: err => this.handleError(err)
     });
   }
 
   supprimerPublication(id: number) {
     if (!confirm('Supprimer cette publication ?')) return;
-    fetch(`http://localhost:8080/api/publications/${id}`, {
-      method: 'DELETE', headers: this.api.authHeaders()
-    }).then(() => {
-      this.message.set('Publication supprimée.');
-      this.api.getPublications().subscribe(data => this.publications.set(data));
+    this.api.delete('publications/' + id).subscribe({
+      next: () => {
+        this.message.set('Publication supprimée.');
+        this.api.getPublications().subscribe(data => this.publications.set(data));
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -158,36 +149,37 @@ export class DashboardAdmin implements OnInit {
 
   // ── Événements ────────────────────────────────────────────
   ajouterEvenement() {
-    fetch('http://localhost:8080/api/evenements', {
-      method: 'POST',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify(this.newEvent)
-    }).then(() => {
-      this.message.set('Événement ajouté !');
-      this.showForm.set('');
-      this.newEvent = { titre: '', type: 'Séminaire', dateEvenement: '', lieu: '', description: '' };
-      this.api.getEvenements().subscribe(data => this.evenements.set(data));
+    this.api.post('evenements', this.newEvent).subscribe({
+      next: () => {
+        this.message.set('Événement ajouté !');
+        this.showForm.set('');
+        this.newEvent = { titre: '', type: 'Séminaire', dateEvenement: '', lieu: '', description: '' };
+        this.api.getEvenements().subscribe(data => this.evenements.set(data));
+      },
+      error: err => this.handleError(err)
     });
   }
 
   supprimerEvenement(id: number) {
     if (!confirm('Supprimer cet événement ?')) return;
-    fetch(`http://localhost:8080/api/evenements/${id}`, {
-      method: 'DELETE', headers: this.api.authHeaders()
-    }).then(() => {
-      this.message.set('Événement supprimé.');
-      this.api.getEvenements().subscribe(data => this.evenements.set(data));
+    this.api.delete('evenements/' + id).subscribe({
+      next: () => {
+        this.message.set('Événement supprimé.');
+        this.api.getEvenements().subscribe(data => this.evenements.set(data));
+      },
+      error: err => this.handleError(err)
     });
   }
 
   // ── Chercheurs ────────────────────────────────────────────
   supprimerChercheur(id: number) {
     if (!confirm('Supprimer ce chercheur ?')) return;
-    fetch(`http://localhost:8080/api/chercheurs/${id}`, {
-      method: 'DELETE', headers: this.api.authHeaders()
-    }).then(() => {
-      this.message.set('Chercheur supprimé.');
-      this.api.getChercheurs().subscribe(data => this.chercheurs.set(data));
+    this.api.delete('chercheurs/' + id).subscribe({
+      next: () => {
+        this.message.set('Chercheur supprimé.');
+        this.api.getChercheurs().subscribe(data => this.chercheurs.set(data));
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -204,40 +196,50 @@ export class DashboardAdmin implements OnInit {
       this.message.set('Email et mot de passe obligatoires.');
       return;
     }
-    fetch('http://localhost:8080/api/users', {
-      method: 'POST',
-      headers: this.api.authHeaders(),
-      body: JSON.stringify(this.newUser)
-    }).then(r => r.json()).then(res => {
-      if (res.error) {
-        this.message.set(res.error);
-      } else {
-        this.message.set('Compte créé avec succès !');
-        this.showForm.set('');
-        this.newUser = { email: '', motDePasse: '', role: 'CHERCHEUR' };
-        this.loadUsers();
+    this.api.post('users', this.newUser).subscribe({
+      next: (res: any) => {
+        if (res.error) {
+          this.message.set(res.error);
+        } else {
+          this.message.set('Compte créé avec succès !');
+          this.showForm.set('');
+          this.newUser = { email: '', motDePasse: '', role: 'CHERCHEUR' };
+          this.loadUsers();
+        }
       }
     });
   }
 
   changerRole(id: number, event: Event) {
     const role = (event.target as HTMLSelectElement).value;
-    fetch(`http://localhost:8080/api/users/${id}/role`, {
-      method: 'PATCH', headers: this.api.authHeaders(), body: JSON.stringify({ role })
-    }).then(() => { this.message.set('Rôle modifié.'); this.loadUsers(); });
+    this.api.patch(`users/${id}/role`, { role }).subscribe({
+      next: () => {
+        this.message.set('Rôle modifié.');
+        this.loadUsers();
+      },
+      error: err => this.handleError(err)
+    });
   }
 
   toggleActif(id: number) {
-    fetch(`http://localhost:8080/api/users/${id}/toggle`, {
-      method: 'PATCH', headers: this.api.authHeaders()
-    }).then(() => { this.message.set('Statut modifié.'); this.loadUsers(); });
+    this.api.patch(`users/${id}/toggle`, {}).subscribe({
+      next: () => {
+        this.message.set('Statut modifié.');
+        this.loadUsers();
+      },
+      error: err => this.handleError(err)
+    });
   }
 
   supprimerUser(id: number) {
     if (!confirm('Supprimer ce compte définitivement ?')) return;
-    fetch(`http://localhost:8080/api/users/${id}`, {
-      method: 'DELETE', headers: this.api.authHeaders()
-    }).then(() => { this.message.set('Compte supprimé.'); this.loadUsers(); });
+    this.api.delete('users/' + id).subscribe({
+      next: () => {
+        this.message.set('Compte supprimé.');
+        this.loadUsers();
+      },
+      error: err => this.handleError(err)
+    });
   }
 
   // ── Axes ──────────────────────────────────────────────────
@@ -250,11 +252,14 @@ export class DashboardAdmin implements OnInit {
 
   ajouterAxe() {
     if (!this.newAxe.nom.trim()) { this.message.set("Le nom de l'axe est obligatoire."); return; }
-    this.api.createAxe(this.newAxe).subscribe(() => {
-      this.message.set('Axe créé !');
-      this.showForm.set('');
-      this.newAxe = { nom: '', description: '', responsableId: null };
-      this.loadAxes();
+    this.api.createAxe(this.newAxe).subscribe({
+      next: () => {
+        this.message.set('Axe créé !');
+        this.showForm.set('');
+        this.newAxe = { nom: '', description: '', responsableId: null };
+        this.loadAxes();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -265,10 +270,13 @@ export class DashboardAdmin implements OnInit {
   saveEditAxe() {
     const axe = this.editingAxe();
     if (!axe) return;
-    this.api.updateAxe(axe.id, axe).subscribe(() => {
-      this.message.set('Axe mis à jour !');
-      this.editingAxe.set(null);
-      this.loadAxes();
+    this.api.updateAxe(axe.id, axe).subscribe({
+      next: () => {
+        this.message.set('Axe mis à jour !');
+        this.editingAxe.set(null);
+        this.loadAxes();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -276,7 +284,13 @@ export class DashboardAdmin implements OnInit {
 
   supprimerAxe(id: number) {
     if (!confirm("Supprimer cet axe ?")) return;
-    this.api.deleteAxe(id).subscribe(() => { this.message.set('Axe supprimé.'); this.loadAxes(); });
+    this.api.deleteAxe(id).subscribe({
+      next: () => {
+        this.message.set('Axe supprimé.');
+        this.loadAxes();
+      },
+      error: err => this.handleError(err)
+    });
   }
 
   getAssocChercheur(axeId: number): number | null { return this.assocMap()[axeId] ?? null; }
@@ -289,18 +303,24 @@ export class DashboardAdmin implements OnInit {
   associerChercheur(axeId: number) {
     const cid = this.getAssocChercheur(axeId);
     if (!cid) return;
-    this.api.addChercheurToAxe(axeId, cid).subscribe(() => {
-      this.message.set("Chercheur associé à l'axe !");
-      this.assocMap.update(m => ({ ...m, [axeId]: null }));
-      this.loadAxes();
+    this.api.addChercheurToAxe(axeId, cid).subscribe({
+      next: () => {
+        this.message.set("Chercheur associé à l'axe !");
+        this.assocMap.update(m => ({ ...m, [axeId]: null }));
+        this.loadAxes();
+      },
+      error: err => this.handleError(err)
     });
   }
 
   retirerChercheur(axeId: number, chercheurId: number) {
     if (!confirm("Retirer ce chercheur de l'axe ?")) return;
-    this.api.removeChercheurFromAxe(axeId, chercheurId).subscribe(() => {
-      this.message.set('Chercheur retiré.');
-      this.loadAxes();
+    this.api.removeChercheurFromAxe(axeId, chercheurId).subscribe({
+      next: () => {
+        this.message.set('Chercheur retiré.');
+        this.loadAxes();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -317,11 +337,14 @@ export class DashboardAdmin implements OnInit {
       this.message.set('Nom et prénom obligatoires.');
       return;
     }
-    this.api.createDoctorant(this.newDoctorant).subscribe(() => {
-      this.message.set('Doctorant ajouté !');
-      this.showForm.set('');
-      this.newDoctorant = { nom: '', prenom: '', sujetThese: '', directeurId: null, dateInscription: '', statut: 'EN_COURS', mention: '', photoUrl: '' };
-      this.loadDoctorants();
+    this.api.createDoctorant(this.newDoctorant).subscribe({
+      next: () => {
+        this.message.set('Doctorant ajouté !');
+        this.showForm.set('');
+        this.newDoctorant = { nom: '', prenom: '', sujetThese: '', directeurId: null, dateInscription: '', statut: 'EN_COURS', mention: '', photoUrl: '' };
+        this.loadDoctorants();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -341,10 +364,13 @@ export class DashboardAdmin implements OnInit {
   saveEditDoctorant() {
     const d = this.editingDoctorant();
     if (!d) return;
-    this.api.updateDoctorant(d.id, d).subscribe(() => {
-      this.message.set('Doctorant mis à jour !');
-      this.editingDoctorant.set(null);
-      this.loadDoctorants();
+    this.api.updateDoctorant(d.id, d).subscribe({
+      next: () => {
+        this.message.set('Doctorant mis à jour !');
+        this.editingDoctorant.set(null);
+        this.loadDoctorants();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -352,9 +378,12 @@ export class DashboardAdmin implements OnInit {
 
   supprimerDoctorant(id: number) {
     if (!confirm('Supprimer ce doctorant ?')) return;
-    this.api.deleteDoctorant(id).subscribe(() => {
-      this.message.set('Doctorant supprimé.');
-      this.loadDoctorants();
+    this.api.deleteDoctorant(id).subscribe({
+      next: () => {
+        this.message.set('Doctorant supprimé.');
+        this.loadDoctorants();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -371,11 +400,14 @@ export class DashboardAdmin implements OnInit {
       this.message.set('Nom et prénom obligatoires.');
       return;
     }
-    this.api.createMasterien(this.newMasterien).subscribe(() => {
-      this.message.set('Mastérien ajouté !');
-      this.showForm.set('');
-      this.newMasterien = { nom: '', prenom: '', sujetMemoire: '', encadrantId: null, promotion: '', statut: 'EN_COURS' };
-      this.loadMasteriens();
+    this.api.createMasterien(this.newMasterien).subscribe({
+      next: () => {
+        this.message.set('Mastérien ajouté !');
+        this.showForm.set('');
+        this.newMasterien = { nom: '', prenom: '', sujetMemoire: '', encadrantId: null, promotion: '', statut: 'EN_COURS' };
+        this.loadMasteriens();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -392,10 +424,13 @@ export class DashboardAdmin implements OnInit {
   saveEditMasterien() {
     const m = this.editingMasterien();
     if (!m) return;
-    this.api.updateMasterien(m.id, m).subscribe(() => {
-      this.message.set('Mastérien mis à jour !');
-      this.editingMasterien.set(null);
-      this.loadMasteriens();
+    this.api.updateMasterien(m.id, m).subscribe({
+      next: () => {
+        this.message.set('Mastérien mis à jour !');
+        this.editingMasterien.set(null);
+        this.loadMasteriens();
+      },
+      error: err => this.handleError(err)
     });
   }
 
@@ -403,15 +438,26 @@ export class DashboardAdmin implements OnInit {
 
   supprimerMasterien(id: number) {
     if (!confirm('Supprimer ce mastérien ?')) return;
-    this.api.deleteMasterien(id).subscribe(() => {
-      this.message.set('Mastérien supprimé.');
-      this.loadMasteriens();
+    this.api.deleteMasterien(id).subscribe({
+      next: () => {
+        this.message.set('Mastérien supprimé.');
+        this.loadMasteriens();
+      },
+      error: err => this.handleError(err)
     });
   }
 
   // ── Auth ──────────────────────────────────────────────────
   logout() {
-    localStorage.clear();
-    this.router.navigate(['/login']);
+    this.api.logout().subscribe({
+      next: () => {
+        localStorage.clear();
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        localStorage.clear();
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }

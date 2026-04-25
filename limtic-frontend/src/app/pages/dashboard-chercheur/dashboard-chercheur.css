@@ -221,7 +221,9 @@
 }
 .data-table tbody tr:last-child td { border-bottom: none; }
 .data-table tbody tr:hover         { background: rgba(255,255,255,0.02); }
+.clickable-row { cursor: pointer; }
 .cell-title { color: white; font-size: 0.9rem; font-weight: 500; }
+.link-cell { text-decoration: underline; color: #00d2ff; }
 .cell-muted { color: rgba(255,255,255,0.4); font-size: 0.875rem; }
 
 .badge-type { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }

@@ -228,8 +228,8 @@
           </thead>
           <tbody>
             @for (p of publications(); track p.id) {
-              <tr>
-                <td class="cell-title">{{ p.titre }}</td>
+              <tr class="clickable-row" (click)="viewPublication(p.id)">
+                <td class="cell-title link-cell">{{ p.titre }}</td>
                 <td>
                   <span class="badge-type" [class]="p.type === 'Journal' ? 'type-j' : 'type-c'">
                     {{ p.type }}
@@ -245,12 +245,12 @@
                 <td>
                   <div class="actions-row">
                     @if (p.statut === 'BROUILLON' || !p.statut) {
-                      <button class="btn-action btn-soumettre" (click)="soumettre(p.id)">
+                      <button class="btn-action btn-soumettre" (click)="soumettre(p.id); $event.stopPropagation()">
                         🚀 Soumettre
                       </button>
                     }
                     @if (p.statut === 'SOUMIS') {
-                      <button class="btn-action btn-retirer" (click)="retirerSoumission(p.id)">
+                      <button class="btn-action btn-retirer" (click)="retirerSoumission(p.id); $event.stopPropagation()">
                         ↩ Retirer
                       </button>
                     }
@@ -301,7 +301,7 @@
                     {{ d.statut === 'EN_COURS' ? 'En cours' : 'Soutenu' }}
                   </span>
                 </div>
-                <button class="btn-remove" (click)="retirerDoctorant(d.id)">✕</button>
+                <button class="btn-remove" (click)="retirerDoctorant(d.id); $event.stopPropagation()">✕</button>
               </div>
             }
           </div>
@@ -331,7 +331,7 @@
                     {{ m.statut === 'EN_COURS' ? 'En cours' : 'Diplômé' }}
                   </span>
                 </div>
-                <button class="btn-remove" (click)="retirerMasterien(m.id)">✕</button>
+                <button class="btn-remove" (click)="retirerMasterien(m.id); $event.stopPropagation()">✕</button>
               </div>
             }
           </div>

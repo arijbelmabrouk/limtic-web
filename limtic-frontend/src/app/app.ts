@@ -2,6 +2,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
+import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
@@ -15,9 +16,10 @@ export class App implements OnInit {
   userRole       = signal('');
   showNavbar     = signal(true);
   dropdownOuvert = signal<string | null>(null);
-  menuOuvert     = signal(false); // hamburger mobile
+  menuOuvert     = signal(false);
 
-  constructor(private router: Router) {}
+  // Un seul constructeur avec ApiService
+  constructor(private router: Router, private api: ApiService) {}
 
   ngOnInit() {
     this.checkAuth();
@@ -28,10 +30,9 @@ export class App implements OnInit {
       this.showNavbar.set(!hiddenRoutes.some(r => e.url.startsWith(r)));
       this.checkAuth();
       this.dropdownOuvert.set(null);
-      this.menuOuvert.set(false); // ferme le menu mobile à chaque navigation
+      this.menuOuvert.set(false);
     });
 
-    // Ferme dropdown si clic en dehors
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.nav-dropdown') && !target.closest('.nav-toggle')) {
@@ -58,20 +59,36 @@ export class App implements OnInit {
   }
 
   checkAuth() {
-    const token = localStorage.getItem('token');
-    if (token) {
+    // Plus de token JWT — on vérifie role dans localStorage
+    // (stocké au login, supprimé au logout)
+    const role = localStorage.getItem('role');
+    if (role) {
       this.isLoggedIn.set(true);
       this.userEmail.set(localStorage.getItem('email') || '');
-      this.userRole.set(localStorage.getItem('role') || '');
+      this.userRole.set(role);
     } else {
       this.isLoggedIn.set(false);
+      this.userEmail.set('');
+      this.userRole.set('');
     }
   }
 
   logout() {
-    localStorage.clear();
-    this.isLoggedIn.set(false);
-    this.fermerTout();
-    this.router.navigate(['/home']);
+    this.api.logout().subscribe({
+      next: () => {
+        localStorage.clear();
+        this.isLoggedIn.set(false);
+        this.userEmail.set('');
+        this.userRole.set('');
+        this.router.navigate(['/home']);
+      },
+      error: () => {
+        localStorage.clear();
+        this.isLoggedIn.set(false);
+        this.userEmail.set('');
+        this.userRole.set('');
+        this.router.navigate(['/home']);
+      }
+    });
   }
 }

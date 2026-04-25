@@ -1,158 +1,144 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Chercheur, Publication, Evenement, Outil, AxeRecherche } from '../models/chercheur.model';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private base = 'http://localhost:8080/api';
+
+  // HTTPS maintenant + port 8443
+  private base = 'https://localhost:8443/api';
 
   constructor(private http: HttpClient) {}
 
-  // ── Auth headers pour HttpClient ──────────────────────────
-  private getHttpHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
-  }
+  // ── Plus de JWT dans localStorage ─────────────────────────
+  // On utilise withCredentials: true pour que le navigateur
+  // envoie automatiquement les cookies de session
+  private options = {
+    withCredentials: true  // ← clé pour envoyer les cookies
+  };
 
-  // ── Auth headers pour fetch() ─────────────────────────────
+  // authHeaders() reste pour compatibilité mais ne met plus de JWT
   authHeaders(): HeadersInit {
-    const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    };
+    // Le cookie XSRF-TOKEN est lu automatiquement par Angular
+    // via HttpClientXsrfModule — pas besoin de le gérer manuellement
+    return { 'Content-Type': 'application/json' };
   }
 
-  // ── Chercheurs ─────────────────────────────────────────────
-  getChercheurs(): Observable<Chercheur[]> {
-    return this.http.get<Chercheur[]>(`${this.base}/chercheurs`);
-  }
-  getChercheur(id: number): Observable<Chercheur> {
-    return this.http.get<Chercheur>(`${this.base}/chercheurs/${id}`);
-  }
-
-  // ── Publications ───────────────────────────────────────────
-  getPublications(): Observable<Publication[]> {
-    return this.http.get<Publication[]>(`${this.base}/publications`);
-  }
-
-  // ── Événements ─────────────────────────────────────────────
-  getEvenements(): Observable<Evenement[]> {
-    return this.http.get<Evenement[]>(`${this.base}/evenements`);
-  }
-
-  // ── Outils ─────────────────────────────────────────────────
-  getOutils(): Observable<Outil[]> {
-    return this.http.get<Outil[]>(`${this.base}/outils`);
-  }
-
-  // ── Users (protégé) ────────────────────────────────────────
-  getUsers(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.base}/users`, {
-      headers: this.getHttpHeaders()
-    });
-  }
-
-  // ── Axes de recherche (NOUVEAUX) ───────────────────────────
-
-  /** Liste tous les axes — public */
-  getAxes(): Observable<AxeRecherche[]> {
-    return this.http.get<AxeRecherche[]>(`${this.base}/axes`);
-  }
-
-  /** Un axe par id — public */
-  getAxe(id: number): Observable<AxeRecherche> {
-    return this.http.get<AxeRecherche>(`${this.base}/axes/${id}`);
-  }
-
-  /** Publications d'un axe — public */
-  getPublicationsByAxe(axeId: number): Observable<Publication[]> {
-    return this.http.get<Publication[]>(`${this.base}/axes/${axeId}/publications`);
-  }
-
-  /** Créer un axe — admin */
-  createAxe(body: { nom: string; description: string; responsableId: number | null }): Observable<AxeRecherche> {
-    return this.http.post<AxeRecherche>(`${this.base}/axes`, body, {
-      headers: this.getHttpHeaders()
-    });
-  }
-
-  /** Modifier un axe — admin */
-  updateAxe(id: number, body: any): Observable<AxeRecherche> {
-    return this.http.put<AxeRecherche>(`${this.base}/axes/${id}`, body, {
-      headers: this.getHttpHeaders()
-    });
-  }
-
-  /** Supprimer un axe — admin */
-  deleteAxe(id: number): Observable<any> {
-    return this.http.delete(`${this.base}/axes/${id}`, {
-      headers: this.getHttpHeaders()
-    });
-  }
-
-  /** Ajouter un chercheur à un axe — admin */
-  addChercheurToAxe(axeId: number, chercheurId: number): Observable<any> {
-    return this.http.post(
-      `${this.base}/axes/${axeId}/chercheurs/${chercheurId}`,
-      {},
-      { headers: this.getHttpHeaders() }
+  // ── Auth ───────────────────────────────────────────────────
+  login(email: string, motDePasse: string): Observable<any> {
+    return this.http.post(`${this.base}/auth/login`,
+      { email, motDePasse },
+      this.options  // withCredentials pour recevoir le cookie de session
     );
   }
 
-  /** Retirer un chercheur d'un axe — admin */
-  removeChercheurFromAxe(axeId: number, chercheurId: number): Observable<any> {
-    return this.http.delete(
-      `${this.base}/axes/${axeId}/chercheurs/${chercheurId}`,
-      { headers: this.getHttpHeaders() }
-    );
+  logout(): Observable<any> {
+    return this.http.post(`${this.base}/auth/logout`, {}, this.options);
+  }
+
+  me(): Observable<any> {
+    return this.http.get(`${this.base}/auth/me`, this.options);
+  }
+
+  // ── Toutes les autres méthodes ajoutent withCredentials ────
+
+  getChercheurs(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/chercheurs`, this.options);
+  }
+
+  getChercheur(id: number): Observable<any> {
+    return this.http.get<any>(`${this.base}/chercheurs/${id}`, this.options);
+  }
+
+  getPublications(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/publications`, this.options);
+  }
+
+  getEvenements(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/evenements`, this.options);
+  }
+
+  getAxes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/axes`, this.options);
   }
 
   getDoctorants(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.base}/doctorants`);
-  }
-
-  createDoctorant(body: any): Observable<any> {
-    return this.http.post(`${this.base}/doctorants`, body, {
-      headers: this.getHttpHeaders()
-    });
-  }
-
-  updateDoctorant(id: number, body: any): Observable<any> {
-    return this.http.put(`${this.base}/doctorants/${id}`, body, {
-      headers: this.getHttpHeaders()
-    });
-  }
-
-  deleteDoctorant(id: number): Observable<any> {
-    return this.http.delete(`${this.base}/doctorants/${id}`, {
-      headers: this.getHttpHeaders()
-    });
+    return this.http.get<any[]>(`${this.base}/doctorants`, this.options);
   }
 
   getMasteriens(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.base}/masteriens`);
+    return this.http.get<any[]>(`${this.base}/masteriens`, this.options);
   }
 
-  createMasterien(body: any): Observable<any> {
-    return this.http.post(`${this.base}/masteriens`, body, {
-      headers: this.getHttpHeaders()
-    });
+  getUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/users`, this.options);
   }
 
-  updateMasterien(id: number, body: any): Observable<any> {
-    return this.http.put(`${this.base}/masteriens/${id}`, body, {
-      headers: this.getHttpHeaders()
-    });
+  getOutils(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/outils`, this.options);
+  }
+
+  createAxe(data: any): Observable<any> {
+    return this.http.post(`${this.base}/axes`, data, this.options);
+  }
+
+  updateAxe(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.base}/axes/${id}`, data, this.options);
+  }
+
+  deleteAxe(id: number): Observable<any> {
+    return this.http.delete(`${this.base}/axes/${id}`, this.options);
+  }
+
+  addChercheurToAxe(axeId: number, chercheurId: number): Observable<any> {
+    return this.http.post(`${this.base}/axes/${axeId}/chercheurs/${chercheurId}`, {}, this.options);
+  }
+
+  removeChercheurFromAxe(axeId: number, chercheurId: number): Observable<any> {
+    return this.http.delete(`${this.base}/axes/${axeId}/chercheurs/${chercheurId}`, this.options);
+  }
+
+  createDoctorant(data: any): Observable<any> {
+    return this.http.post(`${this.base}/doctorants`, data, this.options);
+  }
+
+  updateDoctorant(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.base}/doctorants/${id}`, data, this.options);
+  }
+
+  deleteDoctorant(id: number): Observable<any> {
+    return this.http.delete(`${this.base}/doctorants/${id}`, this.options);
+  }
+
+  createMasterien(data: any): Observable<any> {
+    return this.http.post(`${this.base}/masteriens`, data, this.options);
+  }
+
+  updateMasterien(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.base}/masteriens/${id}`, data, this.options);
   }
 
   deleteMasterien(id: number): Observable<any> {
-    return this.http.delete(`${this.base}/masteriens/${id}`, {
-      headers: this.getHttpHeaders()
-    });
+    return this.http.delete(`${this.base}/masteriens/${id}`, this.options);
+  }
+
+  getAxe(id: number): Observable<any> {
+    return this.http.get<any>(`${this.base}/axes/${id}`, this.options);
+  }
+
+  getPublicationsByAxe(axeId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/publications?axeId=${axeId}`, this.options);
+  }
+
+  post(endpoint: string, body: any): Observable<any> {
+    return this.http.post(`${this.base}/${endpoint}`, body, this.options);
+  }
+
+  patch(endpoint: string, body: any): Observable<any> {
+    return this.http.patch(`${this.base}/${endpoint}`, body, this.options);
+  }
+
+  delete(endpoint: string): Observable<any> {
+    return this.http.delete(`${this.base}/${endpoint}`, this.options);
   }
 }

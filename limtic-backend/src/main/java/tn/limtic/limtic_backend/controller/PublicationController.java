@@ -9,7 +9,7 @@ import org.springframework.data.domain.*;
 
 @RestController
 @RequestMapping("/api/publications")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost:4200"}, allowCredentials = "true")
 public class PublicationController {
 
     private final PublicationService publicationService;
