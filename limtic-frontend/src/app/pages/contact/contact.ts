@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-contact',
@@ -8,6 +9,8 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './contact.css'
 })
 export class Contact {
+  private api = inject(ApiService);
+
   form = {
     nom: '',
     email: '',
@@ -28,24 +31,21 @@ export class Contact {
     this.erreur.set('');
     this.success.set('');
 
-    fetch('http://localhost:8080/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(this.form)
-    })
-    .then(r => r.json())
-    .then(data => {
-      this.loading.set(false);
-      if (data.message) {
-        this.success.set('✅ Votre message a bien été envoyé !');
-        this.form = { nom: '', email: '', sujet: '', message: '' };
-      } else {
-        this.erreur.set('Erreur lors de l\'envoi.');
+    this.api.post('contact', this.form).subscribe({
+      next: (data: any) => {
+        this.loading.set(false);
+        if (data.message) {
+          this.success.set('✅ Votre message a bien été envoyé !');
+          this.form = { nom: '', email: '', sujet: '', message: '' };
+        } else {
+          this.erreur.set('Erreur lors de l\'envoi.');
+        }
+      },
+      error: (err: any) => {
+        this.loading.set(false);
+        const msg = err?.error?.message || err?.statusText || 'Impossible de contacter le serveur.';
+        this.erreur.set(msg);
       }
-    })
-    .catch(() => {
-      this.loading.set(false);
-      this.erreur.set('Impossible de contacter le serveur.');
     });
   }
 }
