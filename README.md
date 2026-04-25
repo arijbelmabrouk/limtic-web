@@ -4,87 +4,105 @@ Projet fullstack développé dans le cadre du cours IDL — ISI El Manar
 Encadrant : M. Mohamed Sahbi Bahroun
 
 ## Stack technique
-- **Frontend** : Angular 19
-- **Backend** : Spring Boot 3 + Java
+- **Frontend** : Angular 19 (standalone components, signals, lazy loading)
+- **Backend** : Spring Boot 3 + Java 17
 - **Base de données** : PostgreSQL 17
-- **Authentification** : JWT (rôles : ADMIN, CHERCHEUR, VISITEUR)
+- **Authentification** : Sessions HTTP + Cookies HttpOnly
+- **Sécurité** : CSRF, Rate Limiting (Bucket4j), HTTPS/TLS
 
 ## Structure du projet
 limtic-web/
-
 ├── limtic-backend/     # API REST Spring Boot
-
-├── limtic-frontend/    # Interface Angular
-
+├── limtic-frontend/    # Interface Angular 19
 └── database/
-    └── limtic_db.sql   # Script SQL pour recréer la base
+└── limtic_backup.sql
 
 ## Lancer le projet
+
+### Prérequis
+- Java 17+, Maven, Node.js 18+, PostgreSQL 17
 
 ### 1. Base de données
 ```bash
 psql -U postgres -c "CREATE DATABASE limtic_db;"
-psql -U postgres -d limtic_db -f database/limtic_db.sql
+psql -U postgres -d limtic_db -f database/limtic_backup.sql
 ```
 
-### 2. Backend
+### 2. Backend — HTTPS port 8443
 ```bash
 cd limtic-backend
 ./mvnw spring-boot:run
 ```
-API disponible sur http://localhost:8080
+➡ API sur **https://localhost:8443**  
+⚠️ Ouvrir dans le navigateur et accepter le certificat auto-signé
 
-### 3. Frontend
+### 3. Frontend — HTTPS port 4200
 ```bash
 cd limtic-frontend
 npm install
-ng serve
+ng serve --ssl
 ```
-Application disponible sur http://localhost:4200
+➡ Application sur **https://localhost:4200**  
+⚠️ Ouvrir dans le navigateur et accepter le certificat auto-signé
+
+> Accepter les deux certificats avant de tester le login
 
 ## Comptes de test
 | Email | Mot de passe | Rôle |
 |-------|-------------|------|
-| admin@limtic.tn | (voir DB) | ADMIN |
-| ben.ali@limtic.tn | (voir DB) | CHERCHEUR |
-| trabelsi@limtic.tn | (voir DB) | CHERCHEUR |
-| jlassi@limtic.tn | (voir DB) | CHERCHEUR |
+| admin@limtic.tn | admin123 | ADMIN |
+| ben.ali@limtic.tn | pass1 | CHERCHEUR |
+| trabelsi@limtic.tn | pass1 | CHERCHEUR |
+| jlassi@limtic.tn | pass1 | CHERCHEUR |
 
-## Fonctionnalités implémentées
-### Pages publiques (Visiteur)
-- ✅ Page d'accueil avec stats et accès rapide
-- ✅ Liste des chercheurs avec détail
-- ✅ Liste des publications
-- ✅ Liste des événements
-- ✅ Liste des outils
+## Sécurité implémentée
+- ✅ HTTPS avec certificat TLS auto-signé (keystore.p12)
+- ✅ Sessions serveur + Cookies HttpOnly (protection XSS)
+- ✅ Protection CSRF avec cookie XSRF-TOKEN + intercepteur Angular custom
+- ✅ Rate limiting : 10 requêtes/minute par IP sur /api/auth/*
+- ✅ Mots de passe hashés avec BCrypt
+- ✅ Guards Angular (adminGuard, authGuard, chercheurGuard) via /api/auth/me
+- ✅ CORS restreint à localhost:4200
+
+## Fonctionnalités
+
+### Pages publiques
+- ✅ Accueil avec statistiques temps réel
+- ✅ Chercheurs avec filtres (axe, grade, statut)
+- ✅ Page personnelle chercheur avec publications et encadrements cliquables
+- ✅ Publications avec recherche, tri, filtres, export BibTeX/CSV, badges classement
+- ✅ Événements avec statut automatique à venir/passé
+- ✅ Axes de recherche avec membres et publications liées
+- ✅ Doctorants et Mastériens avec fiches détaillées
+- ✅ Page Directeur du laboratoire
+- ✅ Contact avec formulaire sécurisé
+- ✅ Réinitialisation mot de passe par email
 
 ### Espace Chercheur
-- ✅ Connexion avec redirection par rôle
-- ✅ Dashboard chercheur avec sidebar
-- ✅ Voir ses publications
-- ✅ Ajouter une publication
-- ✅ Déconnexion
+- ✅ Dashboard avec statistiques publications
+- ✅ Modification du profil (grade, spécialité, liens académiques)
+- ✅ Workflow publications : brouillon → soumis → publié
+- ✅ Gestion des encadrements (doctorants et mastériens)
 
 ### Espace Admin
-- ✅ Dashboard admin avec sidebar
-- ✅ Tableau de bord avec statistiques
-- ✅ Gestion des membres (voir, supprimer)
-- ✅ Gestion des publications (CRUD)
-- ✅ Gestion des événements (CRUD)
-- ✅ Déconnexion
+- ✅ Dashboard avec alertes publications en attente
+- ✅ CRUD : chercheurs, publications, événements, axes, doctorants, mastériens
+- ✅ Validation/rejet des publications soumises
+- ✅ Gestion des comptes utilisateurs et rôles
 
-## API REST — Endpoints disponibles
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | /api/chercheurs | Liste tous les chercheurs |
-| GET | /api/chercheurs/{id} | Détail d'un chercheur |
-| POST | /api/chercheurs | Créer un chercheur |
-| DELETE | /api/chercheurs/{id} | Supprimer un chercheur |
-| GET | /api/publications | Liste toutes les publications |
-| POST | /api/publications | Créer une publication |
-| DELETE | /api/publications/{id} | Supprimer une publication |
-| GET | /api/evenements | Liste tous les événements |
-| POST | /api/evenements | Créer un événement |
-| DELETE | /api/evenements/{id} | Supprimer un événement |
-| POST | /api/auth/login | Connexion |
-| POST | /api/auth/signup | Inscription |
+## API REST
+| Méthode | Endpoint | Auth |
+|---------|----------|------|
+| POST | /api/auth/login | Public |
+| POST | /api/auth/logout | Auth |
+| GET | /api/auth/me | Auth |
+| GET | /api/chercheurs | Public |
+| PATCH | /api/chercheurs/{id}/profil | Auth |
+| GET | /api/publications | Public |
+| GET | /api/publications/page | Public |
+| PATCH | /api/publications/{id}/statut | Auth |
+| GET | /api/evenements | Public |
+| GET | /api/axes | Public |
+| GET | /api/doctorants | Public |
+| GET | /api/masteriens | Public |
+| POST | /api/contact | Public |

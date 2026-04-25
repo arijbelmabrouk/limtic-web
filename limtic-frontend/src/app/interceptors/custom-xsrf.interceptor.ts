@@ -4,22 +4,33 @@ export const customXsrfInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
 ) => {
-  // Lit le cookie XSRF-TOKEN manuellement
-  const xsrfToken = getCookie('XSRF-TOKEN');
+  const mutationMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
-  // L'ajoute sur toutes les requêtes de mutation
-  // même cross-origin (ce qu'Angular refuse de faire nativement)
-  if (xsrfToken && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
-    const cloned = req.clone({
-      headers: req.headers.set('X-XSRF-TOKEN', xsrfToken)
-    });
-    return next(cloned);
+  if (!mutationMethods.includes(req.method)) {
+    return next(req);
   }
 
-  return next(req);
+  const xsrfToken = getCookie('XSRF-TOKEN');
+
+  if (!xsrfToken) {
+    // Pas encore de cookie — on laisse passer sans CSRF
+    return next(req);
+  }
+
+  // Clone avec X-XSRF-TOKEN ET withCredentials forcé
+  const securedReq = req.clone({
+    headers: req.headers.set('X-XSRF-TOKEN', xsrfToken),
+    withCredentials: true  // ← force l'envoi des cookies même cross-origin
+  });
+
+  return next(securedReq);
 };
 
 function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  if (typeof document === 'undefined') return null;
+  // Regex améliorée — gère les espaces avant le cookie
+  const match = document.cookie.match(
+    new RegExp('(^|;\\s*)' + name + '=([^;]*)')
+  );
   return match ? decodeURIComponent(match[2]) : null;
 }

@@ -24,6 +24,9 @@ public class Publication {
     private String journal;
     private String resume;
     private String lienUrl;
+    private String doi;
+    private String pdfUrl;
+    private String motsCles;
 
     @Column(nullable = false)
     private String statut = "BROUILLON";

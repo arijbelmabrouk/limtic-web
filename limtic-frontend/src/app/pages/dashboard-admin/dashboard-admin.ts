@@ -31,12 +31,12 @@ export class DashboardAdmin implements OnInit {
   );
 
   newAxe       = { nom: '', description: '', responsableId: null as number | null };
-  newPub       = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE' };
+  //newPub       = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE',
   newEvent     = { titre: '', type: 'Séminaire', dateEvenement: '', lieu: '', description: '' };
   newUser      = { email: '', motDePasse: '', role: 'CHERCHEUR' };
   newDoctorant = { nom: '', prenom: '', sujetThese: '', directeurId: null as number | null, dateInscription: '', statut: 'EN_COURS', mention: '', photoUrl: '' };
   newMasterien = { nom: '', prenom: '', sujetMemoire: '', encadrantId: null as number | null, promotion: '', statut: 'EN_COURS' };
-
+  newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', motsCles: ''};
   editingDoctorant = signal<any | null>(null);
   editingMasterien = signal<any | null>(null);
 
@@ -95,7 +95,7 @@ export class DashboardAdmin implements OnInit {
       next: () => {
         this.message.set('Publication ajoutée !');
         this.showForm.set('');
-        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE' };
+        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', motsCles: ''};
         this.api.getPublications().subscribe(data => this.publications.set(data));
       },
       error: err => this.handleError(err)

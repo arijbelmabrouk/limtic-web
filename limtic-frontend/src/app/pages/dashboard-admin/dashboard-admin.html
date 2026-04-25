@@ -218,6 +218,18 @@
                 <option value="VISITEUR">Visiteur</option>
               </select>
             </div>
+            <div class="field">
+              <label>DOI</label>
+              <input [(ngModel)]="newPub.doi" placeholder="10.1000/xyz123" />
+            </div>
+            <div class="field">
+              <label>Lien PDF</label>
+              <input [(ngModel)]="newPub.pdfUrl" placeholder="https://..." />
+            </div>
+            <div class="field full">
+              <label>Mots-clés</label>
+              <input [(ngModel)]="newPub.motsCles" placeholder="IA, NLP, deep learning..." />
+            </div>
           </div>
           <button class="btn-submit" (click)="creerCompte()">Créer le compte</button>
         </div>

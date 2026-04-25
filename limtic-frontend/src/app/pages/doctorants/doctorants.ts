@@ -52,4 +52,6 @@ export class Doctorants implements OnInit {
   getInitials(d: any): string {
     return `${d.prenom?.[0] || ''}${d.nom?.[0] || ''}`.toUpperCase();
   }
+
+  
 }
