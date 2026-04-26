@@ -13,13 +13,11 @@ import { Chercheur } from '../../models/chercheur.model';
 export class Chercheurs implements OnInit {
   chercheurs = signal<Chercheur[]>([]);
 
-  // Filtres
-  recherche = signal('');
-  filtreGrade = signal('');
-  filtreAxe = signal('');
-  filtreStatut = signal('');
+  recherche    = signal('');
+  filtreGrade  = signal('');
+  filtreAxe    = signal('');
+  filtreStatut = signal('');  // '' | 'ACTIF' | 'RETRAITE' | 'INVITE'
 
-  // Listes dynamiques
   grades = computed(() => {
     const g = this.chercheurs().map(c => c.grade).filter(Boolean);
     return [...new Set(g)];
@@ -32,7 +30,6 @@ export class Chercheurs implements OnInit {
     return [...new Set(a)];
   });
 
-  // Chercheurs filtrés
   chercheursFiltres = computed(() => {
     let list = this.chercheurs();
 
@@ -56,11 +53,10 @@ export class Chercheurs implements OnInit {
       );
     }
 
+    // FIXE §3.3.1 — filtre case-insensitive + valeurs normalisées
     if (this.filtreStatut()) {
       list = list.filter(c =>
-        this.filtreStatut() === 'actif'
-          ? c.statut !== 'retraité'
-          : c.statut === 'retraité'
+        (c.statut ?? '').toUpperCase() === this.filtreStatut()
       );
     }
 

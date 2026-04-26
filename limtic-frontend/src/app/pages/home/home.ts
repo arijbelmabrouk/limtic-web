@@ -13,20 +13,20 @@ import { Publication, Evenement } from '../../models/chercheur.model';
 export class HomeComponent implements OnInit {
   private api = inject(ApiService);
 
-  // Compteurs existants
-  statsLoading = signal(true);
-  statsChercheurs = signal(0);
+  statsLoading      = signal(true);
+  statsChercheurs   = signal(0);
   statsPublications = signal(0);
-  statsEvenements = signal(0);
-  statsOutils = signal(0);
+  statsEvenements   = signal(0);
+  statsOutils       = signal(0);
+  // ── NOUVEAU §3.1 ──────────────────────────────────────────────
+  statsDoctorants   = signal(0);
+  statsMasteriens   = signal(0);
 
-  // Fil d'actualités dynamique
   dernieresPublications = signal<Publication[]>([]);
-  prochainsEvenements = signal<Evenement[]>([]);
-  actualitesLoading = signal(true);
+  prochainsEvenements   = signal<Evenement[]>([]);
+  actualitesLoading     = signal(true);
 
-  // Nom du labo dynamique (§4.3.6)
-  nomLabo = signal('LIMTIC');
+  nomLabo        = signal('LIMTIC');
   descriptionLabo = signal(
     "Laboratoire d'Informatique, de Modélisation et des Technologies de l'Information et de la Communication"
   );
@@ -51,20 +51,22 @@ export class HomeComponent implements OnInit {
       error: () => this.statsEvenements.set(0)
     });
     this.api.getOutils().subscribe({
-      next: d => { this.statsOutils.set(d?.length || 0); this.statsLoading.set(false); },
-      error: () => { this.statsOutils.set(0); this.statsLoading.set(false); }
+      next: d => { this.statsOutils.set(d?.length || 0); },
+      error: () => this.statsOutils.set(0)
+    });
+    // ── NOUVEAU : doctorants et mastériens ─────────────────────
+    this.api.getDoctorants().subscribe({
+      next: d => this.statsDoctorants.set(d?.length || 0),
+      error: () => this.statsDoctorants.set(0)
+    });
+    this.api.getMasteriens().subscribe({
+      next: d => { this.statsMasteriens.set(d?.length || 0); this.statsLoading.set(false); },
+      error: () => { this.statsMasteriens.set(0); this.statsLoading.set(false); }
     });
   }
 
-  /**
-   * Charge le fil d'actualités dynamique :
-   * - 5 dernières publications publiées (triées par année desc)
-   * - 3 prochains événements (triés par date asc)
-   */
   private chargerActualites(): void {
     this.actualitesLoading.set(true);
-
-    // Dernières publications publiées
     this.api.getPublications().subscribe({
       next: (pubs: Publication[]) => {
         const publiees = pubs
@@ -75,8 +77,6 @@ export class HomeComponent implements OnInit {
       },
       error: () => this.dernieresPublications.set([])
     });
-
-    // Prochains événements (date >= aujourd'hui)
     this.api.getEvenements().subscribe({
       next: (evts: Evenement[]) => {
         const now = new Date();
@@ -93,20 +93,18 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  /** Charge le nom/description du labo depuis les paramètres système (§4.3.6) */
   private chargerParametres(): void {
     this.api.getParametresPublics().subscribe({
       next: (params: any[]) => {
-        const nom = params.find(p => p.cle === 'labo.nom');
+        const nom  = params.find(p => p.cle === 'labo.nom');
         const desc = params.find(p => p.cle === 'labo.description');
-        if (nom?.valeur) this.nomLabo.set(nom.valeur);
+        if (nom?.valeur)  this.nomLabo.set(nom.valeur);
         if (desc?.valeur) this.descriptionLabo.set(desc.valeur);
       },
-      error: () => {} // Silencieux — on garde les valeurs par défaut
+      error: () => {}
     });
   }
 
-  /** Badge de classement affiché dans les cards de publications */
   getBadgeClassement(pub: Publication): { label: string; classe: string } | null {
     if (pub.scimagoQuartile) {
       const classes: Record<string, string> = {

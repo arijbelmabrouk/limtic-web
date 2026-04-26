@@ -242,4 +242,23 @@ export class ApiService {
   delete(endpoint: string): Observable<any> {
     return this.http.delete(`${this.base}/${endpoint}`, this.options);
   }
+
+  // ══════════════════════════════════════════════════════════════════
+// AJOUTS à faire dans api.service.ts
+// ══════════════════════════════════════════════════════════════════
+
+// 1. Ajouter getDoctorant(id) — pour charger un doctorant par ID
+getDoctorant(id: number): Observable<any> {
+  return this.http.get<any>(`${this.base}/doctorants/${id}`, this.options);
+}
+
+// 2. Ajouter getChercheursByStatut — pour filtre actif/retraité
+getChercheursByStatut(statut: string): Observable<any[]> {
+  return this.http.get<any[]>(`${this.base}/chercheurs?statut=${statut}`, this.options);
+}
+
+// 3. Ajouter exportPublicationsCsv — export côté backend (optionnel)
+exportPublicationsCsv(): void {
+  window.open(`${this.base}/publications/export-csv`, '_blank');
+}
 }
