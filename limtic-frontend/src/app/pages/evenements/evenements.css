@@ -20,24 +20,30 @@
   gap: 2rem;
   align-items: center;
   transition: all 0.3s;
+  position: relative;
 }
 .event-card:hover {
   border-color: rgba(0,210,255,0.2);
   transform: translateX(4px);
 }
+
+/* ── Date box : toujours en colonne, jamais en ligne ── */
 .event-date {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   background: rgba(0,210,255,0.08);
   border: 1px solid rgba(0,210,255,0.15);
   border-radius: 12px;
   padding: 1rem 1.5rem;
   min-width: 80px;
+  flex-shrink: 0;
 }
 .day { font-size: 2rem; font-weight: 900; color: #00d2ff; line-height: 1; }
 .month { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
 .year { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
+
 .event-body { flex: 1; }
 .event-type {
   font-size: 0.75rem;
@@ -177,7 +183,6 @@
 }
 .btn-reset:hover { background: rgba(248,113,113,0.2); }
 
-/* Statut badge sur la card */
 .statut-badge {
   position: absolute;
   top: 1rem;
@@ -200,18 +205,8 @@
   border: 1px solid rgba(156,163,175,0.2);
 }
 
-/* Card passée légèrement atténuée */
-.event-card {
-  position: relative;
-}
-
-.event-card.event-passe {
-  opacity: 0.65;
-}
-
-.event-card.event-passe:hover {
-  opacity: 1;
-}
+.event-card.event-passe { opacity: 0.65; }
+.event-card.event-passe:hover { opacity: 1; }
 
 .empty-state {
   text-align: center;
@@ -223,7 +218,7 @@
 .empty-state p { margin-bottom: 1.5rem; }
 
 /* ══════════════════════════════════════════════════════════
-   RESPONSIVE — ÉVÉNEMENTS
+   RESPONSIVE
    ══════════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
@@ -248,28 +243,38 @@
   .btn-group { width: 100%; }
   .btn-group button { flex: 1; }
 
-  /* Carte événement — stack vertical */
+  /* Carte — aligne date + contenu horizontalement, date reste en colonne */
   .event-card {
-    flex-direction: column;
+    flex-direction: row;
     gap: 1rem;
     padding: 1.25rem;
     align-items: flex-start;
   }
 
+  /* Date box : colonne conservée, taille réduite */
   .event-date {
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    min-width: auto;
-    width: 100%;
     justify-content: center;
+    padding: 0.75rem 1rem;
+    min-width: 64px;
+    width: 64px;
   }
 
   .day { font-size: 1.5rem; }
+  .month { font-size: 0.72rem; }
+  .year { font-size: 0.68rem; }
 }
 
 @media (max-width: 480px) {
   .page { padding: 1rem; }
   .page-header h1 { font-size: 1.5rem; }
+
+  .event-date {
+    min-width: 58px;
+    width: 58px;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .day { font-size: 1.3rem; }
 }
