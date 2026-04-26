@@ -48,3 +48,4 @@ dist/
 .angular/
 *.env
 *.p12
+..bfg-report/
