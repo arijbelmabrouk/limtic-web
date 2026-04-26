@@ -8,31 +8,31 @@
     </div>
     <nav class="sidebar-nav">
       <button [class.active]="activeTab() === 'dashboard'" (click)="setTab('dashboard')">
-        📊 Tableau de bord
+        Tableau de bord
       </button>
       <button [class.active]="activeTab() === 'membres'" (click)="setTab('membres')">
-        👨‍🔬 Membres
+        Membres
       </button>
       <button [class.active]="activeTab() === 'comptes'" (click)="setTab('comptes')">
-        👤 Comptes
+        Comptes
       </button>
       <button [class.active]="activeTab() === 'publications'" (click)="setTab('publications')">
-        📄 Publications
+        Publications
         @if (publicationsEnAttente().length > 0) {
           <span class="nav-badge">{{ publicationsEnAttente().length }}</span>
         }
       </button>
       <button [class.active]="activeTab() === 'evenements'" (click)="setTab('evenements')">
-        📅 Événements
+        Événements
       </button>
       <button [class.active]="activeTab() === 'axes'" (click)="setTab('axes')">
-        🔬 Axes
+        Axes
       </button>
       <button [class.active]="activeTab() === 'doctorants'" (click)="setTab('doctorants')">
-        🎓 Doctorants
+        Doctorants
       </button>
       <button [class.active]="activeTab() === 'masteriens'" (click)="setTab('masteriens')">
-        📚 Mastériens
+        Mastériens
       </button>
       <button class="btn-logout-mobile" (click)="logout()">⏻ Quitter</button>
     </nav>
@@ -71,13 +71,11 @@
 
       <div class="stats-grid">
         <div class="stat-card" (click)="setTab('membres')">
-          <div class="stat-icon">👨‍🔬</div>
           <div class="stat-num">{{ stats().chercheurs }}</div>
           <div class="stat-label">Chercheurs</div>
           <div class="stat-action">Gérer →</div>
         </div>
         <div class="stat-card" (click)="setTab('publications')">
-          <div class="stat-icon">📄</div>
           <div class="stat-num">{{ stats().publications }}</div>
           <div class="stat-label">Publications</div>
           @if (publicationsEnAttente().length > 0) {
@@ -87,31 +85,26 @@
           }
         </div>
         <div class="stat-card" (click)="setTab('evenements')">
-          <div class="stat-icon">📅</div>
           <div class="stat-num">{{ stats().evenements }}</div>
           <div class="stat-label">Événements</div>
           <div class="stat-action">Gérer →</div>
         </div>
         <div class="stat-card" (click)="setTab('axes')">
-          <div class="stat-icon">🔬</div>
           <div class="stat-num">{{ stats().axes }}</div>
           <div class="stat-label">Axes</div>
           <div class="stat-action">Gérer →</div>
         </div>
         <div class="stat-card" (click)="setTab('comptes')">
-          <div class="stat-icon">👤</div>
           <div class="stat-num">{{ users().length }}</div>
           <div class="stat-label">Comptes</div>
           <div class="stat-action">Gérer →</div>
         </div>
         <div class="stat-card" (click)="setTab('doctorants')">
-          <div class="stat-icon">🎓</div>
           <div class="stat-num">{{ stats().doctorants }}</div>
           <div class="stat-label">Doctorants</div>
           <div class="stat-action">Gérer →</div>
         </div>
         <div class="stat-card" (click)="setTab('masteriens')">
-          <div class="stat-icon">📚</div>
           <div class="stat-num">{{ stats().masteriens }}</div>
           <div class="stat-label">Mastériens</div>
           <div class="stat-action">Gérer →</div>

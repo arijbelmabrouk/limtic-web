@@ -14,22 +14,22 @@
     <nav class="sidebar-nav">
       <button [class.active]="activeTab() === 'profil'"
               (click)="activeTab.set('profil')">
-        👤 Mon Profil
+        Mon Profil
       </button>
       <button [class.active]="activeTab() === 'publications'"
               (click)="activeTab.set('publications')">
-        📄 Mes Publications
+        Mes Publications
         @if (pubSoumises() > 0) {
           <span class="nav-badge-orange">{{ pubSoumises() }}</span>
         }
       </button>
       <button [class.active]="activeTab() === 'ajouter'"
               (click)="activeTab.set('ajouter')">
-        ➕ Ajouter publication
+        Ajouter publication
       </button>
       <button [class.active]="activeTab() === 'encadrements'"
               (click)="activeTab.set('encadrements')">
-        🎓 Mes encadrements
+        Mes encadrements
       </button>
       <button class="btn-logout-mobile" (click)="logout()">⏻ Quitter</button>
     </nav>
@@ -114,23 +114,23 @@
         <h2 style="margin-top: 1.5rem; margin-bottom: 1rem">Liens externes</h2>
         <div class="form-grid">
           <div class="field">
-            <label>🎓 Google Scholar</label>
+            <label>Google Scholar</label>
             <input [(ngModel)]="editProfil.googleScholar" placeholder="https://scholar.google.com/..." />
           </div>
           <div class="field">
-            <label>🔬 ResearchGate</label>
+            <label>ResearchGate</label>
             <input [(ngModel)]="editProfil.researchGate" placeholder="https://www.researchgate.net/..." />
           </div>
           <div class="field">
-            <label>🆔 ORCID</label>
+            <label>ORCID</label>
             <input [(ngModel)]="editProfil.orcid" placeholder="https://orcid.org/..." />
           </div>
           <div class="field">
-            <label>💼 LinkedIn</label>
+            <label>LinkedIn</label>
             <input [(ngModel)]="editProfil.linkedin" placeholder="https://linkedin.com/in/..." />
           </div>
         </div>
-        <button class="btn-submit" (click)="sauvegarderProfil()">💾 Sauvegarder le profil</button>
+        <button class="btn-submit" (click)="sauvegarderProfil()">Sauvegarder le profil</button>
       </div>
     }
 
@@ -171,20 +171,20 @@
             <button class="btn-choix"
                     [class.selected]="newPub.statut === 'BROUILLON'"
                     (click)="newPub.statut = 'BROUILLON'">
-              📝 Enregistrer en brouillon
+              Enregistrer en brouillon
               <span>Vous pourrez soumettre plus tard</span>
             </button>
             <button class="btn-choix btn-choix-submit"
                     [class.selected]="newPub.statut === 'SOUMIS'"
                     (click)="newPub.statut = 'SOUMIS'">
-              🚀 Soumettre à validation
+              Soumettre à validation
               <span>L'admin devra valider</span>
             </button>
           </div>
         </div>
 
         <button class="btn-submit" (click)="ajouterPublication()">
-          {{ newPub.statut === 'SOUMIS' ? '🚀 Soumettre' : '💾 Enregistrer' }}
+          {{ newPub.statut === 'SOUMIS' ? 'Soumettre' : 'Enregistrer' }}
         </button>
       </div>
     }
@@ -198,17 +198,17 @@
 
       <div class="workflow-info">
         <div class="workflow-step">
-          <span class="wf-badge statut-brouillon">📝 Brouillon</span>
+          <span class="wf-badge statut-brouillon">Brouillon</span>
           <span class="wf-arrow">→</span>
           <span class="wf-desc">Soumettez pour validation</span>
         </div>
         <div class="workflow-step">
-          <span class="wf-badge statut-soumis">⏳ Soumis</span>
+          <span class="wf-badge statut-soumis">Soumis</span>
           <span class="wf-arrow">→</span>
           <span class="wf-desc">En attente de l'admin</span>
         </div>
         <div class="workflow-step">
-          <span class="wf-badge statut-publie">✅ Publié</span>
+          <span class="wf-badge statut-publie">Publié</span>
           <span class="wf-arrow">→</span>
           <span class="wf-desc">Visible publiquement</span>
         </div>
@@ -255,7 +255,7 @@
                       </button>
                     }
                     @if (p.statut === 'PUBLIE') {
-                      <span class="pub-ok">✅ Publié</span>
+                      <span class="pub-ok">Publié</span>
                     }
                   </div>
                 </td>

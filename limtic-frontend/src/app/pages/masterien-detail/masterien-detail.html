@@ -17,7 +17,7 @@
             <h1>{{ mst.prenom }} {{ mst.nom }}</h1>
             <div class="masterien-meta">
               <span class="statut-badge" [class]="mst.statut === 'TERMINE' ? 'soutenu-badge' : 'en-cours'">
-                {{ mst.statut === 'TERMINE' ? '✅ Mémoire soutenu' : '📚 En cours' }}
+                {{ mst.statut === 'TERMINE' ? 'Mémoire soutenu' : 'En cours' }}
               </span>
               @if (mst.promotion) {
                 <span class="promo-badge">Promotion {{ mst.promotion }}</span>

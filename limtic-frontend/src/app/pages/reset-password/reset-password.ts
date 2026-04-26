@@ -37,7 +37,7 @@ export class ResetPassword implements OnInit {
     this.loading.set(true);
     this.erreur.set('');
 
-    fetch('http://localhost:8080/api/auth/reset-password', {
+    fetch('https://localhost:8443/api/auth/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: this.token, motDePasse: this.motDePasse })

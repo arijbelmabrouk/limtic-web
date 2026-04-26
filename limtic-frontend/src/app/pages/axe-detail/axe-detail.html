@@ -39,7 +39,7 @@
       <!-- Chercheurs associés -->
       @if (chercheurs().length > 0) {
         <div class="axe-chercheurs">
-          <h3>👥 Chercheurs associés ({{ chercheurs().length }})</h3>
+          <h3>Chercheurs associés ({{ chercheurs().length }})</h3>
           <div class="chercheurs-grid">
             @for (chercheur of chercheurs(); track chercheur.id) {
               <div class="chercheur-card" (click)="navigateToChercheur(chercheur.id)">
@@ -67,7 +67,7 @@
       <!-- Publications -->
       @if (publications().length > 0) {
         <div class="axe-publications">
-          <h3>📄 Publications ({{ publications().length }})</h3>
+          <h3>Publications ({{ publications().length }})</h3>
           <div class="publications-list">
             @for (pub of publications(); track pub.id) {
               <div class="publication-item" (click)="navigateToPublication(pub.id)">
@@ -98,7 +98,7 @@
       <!-- Doctorants -->
       @if (doctorants().length > 0) {
         <div class="axe-doctorants">
-          <h3>🔬 Doctorants ({{ doctorants().length }})</h3>
+          <h3>Doctorants ({{ doctorants().length }})</h3>
           <div class="doctorants-list">
             @for (doctorant of doctorants(); track doctorant.id) {
               <div class="doctorant-item" (click)="navigateToDoctorant(doctorant.id)">
@@ -129,7 +129,7 @@
       <!-- Masteriens -->
       @if (masteriens().length > 0) {
         <div class="axe-masteriens">
-          <h3>📚 Masteriens ({{ masteriens().length }})</h3>
+          <h3>Masteriens ({{ masteriens().length }})</h3>
           <div class="masteriens-list">
             @for (masterien of masteriens(); track masterien.id) {
               <div class="masterien-item" (click)="navigateToMasterien(masterien.id)">

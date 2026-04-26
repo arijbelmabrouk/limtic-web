@@ -22,7 +22,7 @@ export class ForgotPassword {
     this.erreur.set('');
     this.message.set('');
 
-    fetch('http://localhost:8080/api/auth/forgot-password', {
+    fetch('https://localhost:8443/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: this.email })

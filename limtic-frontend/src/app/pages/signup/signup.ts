@@ -26,7 +26,7 @@ export class Signup {
     this.loading.set(true);
     this.erreur.set('');
 
-    fetch('http://localhost:8080/api/auth/signup', {
+    fetch('https://localhost:8443/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: this.email, motDePasse: this.motDePasse })
