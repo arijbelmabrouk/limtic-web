@@ -32,6 +32,7 @@ psql -U postgres -d limtic_db -f database/limtic_backup.sql
 ```bash
 cd limtic-backend
 ./mvnw spring-boot:run
+powershell.exe -ExecutionPolicy Bypass -File start.ps1
 ```
 ➡ API sur **https://localhost:8443**  
 ⚠️ Ouvrir dans le navigateur et accepter le certificat auto-signé
@@ -106,3 +107,4 @@ ng serve --ssl
 | GET | /api/doctorants | Public |
 | GET | /api/masteriens | Public |
 | POST | /api/contact | Public |
+

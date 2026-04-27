@@ -333,6 +333,43 @@
               <label>Résumé</label>
               <textarea [(ngModel)]="newPub.resume" rows="3" placeholder="Résumé de la publication..."></textarea>
             </div>
+
+            <!-- §3.7.2 CDC — DOI -->
+            <div class="field">
+              <label>DOI</label>
+              <input [(ngModel)]="newPub.doi" placeholder="ex. 10.1000/xyz123" />
+            </div>
+
+            <!-- §3.7.2 CDC — URL externe -->
+            <div class="field">
+              <label>URL externe</label>
+              <input [(ngModel)]="newPub.lienUrl" placeholder="https://..." />
+            </div>
+
+            <!-- §3.7.2 CDC — Upload PDF -->
+            <div class="field full">
+              <label>Fichier PDF</label>
+              <div class="pdf-upload-zone">
+                <input type="file" accept="application/pdf" id="pdfInput"
+                       class="pdf-file-input" (change)="onPdfFileSelected($event)" />
+                <label for="pdfInput" class="pdf-upload-label">
+                  @if (newPubPdfFile) {
+                    <span class="pdf-selected">📄 {{ newPubPdfFile.name }}</span>
+                  } @else {
+                    <span class="pdf-placeholder">📎 Cliquez pour choisir un PDF</span>
+                  }
+                </label>
+                @if (newPubPdfFile) {
+                  <button class="pdf-clear" (click)="newPubPdfFile = null">✕</button>
+                }
+              </div>
+              <span class="field-hint">Le fichier sera uploadé après la création de la publication.</span>
+            </div>
+
+            <div class="field full">
+              <label>Mots-clés</label>
+              <input [(ngModel)]="newPub.motsCles" placeholder="IA, NLP, deep learning..." />
+            </div>
           </div>
           <button class="btn-submit" (click)="ajouterPublication()">Enregistrer la publication</button>
         </div>

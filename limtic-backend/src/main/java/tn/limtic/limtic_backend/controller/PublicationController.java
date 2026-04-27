@@ -1,14 +1,41 @@
 package tn.limtic.limtic_backend.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.servlet.http.HttpServletRequest;
 import tn.limtic.limtic_backend.model.Publication;
 import tn.limtic.limtic_backend.service.AuditService;
 import tn.limtic.limtic_backend.service.PublicationService;
-import java.util.List;
-import java.util.Map;
-import org.springframework.data.domain.*;
 
 @RestController
 @RequestMapping("/api/publications")
@@ -17,6 +44,9 @@ public class PublicationController {
 
     private final PublicationService publicationService;
     private final AuditService auditService;
+
+    private final String uploadDir =
+        Paths.get(System.getProperty("user.dir"), "uploads", "publications").toAbsolutePath().normalize().toString();
 
     public PublicationController(PublicationService publicationService,
                                   AuditService auditService) {
@@ -97,5 +127,65 @@ public class PublicationController {
         Sort.Direction direction = dir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort));
         return publicationService.getPaged(pageable);
+    }
+
+    @PostMapping("/{id}/upload-pdf")
+    public ResponseEntity<?> uploadPdf(@PathVariable Long id,
+                                        @RequestParam("file") MultipartFile file,
+                                        HttpServletRequest request) {
+        if (file.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of("error", "Fichier vide"));
+
+        String ct = file.getContentType();
+        if (ct == null || !ct.equals("application/pdf"))
+            return ResponseEntity.badRequest().body(Map.of("error", "Seuls les fichiers PDF sont acceptés"));
+
+        Publication pub = publicationService.getById(id);
+        if (pub == null) return ResponseEntity.notFound().build();
+
+        try {
+            Path dir = Paths.get(uploadDir);
+            Files.createDirectories(dir);
+            String fileName = "pub_" + id + "_" + UUID.randomUUID() + ".pdf";
+            Path dest = dir.resolve(fileName);
+            Files.copy(file.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
+
+            // Pointer vers l'endpoint de serving direct (plus fiable que /uploads/**)
+            pub.setPdfUrl("/api/publications/pdf/" + fileName);
+            publicationService.save(pub);
+
+            auditService.log(request, "UPLOAD_PDF", "Publication", id,
+                "PDF uploadé : " + fileName, true);
+
+            return ResponseEntity.ok(Map.of("pdfUrl", pub.getPdfUrl()));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Erreur lors de l'upload : " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/pdf/{filename:.+}")
+    public ResponseEntity<Resource> servePdf(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=\"" + filename + "\"")
+                    // ↓ Allow framing from your Angular dev server
+                    .header("X-Frame-Options", "ALLOW-FROM https://localhost:4200")
+                    .header("Content-Security-Policy",
+                            "frame-ancestors 'self' https://localhost:4200 http://localhost:4200")
+                    .body(resource);
+
+        } catch (MalformedURLException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
