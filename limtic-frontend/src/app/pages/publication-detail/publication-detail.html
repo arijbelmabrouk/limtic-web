@@ -58,30 +58,37 @@
         </div>
       }
 
-      <!-- Lecteur PDF inline §3.7.2 -->
-      @if (pub.pdfUrl) {
+      @if (publication()?.pdfUrl) {
         <div class="publication-pdf-viewer">
           <div class="pdf-viewer-header">
             <h3>📄 Document PDF</h3>
-            <a [href]="'https://localhost:8443' + pub.pdfUrl" 
+            <a [href]="'https://localhost:8443' + publication()!.pdfUrl!"
               target="_blank" rel="noopener" class="btn-pdf-download">
               ⬇ Télécharger
             </a>
           </div>
-          <iframe
-            [src]="('https://localhost:8443' + pub.pdfUrl) | safe"
-            class="pdf-iframe"
-            type="application/pdf"
-            title="PDF de la publication">
-            <p>Votre navigateur ne supporte pas l'affichage PDF.
-              <a [href]="'https://localhost:8443' + pub.pdfUrl" target="_blank">
-                Téléchargez le fichier ici.
+
+          @if (pdfLoading()) {
+            <div class="pdf-loading">Chargement du PDF...</div>
+          } @else if (pdfError()) {
+            <div class="pdf-error">
+              Impossible de charger le PDF.
+              <a [href]="'https://localhost:8443' + publication()!.pdfUrl!" target="_blank">
+                Ouvrir dans un nouvel onglet
               </a>
-            </p>
-          </iframe>
+            </div>
+          } @else if (pdfBlobUrl()) {
+            <object
+              [attr.data]="pdfBlobUrl()! | safe"
+              type="application/pdf"
+              class="pdf-iframe">
+              <p>Votre navigateur ne supporte pas l'affichage PDF inline.
+                <a [href]="pdfBlobUrl()!" target="_blank">Téléchargez le fichier ici.</a>
+              </p>
+            </object>
+          }
         </div>
       }
-
       <!-- Détails -->
       <div class="publication-details">
         <h3>Détails de publication</h3>
@@ -127,8 +134,8 @@
           @if (pub.pdfUrl) {
             <div class="detail-item">
               <label>Fichier PDF</label>
-              <a class="btn-pdf-download" 
-                [href]="'https://localhost:8443' + pub.pdfUrl" 
+              <a class="btn-pdf-download"
+                [href]="'https://localhost:8443' + pub.pdfUrl"
                 target="_blank" rel="noopener">
                 📄 Télécharger le PDF
               </a>

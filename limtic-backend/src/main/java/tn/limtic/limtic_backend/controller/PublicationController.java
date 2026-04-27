@@ -178,6 +178,10 @@ public class PublicationController {
                     .contentType(MediaType.APPLICATION_PDF)
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" + filename + "\"")
+                    // ↓ Allow framing from your Angular dev server
+                    .header("X-Frame-Options", "ALLOW-FROM https://localhost:4200")
+                    .header("Content-Security-Policy",
+                            "frame-ancestors 'self' https://localhost:4200 http://localhost:4200")
                     .body(resource);
 
         } catch (MalformedURLException e) {

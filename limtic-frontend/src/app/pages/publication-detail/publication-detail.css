@@ -359,6 +359,7 @@
 /* ── Inline PDF Viewer §3.7.2 ───────────────────────────────── */
 .publication-pdf-viewer {
   margin-top: 2rem;
+  margin-bottom:2rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
