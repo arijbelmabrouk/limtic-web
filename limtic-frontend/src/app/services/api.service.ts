@@ -76,7 +76,9 @@ export class ApiService {
     return this.http.delete(`${this.base}/publications/${id}`, this.options);
   }
 
-  /** §3.7.2 CDC — Upload PDF pour une publication */
+  getUploadUrl(relativePath: string): string {
+  return `https://localhost:8443${relativePath}`;
+  }
   uploadPdfPublication(publicationId: number, file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);

@@ -8,22 +8,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Sert les fichiers uploadés (photos, PDFs…) comme ressources statiques.
- * URL d'accès : /uploads/publications/xxx.pdf, /uploads/evenements/xxx.jpg, etc.
- */
 @Configuration
-public class WebmvcConfig implements WebMvcConfigurer {
+public class WebMvcConfig implements WebMvcConfigurer {
 
     @Value("${app.upload.dir:uploads/}")
     private String uploadDir;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Anchored to the JVM working directory so it matches where the controller writes files
-        Path uploadPath = Paths.get(System.getProperty("user.dir"), uploadDir)
-                               .toAbsolutePath()
-                               .normalize();
+        // Resolve to absolute path so it works regardless of working directory
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
 
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadPath + "/");
