@@ -36,7 +36,8 @@ export class DashboardAdmin implements OnInit {
   newUser      = { email: '', motDePasse: '', role: 'CHERCHEUR' };
   newDoctorant = { nom: '', prenom: '', sujetThese: '', directeurId: null as number | null, dateInscription: '', statut: 'EN_COURS', mention: '', photoUrl: '' };
   newMasterien = { nom: '', prenom: '', sujetMemoire: '', encadrantId: null as number | null, promotion: '', statut: 'EN_COURS' };
-  newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', motsCles: ''};
+  newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: ''};
+  newPubPdfFile: File | null = null;   // fichier PDF sélectionné avant création
   editingDoctorant = signal<any | null>(null);
   editingMasterien = signal<any | null>(null);
 
@@ -92,14 +93,28 @@ export class DashboardAdmin implements OnInit {
   // ── Publications ──────────────────────────────────────────
   ajouterPublication() {
     this.api.post('publications', this.newPub).subscribe({
-      next: () => {
+      next: (pub: any) => {
+        // Si un PDF a été sélectionné, l'uploader maintenant qu'on a l'ID
+        if (this.newPubPdfFile) {
+          this.api.uploadPdfPublication(pub.id, this.newPubPdfFile).subscribe({
+            next: () => this.api.getPublications().subscribe(data => this.publications.set(data)),
+            error: () => this.api.getPublications().subscribe(data => this.publications.set(data))
+          });
+        } else {
+          this.api.getPublications().subscribe(data => this.publications.set(data));
+        }
         this.message.set('Publication ajoutée !');
         this.showForm.set('');
-        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', motsCles: ''};
-        this.api.getPublications().subscribe(data => this.publications.set(data));
+        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: ''};
+        this.newPubPdfFile = null;
       },
       error: err => this.handleError(err)
     });
+  }
+
+  onPdfFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) this.newPubPdfFile = input.files[0];
   }
 
   validerPublication(id: number) {

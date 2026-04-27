@@ -38,8 +38,10 @@ export class DashboardChercheur implements OnInit {
     titre: '', type: 'Journal',
     annee: new Date().getFullYear(),
     journal: '', resume: '',
+    doi: '', lienUrl: '',
     statut: 'BROUILLON'
   };
+  newPubPdfFile: File | null = null;
 
   pubBrouillons = computed(() => this.publications().filter(p => p.statut === 'BROUILLON' || !p.statut).length);
   pubSoumises   = computed(() => this.publications().filter(p => p.statut === 'SOUMIS').length);
@@ -168,18 +170,32 @@ export class DashboardChercheur implements OnInit {
       return;
     }
     this.api.post('publications', this.newPub).subscribe({
-      next: () => {
+      next: (pub: any) => {
+        // §3.7.2 CDC — uploader le PDF si sélectionné
+        if (this.newPubPdfFile) {
+          this.api.uploadPdfPublication(pub.id, this.newPubPdfFile).subscribe({
+            next: () => this.loadProfil(),
+            error: () => this.loadProfil()
+          });
+        } else {
+          this.loadProfil();
+        }
         this.message.set(
           this.newPub.statut === 'SOUMIS'
             ? 'Publication soumise à validation !'
             : 'Publication enregistrée en brouillon !'
         );
         this.activeTab.set('publications');
-        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'BROUILLON' };
-        this.loadProfil();
+        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', doi: '', lienUrl: '', statut: 'BROUILLON' };
+        this.newPubPdfFile = null;
       },
       error: err => this.handleError(err)
     });
+  }
+
+  onPdfFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) this.newPubPdfFile = input.files[0];
   }
 
   soumettre(id: number) {

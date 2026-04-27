@@ -58,6 +58,27 @@
         </div>
       }
 
+      <!-- Lecteur PDF inline §3.7.2 -->
+      @if (pub.pdfUrl) {
+        <div class="publication-pdf-viewer">
+          <div class="pdf-viewer-header">
+            <h3>📄 Document PDF</h3>
+            <a class="btn-pdf-download" [href]="pub.pdfUrl" target="_blank" rel="noopener">
+              ⬇ Télécharger
+            </a>
+          </div>
+          <iframe
+            [src]="pub.pdfUrl | safe"
+            class="pdf-iframe"
+            type="application/pdf"
+            title="PDF de la publication">
+            <p>Votre navigateur ne supporte pas l'affichage PDF.
+              <a [href]="pub.pdfUrl" target="_blank">Téléchargez le fichier ici.</a>
+            </p>
+          </iframe>
+        </div>
+      }
+
       <!-- Détails -->
       <div class="publication-details">
         <h3>Détails de publication</h3>
@@ -98,6 +119,14 @@
             <div class="detail-item">
               <label>Lien externe</label>
               <a [href]="pub.lienUrl" target="_blank" rel="noopener">Accéder à la publication →</a>
+            </div>
+          }
+          @if (pub.pdfUrl) {
+            <div class="detail-item">
+              <label>Fichier PDF</label>
+              <a class="btn-pdf-download" [href]="pub.pdfUrl" target="_blank" rel="noopener">
+                📄 Télécharger le PDF
+              </a>
             </div>
           }
         </div>

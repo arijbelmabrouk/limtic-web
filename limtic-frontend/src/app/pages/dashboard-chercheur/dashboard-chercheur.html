@@ -163,6 +163,38 @@
             <label>Résumé</label>
             <textarea [(ngModel)]="newPub.resume" placeholder="Résumé de la publication..." rows="3"></textarea>
           </div>
+
+          <!-- §3.7.2 CDC — DOI -->
+          <div class="field">
+            <label>DOI</label>
+            <input [(ngModel)]="newPub.doi" placeholder="ex. 10.1000/xyz123" />
+          </div>
+
+          <!-- §3.7.2 CDC — URL externe -->
+          <div class="field">
+            <label>URL externe</label>
+            <input [(ngModel)]="newPub.lienUrl" placeholder="https://..." />
+          </div>
+
+          <!-- §3.7.2 CDC — Upload PDF -->
+          <div class="field full">
+            <label>Fichier PDF</label>
+            <div class="pdf-upload-zone">
+              <input type="file" accept="application/pdf" id="pdfInputChercheur"
+                     class="pdf-file-input" (change)="onPdfFileSelected($event)" />
+              <label for="pdfInputChercheur" class="pdf-upload-label">
+                @if (newPubPdfFile) {
+                  <span class="pdf-selected">📄 {{ newPubPdfFile.name }}</span>
+                } @else {
+                  <span class="pdf-placeholder">📎 Cliquez pour choisir un PDF</span>
+                }
+              </label>
+              @if (newPubPdfFile) {
+                <button class="pdf-clear" (click)="newPubPdfFile = null">✕</button>
+              }
+            </div>
+            <span class="field-hint">Le fichier sera uploadé après enregistrement.</span>
+          </div>
         </div>
 
         <div class="statut-choix">

@@ -3,10 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { Publication } from '../../models/chercheur.model';
+import { SafePipe } from '../../pipes/Safepipe';
 
 @Component({
   selector: 'app-publication-detail',
-  imports: [CommonModule],
+  imports: [CommonModule, SafePipe],
   templateUrl: './publication-detail.html',
   styleUrl: './publication-detail.css'
 })

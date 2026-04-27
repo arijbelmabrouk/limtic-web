@@ -76,6 +76,17 @@ export class ApiService {
     return this.http.delete(`${this.base}/publications/${id}`, this.options);
   }
 
+  /** §3.7.2 CDC — Upload PDF pour une publication */
+  uploadPdfPublication(publicationId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(
+      `${this.base}/publications/${publicationId}/upload-pdf`,
+      formData,
+      { withCredentials: true }
+    );
+  }
+
   // ── Événements ────────────────────────────────────────────────────────────
   getEvenements(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/evenements`, this.options);
