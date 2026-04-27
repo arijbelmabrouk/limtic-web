@@ -31,7 +31,9 @@ body {
   flex-shrink: 0;
   text-decoration: none;
 }
-.nav-logo  { font-size: 1.8rem; color: #00d2ff; }
+.nav-logo  { font-size: 1.4rem; color: #00d2ff; }
+.nav-isi-logo { height: 40px; width: auto; object-fit: contain; }
+.nav-limtic-logo { height: 23px; width: auto; object-fit: contain; }
 .nav-title { font-size: 1.4rem; font-weight: 700; color: white; letter-spacing: 3px; }
 
 /* Hamburger — caché sur desktop */
