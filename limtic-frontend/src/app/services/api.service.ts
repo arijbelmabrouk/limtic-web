@@ -79,6 +79,13 @@ export class ApiService {
   getUploadUrl(relativePath: string): string {
   return `https://localhost:8443${relativePath}`;
   }
+  
+  getPdfBlob(relativePath: string): Observable<Blob> {
+  return this.http.get(`https://localhost:8443${relativePath}`, {
+    responseType: 'blob',
+    withCredentials: true
+  });
+}
   uploadPdfPublication(publicationId: number, file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);

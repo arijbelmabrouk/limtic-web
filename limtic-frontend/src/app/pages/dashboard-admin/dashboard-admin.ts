@@ -4,11 +4,12 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
+import { SafePipe } from '../../pipes/Safepipe';
 
 @Component({
   selector: 'app-dashboard-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, SafePipe],
   templateUrl: './dashboard-admin.html',
   styleUrl: './dashboard-admin.css'
 })
@@ -62,8 +63,13 @@ export class DashboardAdmin implements OnInit {
   editPubPdfPreviewUrl: SafeResourceUrl | null = null;
   private _editPdfBlobUrl: string | null = null;
   get editPdfBlobUrl(): string | null { return this._editPdfBlobUrl; }
+  editPdfViewerUrl = signal<SafeResourceUrl | null>(null);
   editRemovePdf = false;
   private _editExistingPdfSafeUrl: SafeResourceUrl | null = null;
+  private _editExistingPdfBlobUrl: string | null = null;
+
+  // Expose blob URL to template
+  get editExistingPdfBlobUrl(): string | null { return this._editExistingPdfBlobUrl; }
 
   showForm = signal('');
   message  = signal('');
@@ -187,6 +193,14 @@ export class DashboardAdmin implements OnInit {
     this.clearEditPdfSelection();
     this.editRemovePdf = false;
     this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
+    if (p.pdfUrl) {
+      this.loadEditExistingPdf();
+    }
     this.showForm.set('');   // ferme le formulaire d'ajout si ouvert
   }
 
@@ -235,6 +249,11 @@ export class DashboardAdmin implements OnInit {
     this.clearEditPdfSelection();
     this.editRemovePdf = false;
     this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
     this.editingPublication.set(null);
   }
 
@@ -246,6 +265,7 @@ export class DashboardAdmin implements OnInit {
     this.editPubPdfFile = input.files[0];
     this._editPdfBlobUrl = URL.createObjectURL(this.editPubPdfFile);
     this.editPubPdfPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editPdfBlobUrl);
+    this.editPdfViewerUrl.set(this.editPubPdfPreviewUrl);
     this.editRemovePdf = false;
   }
 
@@ -256,10 +276,27 @@ export class DashboardAdmin implements OnInit {
     }
     this.editPubPdfPreviewUrl = null;
     this.editPubPdfFile = null;
+    if (!this.editRemovePdf) {
+      this.loadEditExistingPdf();
+    } else {
+      this.editPdfViewerUrl.set(null);
+    }
   }
 
-  markRemoveEditPdf() { this.editRemovePdf = true; }
-  undoRemoveEditPdf() { this.editRemovePdf = false; }
+  markRemoveEditPdf() {
+    this.editRemovePdf = true;
+    this.clearEditPdfSelection();
+    this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
+  }
+  undoRemoveEditPdf() {
+    this.editRemovePdf = false;
+    this.loadEditExistingPdf();
+  }
 
   getFullPdfUrl(relativePath: string): string {
     return this.api.getUploadUrl(relativePath);
@@ -269,11 +306,45 @@ export class DashboardAdmin implements OnInit {
     const p = this.editingPublication();
     if (!p?.pdfUrl) return this.sanitizer.bypassSecurityTrustResourceUrl('');
     if (!this._editExistingPdfSafeUrl) {
-      this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-        this.api.getUploadUrl(p.pdfUrl)
-      );
+      // Load the PDF via XHR as a blob and create an object URL to avoid cross-origin/embed issues.
+      // Start with an empty safe URL and trigger a fetch — template will update when the blob is ready.
+      this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+      this.api.getPdfBlob(p.pdfUrl).subscribe({
+        next: (blob) => {
+          // revoke previous blob URL if any
+          if (this._editExistingPdfBlobUrl) URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+          this._editExistingPdfBlobUrl = URL.createObjectURL(blob);
+          this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editExistingPdfBlobUrl);
+        },
+        error: () => {
+          // keep safeUrl empty — template shows an error link to open in new tab
+          this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+        }
+      });
     }
     return this._editExistingPdfSafeUrl;
+  }
+
+  getEditPdfViewerUrl(): SafeResourceUrl | null {
+    return this.editPdfViewerUrl();
+  }
+
+  private loadEditExistingPdf() {
+    const p = this.editingPublication();
+    if (!p?.pdfUrl || this.editRemovePdf || this.editPubPdfFile) return;
+    this.api.getPdfBlob(p.pdfUrl).subscribe({
+      next: (blob) => {
+        if (this._editExistingPdfBlobUrl) URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+        const pdfBlob = blob.type ? blob : new Blob([blob], { type: 'application/pdf' });
+        this._editExistingPdfBlobUrl = URL.createObjectURL(pdfBlob);
+        this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editExistingPdfBlobUrl);
+        this.editPdfViewerUrl.set(this._editExistingPdfSafeUrl);
+      },
+      error: () => {
+        this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+        this.editPdfViewerUrl.set(null);
+      }
+    });
   }
 
   validerPublication(id: number) {

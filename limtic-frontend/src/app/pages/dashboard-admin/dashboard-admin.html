@@ -521,19 +521,26 @@
             <div class="field full">
               <label>Fichier PDF</label>
 
-              <!-- PDF existant -->
-              @if (editingPublication().pdfUrl && !editRemovePdf) {
+              <!-- PDF viewer unique (existant ou nouveau) -->
+              @if (!editRemovePdf && editPdfViewerUrl()) {
                 <div class="pdf-existing-row">
-                  <span class="pdf-existing-label">📄 PDF actuel</span>
-                  <a [href]="getFullPdfUrl(editingPublication().pdfUrl)" target="_blank" class="btn-pdf-open">↗ Ouvrir</a>
-                  <button class="pdf-clear" (click)="markRemoveEditPdf()">✕ Supprimer</button>
+                  <span class="pdf-existing-label">
+                    📄 {{ editPubPdfFile ? 'Nouveau PDF' : 'PDF actuel' }}
+                  </span>
+                  <a [href]="editPubPdfFile ? editPdfBlobUrl : getFullPdfUrl(editingPublication().pdfUrl)"
+                     target="_blank" class="btn-pdf-open">↗ Ouvrir</a>
+                  @if (editPubPdfFile) {
+                    <button class="pdf-clear" (click)="clearEditPdfSelection()">✕ Retirer</button>
+                  } @else {
+                    <button class="pdf-clear" (click)="markRemoveEditPdf()">✕ Supprimer</button>
+                  }
                 </div>
                 <div class="pdf-preview-panel" style="margin-top:0.75rem;">
                   <iframe
-                    [src]="getEditExistingPdfUrl()"
+                    [src]="editPdfViewerUrl()!"
                     class="pdf-preview-frame"
                     type="application/pdf"
-                    title="PDF actuel">
+                    title="Prévisualisation PDF">
                   </iframe>
                 </div>
               }
@@ -562,24 +569,6 @@
               </div>
               <span class="field-hint">Vous pouvez remplacer le PDF existant ou en supprimer un.</span>
 
-              <!-- Prévisualisation du nouveau fichier sélectionné -->
-              @if (editPubPdfPreviewUrl) {
-                <div class="pdf-preview-panel">
-                  <div class="pdf-preview-header">
-                    <span class="pdf-preview-title">👁 Prévisualisation — {{ editPubPdfFile?.name }}</span>
-                    <div class="pdf-preview-actions">
-                      <a [href]="editPdfBlobUrl" target="_blank" class="btn-pdf-open">↗ Ouvrir dans un onglet</a>
-                      <button class="pdf-preview-close" (click)="clearEditPdfSelection()">✕</button>
-                    </div>
-                  </div>
-                  <iframe
-                    [src]="editPubPdfPreviewUrl"
-                    class="pdf-preview-frame"
-                    type="application/pdf"
-                    title="Prévisualisation PDF">
-                  </iframe>
-                </div>
-              }
             </div>
 
             <!-- §3.7.2 CDC — Classement -->
