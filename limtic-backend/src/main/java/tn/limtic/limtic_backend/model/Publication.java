@@ -60,6 +60,12 @@ public class Publication {
      */
     private String classementCORE;
 
+    /**
+     * Source de référence du classement (ex: "Scimago 2024", "CORE 2023", "JCR Clarivate").
+     * Permet de tracer l'origine du score renseigné.
+     */
+    private String sourceClassement;
+
     // ── Relations ──────────────────────────────────────────────────────────
     @ManyToOne
     @JoinColumn(name = "axe_id")

@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
 import { Publication } from '../../models/chercheur.model';
 
@@ -34,20 +35,33 @@ export class DashboardChercheur implements OnInit {
     googleScholar: '', researchGate: '', orcid: '', linkedin: ''
   };
 
-  newPub = {
+  newPub: {
+    titre: string; type: string; annee: number;
+    journal: string; resume: string; doi: string; lienUrl: string; statut: string;
+    // §3.7.2 CDC — Score / classement de la venue
+    scimagoQuartile: string; classementCORE: string;
+    facteurImpact: number | null; snip: number | null;
+    sourceClassement: string;
+  } = {
     titre: '', type: 'Journal',
     annee: new Date().getFullYear(),
     journal: '', resume: '',
     doi: '', lienUrl: '',
-    statut: 'BROUILLON'
+    statut: 'BROUILLON',
+    // §3.7.2 — champs classement
+    scimagoQuartile: '', classementCORE: '',
+    facteurImpact: null, snip: null, sourceClassement: ''
   };
   newPubPdfFile: File | null = null;
+  newPubPdfPreviewUrl: SafeResourceUrl | null = null;
+  private _pdfBlobUrl: string | null = null;
+  get pdfBlobUrl(): string | null { return this._pdfBlobUrl; }
 
   pubBrouillons = computed(() => this.publications().filter(p => p.statut === 'BROUILLON' || !p.statut).length);
   pubSoumises   = computed(() => this.publications().filter(p => p.statut === 'SOUMIS').length);
   pubPubliees   = computed(() => this.publications().filter(p => p.statut === 'PUBLIE').length);
 
-  constructor(private router: Router, private api: ApiService) {}
+  constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer) {}
 
   private handleError(error: any) {
     const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
@@ -186,8 +200,12 @@ export class DashboardChercheur implements OnInit {
             : 'Publication enregistrée en brouillon !'
         );
         this.activeTab.set('publications');
-        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', doi: '', lienUrl: '', statut: 'BROUILLON' };
-        this.newPubPdfFile = null;
+        this.newPub = {
+          titre: '', type: 'Journal', annee: new Date().getFullYear(),
+          journal: '', resume: '', doi: '', lienUrl: '', statut: 'BROUILLON',
+          scimagoQuartile: '', classementCORE: '', facteurImpact: null, snip: null, sourceClassement: ''
+        };
+        this.clearPdfSelection();
       },
       error: err => this.handleError(err)
     });
@@ -195,7 +213,21 @@ export class DashboardChercheur implements OnInit {
 
   onPdfFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) this.newPubPdfFile = input.files[0];
+    if (input.files && input.files[0]) {
+      if (this._pdfBlobUrl) URL.revokeObjectURL(this._pdfBlobUrl);
+      this.newPubPdfFile = input.files[0];
+      this._pdfBlobUrl = URL.createObjectURL(this.newPubPdfFile);
+      this.newPubPdfPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._pdfBlobUrl);
+    }
+  }
+
+  clearPdfSelection() {
+    if (this._pdfBlobUrl) {
+      URL.revokeObjectURL(this._pdfBlobUrl);
+      this._pdfBlobUrl = null;
+    }
+    this.newPubPdfPreviewUrl = null;
+    this.newPubPdfFile = null;
   }
 
   soumettre(id: number) {

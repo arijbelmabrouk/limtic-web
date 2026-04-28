@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
 
 @Component({
@@ -36,8 +37,22 @@ export class DashboardAdmin implements OnInit {
   newUser      = { email: '', motDePasse: '', role: 'CHERCHEUR' };
   newDoctorant = { nom: '', prenom: '', sujetThese: '', directeurId: null as number | null, dateInscription: '', statut: 'EN_COURS', mention: '', photoUrl: '' };
   newMasterien = { nom: '', prenom: '', sujetMemoire: '', encadrantId: null as number | null, promotion: '', statut: 'EN_COURS' };
-  newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: ''};
+  newPub: {
+    titre: string; type: string; annee: number; journal: string; resume: string;
+    statut: string; doi: string; pdfUrl: string; lienUrl: string; motsCles: string;
+    // §3.7.2 CDC — Score / classement de la venue
+    scimagoQuartile: string; classementCORE: string;
+    facteurImpact: number | null; snip: number | null;
+    sourceClassement: string;
+  } = {
+    titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '',
+    resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: '',
+    // §3.7.2 — champs classement
+    scimagoQuartile: '', classementCORE: '',
+    facteurImpact: null, snip: null, sourceClassement: ''
+  };
   newPubPdfFile: File | null = null;   // fichier PDF sélectionné avant création
+  newPubPdfPreviewUrl: SafeResourceUrl | null = null; // URL sécurisée pour l'iframe
   editingDoctorant = signal<any | null>(null);
   editingMasterien = signal<any | null>(null);
 
@@ -45,7 +60,7 @@ export class DashboardAdmin implements OnInit {
   message  = signal('');
   erreur   = signal('');
 
-  constructor(private router: Router, private api: ApiService) {}
+  constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer) {}
 
   private handleError(error: any) {
     const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
@@ -105,16 +120,38 @@ export class DashboardAdmin implements OnInit {
         }
         this.message.set('Publication ajoutée !');
         this.showForm.set('');
-        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: ''};
-        this.newPubPdfFile = null;
+        this.newPub = {
+          titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '',
+          resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: '',
+          scimagoQuartile: '', classementCORE: '', facteurImpact: null, snip: null, sourceClassement: ''
+        };
+        this.clearPdfSelection();
       },
       error: err => this.handleError(err)
     });
   }
 
+  // Raw blob URL kept separately so we can revoke it and use it in <a href>
+  private _pdfBlobUrl: string | null = null;
+  get pdfBlobUrl(): string | null { return this._pdfBlobUrl; }
+
   onPdfFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) this.newPubPdfFile = input.files[0];
+    if (input.files && input.files[0]) {
+      if (this._pdfBlobUrl) URL.revokeObjectURL(this._pdfBlobUrl);
+      this.newPubPdfFile = input.files[0];
+      this._pdfBlobUrl = URL.createObjectURL(this.newPubPdfFile);
+      this.newPubPdfPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._pdfBlobUrl);
+    }
+  }
+
+  clearPdfSelection() {
+    if (this._pdfBlobUrl) {
+      URL.revokeObjectURL(this._pdfBlobUrl);
+      this._pdfBlobUrl = null;
+    }
+    this.newPubPdfPreviewUrl = null;
+    this.newPubPdfFile = null;
   }
 
   validerPublication(id: number) {
