@@ -89,6 +89,13 @@ export class ApiService {
     );
   }
 
+  deletePdfPublication(publicationId: number): Observable<any> {
+    return this.http.delete(
+      `${this.base}/publications/${publicationId}/pdf`,
+      { withCredentials: true }
+    );
+  }
+
   // ── Événements ────────────────────────────────────────────────────────────
   getEvenements(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/evenements`, this.options);

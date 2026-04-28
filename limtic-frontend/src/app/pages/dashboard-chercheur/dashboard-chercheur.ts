@@ -60,6 +60,14 @@ export class DashboardChercheur implements OnInit {
   // ── Édition de publication ────────────────────────────────
   editingPublication = signal<any | null>(null);
 
+  // §3.7.2 — PDF dans le formulaire d'édition
+  editPubPdfFile: File | null = null;
+  editPubPdfPreviewUrl: SafeResourceUrl | null = null;
+  private _editPdfBlobUrl: string | null = null;
+  get editPdfBlobUrl(): string | null { return this._editPdfBlobUrl; }
+  editRemovePdf = false;
+  private _editExistingPdfSafeUrl: SafeResourceUrl | null = null;
+
   pubBrouillons = computed(() => this.publications().filter(p => p.statut === 'BROUILLON' || !p.statut).length);
   pubSoumises   = computed(() => this.publications().filter(p => p.statut === 'SOUMIS').length);
   pubPubliees   = computed(() => this.publications().filter(p => p.statut === 'PUBLIE').length);
@@ -250,8 +258,12 @@ export class DashboardChercheur implements OnInit {
       classementCORE: p.classementCORE || '',
       facteurImpact: p.facteurImpact ?? null,
       snip: p.snip ?? null,
-      sourceClassement: p.sourceClassement || ''
+      sourceClassement: p.sourceClassement || '',
+      pdfUrl: p.pdfUrl || null
     });
+    this.clearEditPdfSelection();
+    this.editRemovePdf = false;
+    this._editExistingPdfSafeUrl = null;
     this.activeTab.set('publications'); // reste sur l'onglet publications
   }
 
@@ -259,17 +271,88 @@ export class DashboardChercheur implements OnInit {
     const p = this.editingPublication();
     if (!p) return;
     if (!p.titre?.trim()) { this.message.set('Le titre est obligatoire.'); return; }
+
+    // Si l'utilisateur veut supprimer le PDF existant sans le remplacer
+    if (this.editRemovePdf && !this.editPubPdfFile) {
+      this.api.deletePdfPublication(p.id).subscribe({
+        next: () => {},
+        error: () => {} // non bloquant si le fichier n'existe plus
+      });
+      p.pdfUrl = null;
+    }
+
     this.api.updatePublication(p.id, p).subscribe({
-      next: () => {
-        this.message.set('Publication mise à jour !');
-        this.editingPublication.set(null);
-        this.loadProfil();
+      next: (saved: any) => {
+        // Uploader le nouveau PDF si sélectionné
+        if (this.editPubPdfFile) {
+          this.api.uploadPdfPublication(p.id, this.editPubPdfFile).subscribe({
+            next: () => {
+              this.message.set('Publication mise à jour avec le nouveau PDF !');
+              this.clearEditPdfSelection();
+              this.editingPublication.set(null);
+              this.loadProfil();
+            },
+            error: () => {
+              this.message.set('Publication mise à jour, mais erreur lors de l\'upload PDF.');
+              this.clearEditPdfSelection();
+              this.editingPublication.set(null);
+              this.loadProfil();
+            }
+          });
+        } else {
+          this.message.set('Publication mise à jour !');
+          this.editingPublication.set(null);
+          this.loadProfil();
+        }
       },
       error: err => this.handleError(err)
     });
   }
 
-  cancelEditPublication() { this.editingPublication.set(null); }
+  cancelEditPublication() {
+    this.clearEditPdfSelection();
+    this.editRemovePdf = false;
+    this._editExistingPdfSafeUrl = null;
+    this.editingPublication.set(null);
+  }
+
+  // ── Helpers PDF édition ───────────────────────────────────
+  onEditPdfFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    if (this._editPdfBlobUrl) URL.revokeObjectURL(this._editPdfBlobUrl);
+    this.editPubPdfFile = input.files[0];
+    this._editPdfBlobUrl = URL.createObjectURL(this.editPubPdfFile);
+    this.editPubPdfPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editPdfBlobUrl);
+    this.editRemovePdf = false; // un nouveau fichier annule la demande de suppression
+  }
+
+  clearEditPdfSelection() {
+    if (this._editPdfBlobUrl) {
+      URL.revokeObjectURL(this._editPdfBlobUrl);
+      this._editPdfBlobUrl = null;
+    }
+    this.editPubPdfPreviewUrl = null;
+    this.editPubPdfFile = null;
+  }
+
+  markRemoveEditPdf() { this.editRemovePdf = true; }
+  undoRemoveEditPdf() { this.editRemovePdf = false; }
+
+  getFullPdfUrl(relativePath: string): string {
+    return this.api.getUploadUrl(relativePath);
+  }
+
+  getEditExistingPdfUrl(): SafeResourceUrl {
+    const p = this.editingPublication();
+    if (!p?.pdfUrl) return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    if (!this._editExistingPdfSafeUrl) {
+      this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+        this.api.getUploadUrl(p.pdfUrl)
+      );
+    }
+    return this._editExistingPdfSafeUrl;
+  }
 
   soumettre(id: number) {
     this.api.patch(`publications/${id}/statut`, { statut: 'SOUMIS' }).subscribe({

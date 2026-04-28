@@ -164,6 +164,29 @@ public class PublicationController {
         }
     }
 
+    @DeleteMapping("/{id}/pdf")
+    public ResponseEntity<?> deletePdf(@PathVariable Long id, HttpServletRequest request) {
+        Publication pub = publicationService.getById(id);
+        if (pub == null) return ResponseEntity.notFound().build();
+
+        String pdfUrl = pub.getPdfUrl();
+        if (pdfUrl != null && !pdfUrl.isBlank()) {
+            // Extract filename from "/api/publications/pdf/<filename>"
+            String filename = pdfUrl.substring(pdfUrl.lastIndexOf('/') + 1);
+            try {
+                Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                // Log but don't fail — still clear the DB reference
+            }
+            pub.setPdfUrl(null);
+            publicationService.save(pub);
+            auditService.log(request, "DELETE_PDF", "Publication", id,
+                "PDF supprimé pour publication id=" + id, true);
+        }
+        return ResponseEntity.ok(Map.of("message", "PDF supprimé"));
+    }
+
     @GetMapping("/pdf/{filename:.+}")
     public ResponseEntity<Resource> servePdf(@PathVariable String filename) {
         try {

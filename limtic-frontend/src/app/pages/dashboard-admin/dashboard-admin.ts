@@ -57,6 +57,14 @@ export class DashboardAdmin implements OnInit {
   editingMasterien    = signal<any | null>(null);
   editingPublication  = signal<any | null>(null);
 
+  // §3.7.2 — PDF dans le formulaire d'édition de publication
+  editPubPdfFile: File | null = null;
+  editPubPdfPreviewUrl: SafeResourceUrl | null = null;
+  private _editPdfBlobUrl: string | null = null;
+  get editPdfBlobUrl(): string | null { return this._editPdfBlobUrl; }
+  editRemovePdf = false;
+  private _editExistingPdfSafeUrl: SafeResourceUrl | null = null;
+
   showForm = signal('');
   message  = signal('');
   erreur   = signal('');
@@ -173,8 +181,12 @@ export class DashboardAdmin implements OnInit {
       classementCORE: p.classementCORE || '',
       facteurImpact: p.facteurImpact ?? null,
       snip: p.snip ?? null,
-      sourceClassement: p.sourceClassement || ''
+      sourceClassement: p.sourceClassement || '',
+      pdfUrl: p.pdfUrl || null
     });
+    this.clearEditPdfSelection();
+    this.editRemovePdf = false;
+    this._editExistingPdfSafeUrl = null;
     this.showForm.set('');   // ferme le formulaire d'ajout si ouvert
   }
 
@@ -182,17 +194,87 @@ export class DashboardAdmin implements OnInit {
     const p = this.editingPublication();
     if (!p) return;
     if (!p.titre?.trim()) { this.message.set('Le titre est obligatoire.'); return; }
+
+    // Suppression du PDF existant sans remplacement
+    if (this.editRemovePdf && !this.editPubPdfFile) {
+      this.api.deletePdfPublication(p.id).subscribe({
+        next: () => {},
+        error: () => {}
+      });
+      p.pdfUrl = null;
+    }
+
     this.api.updatePublication(p.id, p).subscribe({
       next: () => {
-        this.message.set('Publication mise à jour !');
-        this.editingPublication.set(null);
-        this.api.getPublications().subscribe(data => this.publications.set(data));
+        if (this.editPubPdfFile) {
+          this.api.uploadPdfPublication(p.id, this.editPubPdfFile).subscribe({
+            next: () => {
+              this.message.set('Publication mise à jour avec le nouveau PDF !');
+              this.clearEditPdfSelection();
+              this.editingPublication.set(null);
+              this.api.getPublications().subscribe(data => this.publications.set(data));
+            },
+            error: () => {
+              this.message.set('Publication mise à jour, mais erreur lors de l\'upload PDF.');
+              this.clearEditPdfSelection();
+              this.editingPublication.set(null);
+              this.api.getPublications().subscribe(data => this.publications.set(data));
+            }
+          });
+        } else {
+          this.message.set('Publication mise à jour !');
+          this.editingPublication.set(null);
+          this.api.getPublications().subscribe(data => this.publications.set(data));
+        }
       },
       error: err => this.handleError(err)
     });
   }
 
-  cancelEditPublication() { this.editingPublication.set(null); }
+  cancelEditPublication() {
+    this.clearEditPdfSelection();
+    this.editRemovePdf = false;
+    this._editExistingPdfSafeUrl = null;
+    this.editingPublication.set(null);
+  }
+
+  // ── Helpers PDF édition ───────────────────────────────────
+  onEditPdfFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    if (this._editPdfBlobUrl) URL.revokeObjectURL(this._editPdfBlobUrl);
+    this.editPubPdfFile = input.files[0];
+    this._editPdfBlobUrl = URL.createObjectURL(this.editPubPdfFile);
+    this.editPubPdfPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editPdfBlobUrl);
+    this.editRemovePdf = false;
+  }
+
+  clearEditPdfSelection() {
+    if (this._editPdfBlobUrl) {
+      URL.revokeObjectURL(this._editPdfBlobUrl);
+      this._editPdfBlobUrl = null;
+    }
+    this.editPubPdfPreviewUrl = null;
+    this.editPubPdfFile = null;
+  }
+
+  markRemoveEditPdf() { this.editRemovePdf = true; }
+  undoRemoveEditPdf() { this.editRemovePdf = false; }
+
+  getFullPdfUrl(relativePath: string): string {
+    return this.api.getUploadUrl(relativePath);
+  }
+
+  getEditExistingPdfUrl(): SafeResourceUrl {
+    const p = this.editingPublication();
+    if (!p?.pdfUrl) return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    if (!this._editExistingPdfSafeUrl) {
+      this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+        this.api.getUploadUrl(p.pdfUrl)
+      );
+    }
+    return this._editExistingPdfSafeUrl;
+  }
 
   validerPublication(id: number) {
     this.api.patch(`publications/${id}/statut`, { statut: 'PUBLIE' }).subscribe({
