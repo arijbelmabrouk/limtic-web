@@ -57,6 +57,9 @@ export class DashboardChercheur implements OnInit {
   private _pdfBlobUrl: string | null = null;
   get pdfBlobUrl(): string | null { return this._pdfBlobUrl; }
 
+  // ── Édition de publication ────────────────────────────────
+  editingPublication = signal<any | null>(null);
+
   pubBrouillons = computed(() => this.publications().filter(p => p.statut === 'BROUILLON' || !p.statut).length);
   pubSoumises   = computed(() => this.publications().filter(p => p.statut === 'SOUMIS').length);
   pubPubliees   = computed(() => this.publications().filter(p => p.statut === 'PUBLIE').length);
@@ -229,6 +232,44 @@ export class DashboardChercheur implements OnInit {
     this.newPubPdfPreviewUrl = null;
     this.newPubPdfFile = null;
   }
+
+  // ── Édition de publication ────────────────────────────────
+  startEditPublication(p: any) {
+    // Un chercheur ne peut éditer que ses brouillons
+    this.editingPublication.set({
+      id: p.id,
+      titre: p.titre || '',
+      type: p.type || 'Journal',
+      annee: p.annee || new Date().getFullYear(),
+      journal: p.journal || '',
+      resume: p.resume || '',
+      doi: p.doi || '',
+      lienUrl: p.lienUrl || '',
+      statut: p.statut || 'BROUILLON',
+      scimagoQuartile: p.scimagoQuartile || '',
+      classementCORE: p.classementCORE || '',
+      facteurImpact: p.facteurImpact ?? null,
+      snip: p.snip ?? null,
+      sourceClassement: p.sourceClassement || ''
+    });
+    this.activeTab.set('publications'); // reste sur l'onglet publications
+  }
+
+  saveEditPublication() {
+    const p = this.editingPublication();
+    if (!p) return;
+    if (!p.titre?.trim()) { this.message.set('Le titre est obligatoire.'); return; }
+    this.api.updatePublication(p.id, p).subscribe({
+      next: () => {
+        this.message.set('Publication mise à jour !');
+        this.editingPublication.set(null);
+        this.loadProfil();
+      },
+      error: err => this.handleError(err)
+    });
+  }
+
+  cancelEditPublication() { this.editingPublication.set(null); }
 
   soumettre(id: number) {
     this.api.patch(`publications/${id}/statut`, { statut: 'SOUMIS' }).subscribe({

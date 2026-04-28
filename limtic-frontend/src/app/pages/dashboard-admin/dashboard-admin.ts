@@ -53,8 +53,9 @@ export class DashboardAdmin implements OnInit {
   };
   newPubPdfFile: File | null = null;   // fichier PDF sélectionné avant création
   newPubPdfPreviewUrl: SafeResourceUrl | null = null; // URL sécurisée pour l'iframe
-  editingDoctorant = signal<any | null>(null);
-  editingMasterien = signal<any | null>(null);
+  editingDoctorant    = signal<any | null>(null);
+  editingMasterien    = signal<any | null>(null);
+  editingPublication  = signal<any | null>(null);
 
   showForm = signal('');
   message  = signal('');
@@ -103,6 +104,7 @@ export class DashboardAdmin implements OnInit {
     this.editingAxe.set(null);
     this.editingDoctorant.set(null);
     this.editingMasterien.set(null);
+    this.editingPublication.set(null);
   }
 
   // ── Publications ──────────────────────────────────────────
@@ -153,6 +155,44 @@ export class DashboardAdmin implements OnInit {
     this.newPubPdfPreviewUrl = null;
     this.newPubPdfFile = null;
   }
+
+  // ── Édition de publication ────────────────────────────────
+  startEditPublication(p: any) {
+    this.editingPublication.set({
+      id: p.id,
+      titre: p.titre || '',
+      type: p.type || 'Journal',
+      annee: p.annee || new Date().getFullYear(),
+      journal: p.journal || '',
+      resume: p.resume || '',
+      doi: p.doi || '',
+      lienUrl: p.lienUrl || '',
+      motsCles: p.motsCles || '',
+      statut: p.statut || 'BROUILLON',
+      scimagoQuartile: p.scimagoQuartile || '',
+      classementCORE: p.classementCORE || '',
+      facteurImpact: p.facteurImpact ?? null,
+      snip: p.snip ?? null,
+      sourceClassement: p.sourceClassement || ''
+    });
+    this.showForm.set('');   // ferme le formulaire d'ajout si ouvert
+  }
+
+  saveEditPublication() {
+    const p = this.editingPublication();
+    if (!p) return;
+    if (!p.titre?.trim()) { this.message.set('Le titre est obligatoire.'); return; }
+    this.api.updatePublication(p.id, p).subscribe({
+      next: () => {
+        this.message.set('Publication mise à jour !');
+        this.editingPublication.set(null);
+        this.api.getPublications().subscribe(data => this.publications.set(data));
+      },
+      error: err => this.handleError(err)
+    });
+  }
+
+  cancelEditPublication() { this.editingPublication.set(null); }
 
   validerPublication(id: number) {
     this.api.patch(`publications/${id}/statut`, { statut: 'PUBLIE' }).subscribe({
