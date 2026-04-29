@@ -1,7 +1,7 @@
 <div class="page contact-page">
   <div class="page-header">
-    <h1>Contact</h1>
-    <p>Écrivez-nous, nous répondons dans les meilleurs délais.</p>
+    <h1>Contactez nous</h1>
+    <p>Laboratoire LIMTIC — Nous sommes à votre disposition</p>
   </div>
 
   <div class="contact-grid">
@@ -11,7 +11,7 @@
 
       @if (envoi() === 'ok') {
         <div class="success-banner">
-          Votre message a bien été envoyé. Nous vous répondrons prochainement.
+          ✅ Votre message a bien été envoyé. Nous vous répondrons prochainement.
         </div>
       }
 
@@ -71,7 +71,7 @@
             }
           </div>
 
-          <!-- ── §3.9 CDC — Widget hCaptcha ── -->
+          <!-- hCaptcha -->
           <div class="form-group captcha-group">
             <div id="hcaptcha-container"></div>
             @if (!captchaToken() && envoi() === 'error') {
@@ -99,7 +99,7 @@
       }
     </div>
 
-    <!-- ── Informations de contact + Google Maps ─────────────── -->
+    <!-- ── Informations de contact ────────────────────────────── -->
     <div class="contact-info-col">
 
       <div class="info-block">
@@ -108,24 +108,61 @@
         @if (adresse()) {
           <div class="info-item">
             <span class="info-icon">📍</span>
-            <span>{{ adresse() }}</span>
+            <div>
+              <strong>Adresse postale</strong>
+              <p>{{ adresse() }}</p>
+            </div>
           </div>
         }
 
         @if (telephone()) {
           <div class="info-item">
             <span class="info-icon">📞</span>
-            <a [href]="'tel:' + telephone()">{{ telephone() }}</a>
+            <div>
+              <strong>Téléphone</strong>
+              <a [href]="'tel:' + telephone()">{{ telephone() }}</a>
+            </div>
           </div>
         }
 
         <div class="info-item">
           <span class="info-icon">✉️</span>
-          <a [href]="'mailto:' + emailContact()">{{ emailContact() }}</a>
+          <div>
+            <strong>Email</strong>
+            <a [href]="'mailto:' + emailContact()">{{ emailContact() }}</a>
+          </div>
         </div>
+
+        <!-- Réseaux sociaux -->
+        @if (linkedinLabo() || researchGate() || twitterLabo() || facebookLabo()) {
+          <div class="social-separator"></div>
+          <h4 class="social-title">Suivez-nous</h4>
+          <div class="social-links">
+            @if (linkedinLabo()) {
+              <a [href]="linkedinLabo()" target="_blank" class="social-btn linkedin-btn">
+                <span class="social-icon">in</span> LinkedIn
+              </a>
+            }
+            @if (researchGate()) {
+              <a [href]="researchGate()" target="_blank" class="social-btn rg-btn">
+                <span class="social-icon">R</span> ResearchGate
+              </a>
+            }
+            @if (twitterLabo()) {
+              <a [href]="twitterLabo()" target="_blank" class="social-btn twitter-btn">
+                <span class="social-icon">𝕏</span> X / Twitter
+              </a>
+            }
+            @if (facebookLabo()) {
+              <a [href]="facebookLabo()" target="_blank" class="social-btn fb-btn">
+                <span class="social-icon">f</span> Facebook
+              </a>
+            }
+          </div>
+        }
       </div>
 
-      <!-- ── Google Maps (§3.9 CDC) ── -->
+      <!-- Google Maps -->
       @if (googleMapsUrl()) {
         <div class="maps-container">
           <iframe

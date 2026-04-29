@@ -39,9 +39,8 @@ export class ApiService {
     return this.http.delete(`${this.base}/chercheurs/${id}`, this.options);
   }
 
-  // ── Import/Export CSV membres (§4.3.2) ───────────────────────────────────
+  // ── Import/Export CSV membres ─────────────────────────────────────────────
   exportChercheursCsv(): void {
-    // Ouvre l'URL dans un nouvel onglet — le navigateur déclenche le téléchargement
     window.open(`${this.base}/admin/chercheurs/export-csv`, '_blank');
   }
   importChercheursCsv(file: File): Observable<any> {
@@ -49,7 +48,6 @@ export class ApiService {
     formData.append('file', file);
     return this.http.post(`${this.base}/admin/chercheurs/import-csv`, formData, {
       withCredentials: true
-      // PAS de Content-Type : le navigateur le définit automatiquement avec le boundary
     });
   }
 
@@ -77,15 +75,16 @@ export class ApiService {
   }
 
   getUploadUrl(relativePath: string): string {
-  return `https://localhost:8443${relativePath}`;
+    return `https://localhost:8443${relativePath}`;
   }
-  
+
   getPdfBlob(relativePath: string): Observable<Blob> {
-  return this.http.get(`https://localhost:8443${relativePath}`, {
-    responseType: 'blob',
-    withCredentials: true
-  });
-}
+    return this.http.get(`https://localhost:8443${relativePath}`, {
+      responseType: 'blob',
+      withCredentials: true
+    });
+  }
+
   uploadPdfPublication(publicationId: number, file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
@@ -120,10 +119,28 @@ export class ApiService {
     return this.http.delete(`${this.base}/evenements/${id}`, this.options);
   }
 
-  /** Upload multiple photos pour un événement (drag-drop) */
+  /** Upload multiple photos pour un événement avec légendes et ordre */
   uploadPhotosEvenement(evenementId: number, files: File[]): Observable<any> {
     const formData = new FormData();
     files.forEach(f => formData.append('files', f));
+    return this.http.post(
+      `${this.base}/evenements/${evenementId}/photos`,
+      formData,
+      { withCredentials: true }
+    );
+  }
+
+  /** Upload photos avec légendes (multipart enrichi) */
+  uploadPhotosAvecLegendes(
+    evenementId: number,
+    items: { file: File; legende: string; ordre: number }[]
+  ): Observable<any> {
+    const formData = new FormData();
+    items.forEach((item, i) => {
+      formData.append('files', item.file);
+      formData.append(`legendes[${i}]`, item.legende);
+      formData.append(`ordres[${i}]`, String(item.ordre));
+    });
     return this.http.post(
       `${this.base}/evenements/${evenementId}/photos`,
       formData,
@@ -140,10 +157,19 @@ export class ApiService {
   }
 
   /** Met à jour l'ordre des photos (drag-drop) */
-  updateOrdrePhotos(evenementId: number, ordres: {id: number, ordre: number}[]): Observable<any> {
+  updateOrdrePhotos(evenementId: number, ordres: { id: number; ordre: number }[]): Observable<any> {
     return this.http.patch(
       `${this.base}/evenements/${evenementId}/photos/ordre`,
       ordres,
+      this.options
+    );
+  }
+
+  /** Met à jour la légende d'une photo existante */
+  updateLegendePhoto(evenementId: number, photoId: number, legende: string): Observable<any> {
+    return this.http.patch(
+      `${this.base}/evenements/${evenementId}/photos/${photoId}`,
+      { legende },
       this.options
     );
   }
@@ -174,6 +200,9 @@ export class ApiService {
   // ── Doctorants / Mastériens ───────────────────────────────────────────────
   getDoctorants(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/doctorants`, this.options);
+  }
+  getDoctorant(id: number): Observable<any> {
+    return this.http.get<any>(`${this.base}/doctorants/${id}`, this.options);
   }
   createDoctorant(data: any): Observable<any> {
     return this.http.post(`${this.base}/doctorants`, data, this.options);
@@ -208,7 +237,7 @@ export class ApiService {
     return this.http.get<any[]>(`${this.base}/users`, this.options);
   }
 
-  // ── Paramètres système (§4.3.6) ───────────────────────────────────────────
+  // ── Paramètres système ────────────────────────────────────────────────────
   getParametresPublics(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/admin/parametres/public`, this.options);
   }
@@ -219,7 +248,7 @@ export class ApiService {
     return this.http.put(`${this.base}/admin/parametres/${cle}`, { valeur }, this.options);
   }
 
-  // ── Journal d'audit (§4.1) ────────────────────────────────────────────────
+  // ── Journal d'audit ───────────────────────────────────────────────────────
   getAuditLog(page = 0, size = 50): Observable<any> {
     return this.http.get(
       `${this.base}/admin/audit?page=${page}&size=${size}`,
@@ -227,20 +256,13 @@ export class ApiService {
     );
   }
 
-  // ── Actualités (fil dynamique pour la home) ───────────────────────────────
-  /**
-   * Retourne les N dernières publications publiées
-   */
+  // ── Actualités ────────────────────────────────────────────────────────────
   getDernieresPublications(n = 5): Observable<any[]> {
     return this.http.get<any[]>(
       `${this.base}/publications?statut=PUBLIE&sort=annee,desc&size=${n}`,
       this.options
     );
   }
-
-  /**
-   * Retourne les prochains événements (dateEvenement >= aujourd'hui)
-   */
   getProchainsEvenements(n = 3): Observable<any[]> {
     return this.http.get<any[]>(
       `${this.base}/evenements?upcoming=true&size=${n}`,
@@ -248,7 +270,7 @@ export class ApiService {
     );
   }
 
-  // ── Contact (avec captcha) ────────────────────────────────────────────────
+  // ── Contact ───────────────────────────────────────────────────────────────
   envoyerContact(data: {
     nom: string;
     email: string;
@@ -259,7 +281,17 @@ export class ApiService {
     return this.http.post(`${this.base}/contact`, data, this.options);
   }
 
-  // ── Helpers génériques (compatibilité ancien code) ────────────────────────
+  // ── Chercheurs par statut ─────────────────────────────────────────────────
+  getChercheursByStatut(statut: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/chercheurs?statut=${statut}`, this.options);
+  }
+
+  // ── Export publications CSV ───────────────────────────────────────────────
+  exportPublicationsCsv(): void {
+    window.open(`${this.base}/publications/export-csv`, '_blank');
+  }
+
+  // ── Helpers génériques ────────────────────────────────────────────────────
   post(endpoint: string, body: any): Observable<any> {
     return this.http.post(`${this.base}/${endpoint}`, body, this.options);
   }
@@ -270,22 +302,4 @@ export class ApiService {
     return this.http.delete(`${this.base}/${endpoint}`, this.options);
   }
 
-  // ══════════════════════════════════════════════════════════════════
-// AJOUTS à faire dans api.service.ts
-// ══════════════════════════════════════════════════════════════════
-
-// 1. Ajouter getDoctorant(id) — pour charger un doctorant par ID
-getDoctorant(id: number): Observable<any> {
-  return this.http.get<any>(`${this.base}/doctorants/${id}`, this.options);
-}
-
-// 2. Ajouter getChercheursByStatut — pour filtre actif/retraité
-getChercheursByStatut(statut: string): Observable<any[]> {
-  return this.http.get<any[]>(`${this.base}/chercheurs?statut=${statut}`, this.options);
-}
-
-// 3. Ajouter exportPublicationsCsv — export côté backend (optionnel)
-exportPublicationsCsv(): void {
-  window.open(`${this.base}/publications/export-csv`, '_blank');
-}
 }

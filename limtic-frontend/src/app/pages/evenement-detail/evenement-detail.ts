@@ -33,11 +33,26 @@ export class EvenementDetail implements OnInit {
     this.chargerEvenement(id);
   }
 
+  private normalizePhoto(img: any): PhotoEvenement {
+    const url = img.url && !img.url.startsWith('http')
+      ? this.api.getUploadUrl(img.url)
+      : img.url;
+    return { ...img, url };
+  }
+
+  private normalizeEvenement(data: any): Evenement {
+    return {
+      ...data,
+      photos: (data.photos ?? []).map((img: any) => this.normalizePhoto(img))
+    };
+  }
+
   private chargerEvenement(id: number) {
     this.api.getEvenement(id).subscribe(data => {
-      this.evenement.set(data);
-      if (data.photos?.length) {
-        this.photoActive.set(data.photos[0]);
+      const normalized = this.normalizeEvenement(data);
+      this.evenement.set(normalized);
+      if (normalized.photos?.length) {
+        this.photoActive.set(normalized.photos[0]);
         this.photoActiveIdx.set(0);
       }
     });

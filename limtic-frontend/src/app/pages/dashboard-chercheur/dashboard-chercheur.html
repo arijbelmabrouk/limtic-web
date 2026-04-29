@@ -36,6 +36,7 @@
     <div class="sidebar-footer">
       <span class="user-email">{{ email() }}</span>
       <span class="user-role">CHERCHEUR</span>
+      <a routerLink="/home" class="btn-site-link" (click)="fermerTout()">Retour au site</a>
       <button class="btn-logout-side" (click)="logout()">⏻ Déconnexion</button>
     </div>
   </aside>
@@ -44,7 +45,7 @@
   <main class="main-content">
 
     @if (message()) {
-      <div class="alert-success">✅ {{ message() }}</div>
+      <div class="alert-success">{{ message() }}</div>
     }
 
     <div class="dash-header">
@@ -52,7 +53,13 @@
         <h1>Mon Espace Chercheur</h1>
         <p class="dash-sub">Bienvenue, {{ email() }}</p>
       </div>
-      <span class="role-badge">{{ role() }}</span>
+      <div class="header-actions">
+        <span class="role-badge">{{ role() }}</span>
+        <button class="theme-toggle-dashboard" (click)="themeService.toggle()"
+                [title]="themeService.theme() === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'">
+          {{ themeService.theme() === 'dark' ? '☀️' : '🌙' }}
+        </button>
+      </div>
     </div>
 
     <div class="stats-row">

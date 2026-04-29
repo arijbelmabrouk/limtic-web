@@ -45,7 +45,7 @@ public class ParametreController {
             if (p.isSensible()) p.setValeur("***");
         });
         return all.stream()
-            .filter(p -> List.of("labo", "seo", "contact", "reseaux").contains(p.getGroupe()))
+            .filter(p -> List.of("labo", "seo", "contact", "reseaux", "reseaux_sociaux").contains(p.getGroupe()))
             .toList();
     }
 

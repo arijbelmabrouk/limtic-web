@@ -92,6 +92,8 @@
             <span class="user-badge">{{ userRole() }}</span>
             <span class="user-email-mobile">{{ userEmail() }}</span>
           </div>
+          <a [routerLink]="userRole() === 'ADMIN' ? '/dashboard-admin' : '/dashboard-chercheur'"
+             class="btn-dashboard-mobile" (click)="fermerTout()">Mon dashboard</a>
           <button class="btn-logout" (click)="logout()">⏻ Déconnexion</button>
         } @else {
           <a routerLink="/login" class="btn-signup-mobile" (click)="fermerTout()">Connexion</a>
@@ -99,9 +101,17 @@
       </div>
     </div>
 
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" (click)="themeService.toggle()" 
+            [title]="themeService.theme() === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'">
+      {{ themeService.theme() === 'dark' ? '☀️' : '🌙' }}
+    </button>
+
     <!-- Auth desktop -->
     <div class="nav-auth">
       @if (isLoggedIn()) {
+        <a [routerLink]="userRole() === 'ADMIN' ? '/dashboard-admin' : '/dashboard-chercheur'"
+           class="btn-dashboard-nav">Tableau de bord</a>
         <div class="user-info">
           <span class="user-badge">{{ userRole() }}</span>
           <span class="user-email">{{ userEmail() }}</span>

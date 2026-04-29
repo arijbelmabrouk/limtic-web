@@ -103,7 +103,7 @@
           <div class="stage-details">
             @for (pub of doc.publications; track pub.id) {
               <div class="stage-item" style="cursor:pointer"
-                (click)="navigateToChercheur(doc.directeur?.id)">
+                (click)="navigateToPublication(pub.id)">
                 <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:4px;">
                   <span class="pub-type"
                     [class]="pub.type === 'Journal' ? 'type-journal' : 'type-conf'">

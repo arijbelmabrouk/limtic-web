@@ -1,16 +1,17 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
+import { ThemeService } from '../../services/theme.service';
 import { Publication } from '../../models/chercheur.model';
 
 @Component({
   selector: 'app-dashboard-chercheur',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './dashboard-chercheur.html',
-  styleUrl: './dashboard-chercheur.css'
+  styleUrls: ['./dashboard-chercheur.css']
 })
 export class DashboardChercheur implements OnInit {
   email        = signal('');
@@ -74,7 +75,7 @@ export class DashboardChercheur implements OnInit {
   pubSoumises   = computed(() => this.publications().filter(p => p.statut === 'SOUMIS').length);
   pubPubliees   = computed(() => this.publications().filter(p => p.statut === 'PUBLIE').length);
 
-  constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer) {}
+  constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer, public themeService: ThemeService) {}
 
   private handleError(error: any) {
     const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
@@ -462,8 +463,20 @@ export class DashboardChercheur implements OnInit {
     return '📝 Brouillon';
   }
 
+  fermerTout() {
+  this.message.set('');
+  this.editingPublication.set(null);
+  this.clearPdfSelection();
+  this.clearEditPdfSelection();
+  }
+  
   logout() {
     localStorage.clear();
     this.router.navigate(['/login']);
+  }
+
+  navigateTo(path: string) {
+    this.fermerTout();
+    this.router.navigate([path]);
   }
 }

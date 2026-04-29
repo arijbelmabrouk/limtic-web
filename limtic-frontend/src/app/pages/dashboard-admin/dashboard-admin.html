@@ -39,12 +39,20 @@
     <div class="sidebar-footer">
       <span class="admin-email">{{ email() }}</span>
       <span class="admin-role">ADMIN</span>
+      <a routerLink="/home" class="btn-site-link">Retour au site</a>
       <button class="btn-logout-side" (click)="logout()">⏻ Déconnexion</button>
     </div>
   </aside>
 
   <!-- Main content -->
   <main class="main-content">
+
+    <div class="dashboard-theme-bar">
+      <button class="theme-toggle-dashboard" (click)="themeService.toggle()"
+              [title]="themeService.theme() === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'">
+        {{ themeService.theme() === 'dark' ? '☀️' : '🌙' }}
+      </button>
+    </div>
 
     @if (message()) {
       <div class="alert-success">✅ {{ message() }}</div>
@@ -725,71 +733,7 @@
 
     <!-- TAB: ÉVÉNEMENTS -->
     @if (activeTab() === 'evenements') {
-      <div class="tab-header-row">
-        <div>
-          <h1>Gestion des Événements</h1>
-          <p>{{ evenements().length }} événement(s) enregistré(s)</p>
-        </div>
-        <button class="btn-add" (click)="showForm.set(showForm() === 'event' ? '' : 'event')">
-          {{ showForm() === 'event' ? '✕ Fermer' : '➕ Nouvel événement' }}
-        </button>
-      </div>
-
-      @if (showForm() === 'event') {
-        <div class="form-card">
-          <h2>Ajouter un événement</h2>
-          <div class="form-grid">
-            <div class="field full">
-              <label>Titre *</label>
-              <input [(ngModel)]="newEvent.titre" placeholder="Titre de l'événement" />
-            </div>
-            <div class="field">
-              <label>Type</label>
-              <select [(ngModel)]="newEvent.type">
-                <option value="Séminaire">Séminaire</option>
-                <option value="Conférence">Conférence</option>
-                <option value="Journée de recherche">Journée de recherche</option>
-                <option value="Atelier">Atelier</option>
-                <option value="Soutenance">Soutenance</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Date</label>
-              <input type="date" [(ngModel)]="newEvent.dateEvenement" />
-            </div>
-            <div class="field">
-              <label>Lieu</label>
-              <input [(ngModel)]="newEvent.lieu" placeholder="ex. Salle A, ISI El Manar" />
-            </div>
-            <div class="field full">
-              <label>Description</label>
-              <textarea [(ngModel)]="newEvent.description" rows="3" placeholder="Description de l'événement..."></textarea>
-            </div>
-          </div>
-          <button class="btn-submit" (click)="ajouterEvenement()">Enregistrer l'événement</button>
-        </div>
-      }
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr><th>Titre</th><th>Type</th><th>Date</th><th>Lieu</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            @for (e of evenements(); track e.id) {
-              <tr>
-                <td class="cell-title">{{ e.titre }}</td>
-                <td><span class="badge-event">{{ e.type }}</span></td>
-                <td class="cell-muted">{{ e.dateEvenement }}</td>
-                <td class="cell-muted">{{ e.lieu }}</td>
-                <td>
-                  <button class="btn-action btn-delete" (click)="supprimerEvenement(e.id)">Suppr.</button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+      <app-admin-evenements></app-admin-evenements>
     }
 
     <!-- TAB: AXES -->

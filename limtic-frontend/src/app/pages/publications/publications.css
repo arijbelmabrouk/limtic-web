@@ -1,23 +1,24 @@
 .page {
   min-height: 100vh;
-  background: #111827;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   padding: 3rem 5rem;
 }
 .page-header {
   margin-bottom: 3rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(0,210,255,0.1);
+  border-bottom: 1px solid var(--border-color);
 }
-.page-header h1 { font-size: 2.5rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; }
-.page-header p  { color: #94a3b8; font-size: 0.95rem; }
+.page-header h1 { font-size: 2.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; }
+.page-header p  { color: var(--text-secondary); font-size: 0.95rem; }
 
 /* ── Liste ── */
 .pub-list { display: flex; flex-direction: column; gap: 1.25rem; }
 
 /* ── Carte ── */
 .pub-card {
-  background: #1f2937;
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-left: 3px solid transparent;
   border-radius: 14px;
   padding: 1.75rem 2rem;
@@ -29,10 +30,10 @@
   text-decoration: none;
 }
 .pub-card:hover {
-  border-left-color: #00d2ff;
-  background: #243044;
+  border-left-color: var(--accent);
+  background: rgba(0,0,0,0.04);
   transform: translateX(5px);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
 }
 
 /* ── Ligne du haut : type + année + badges ── */
@@ -51,7 +52,7 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   background: rgba(0,210,255,0.12);
-  color: #00d2ff;
+  color: var(--accent);
   border: 1px solid rgba(0,210,255,0.2);
 }
 /* Variantes par type */
@@ -70,8 +71,8 @@
 .pub-year {
   font-size: 0.88rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.35);
-  background: rgba(255,255,255,0.05);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
   padding: 3px 10px;
   border-radius: 20px;
 }
@@ -111,7 +112,7 @@
 
 /* ── Titre ── */
 .pub-title {
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 1.15rem;
   font-weight: 700;
   line-height: 1.45;
@@ -120,23 +121,23 @@
 
 /* ── Journal ── */
 .pub-journal {
-  color: #00d2ff;
+  color: var(--accent);
   font-size: 0.88rem;
   font-style: italic;
   margin: 0;
-  opacity: 0.85;
+  opacity: 0.95;
 }
 
 /* ── Auteurs ── */
 .pub-authors {
-  color: #a78bfa;
+  color: #7c3aed;
   font-size: 0.85rem;
   margin: 0;
 }
 
 /* ── Résumé ── */
 .pub-resume {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.65;
   margin: 0;
@@ -150,13 +151,13 @@
   flex-wrap: wrap;
   margin-top: 0.25rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .pub-doi, .pub-link {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #00d2ff;
+  color: var(--accent);
   text-decoration: none;
   padding: 3px 10px;
   border: 1px solid rgba(0,210,255,0.2);
@@ -179,9 +180,9 @@
 
 .pub-axe {
   font-size: 0.78rem;
-  color: #94a3b8;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   padding: 3px 10px;
   border-radius: 6px;
   margin-left: auto;
@@ -189,8 +190,8 @@
 
 /* ── Filtres ── */
 .filters-bar {
-  background: #1f2937;
-  border: 1px solid rgba(0,210,255,0.1);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 1.5rem;
   margin-bottom: 2rem;
@@ -202,44 +203,47 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #111827;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0 1rem;
   transition: border-color 0.2s;
 }
-.search-box:focus-within { border-color: #00d2ff; }
-.search-icon { color: rgba(255,255,255,0.3); }
+.search-box:focus-within { border-color: var(--accent); }
+.search-icon { color: var(--text-secondary); }
 .search-box input {
   flex: 1; background: none; border: none;
-  color: #f1f5f9; padding: 12px 0;
+  color: var(--text-primary); padding: 12px 0;
   font-size: 0.9rem; outline: none;
 }
-.search-box input::placeholder { color: rgba(255,255,255,0.25); }
+.search-box input::placeholder { color: var(--text-secondary); }
 
 .filters-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
 .filters-row select {
-  background: #111827;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 8px 12px;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-size: 0.85rem;
   cursor: pointer;
   transition: border-color 0.2s;
 }
-.filters-row select:focus { outline: none; border-color: #00d2ff; }
-.filters-row select option, .filters-row select optgroup { background: #1f2937; color: #f1f5f9; }
+.filters-row select:focus { outline: none; border-color: var(--accent); }
+.filters-row select option, .filters-row select optgroup { background: var(--bg-secondary); color: var(--text-primary); }
 
 .btn-reset {
-  background: rgba(248,113,113,0.1);
-  border: 1px solid rgba(248,113,113,0.2);
-  color: #f87171; padding: 8px 14px;
-  border-radius: 8px; cursor: pointer;
-  font-size: 0.85rem; font-weight: 600;
+  background: var(--accent-soft);
+  border: 1px solid rgba(0,210,255,0.2);
+  color: var(--accent);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
   transition: all 0.2s;
 }
-.btn-reset:hover { background: rgba(248,113,113,0.2); }
+.btn-reset:hover { background: rgba(0,210,255,0.2); }
 
 .export-row { display: flex; gap: 0.75rem; }
 .btn-export { padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
@@ -249,11 +253,11 @@
 .btn-export.csv:hover { background: rgba(52,211,153,0.25); }
 
 /* ── Empty state ── */
-.empty-state { text-align: center; padding: 4rem 2rem; color: rgba(255,255,255,0.35); }
+.empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
 .empty-state button {
   margin-top: 1rem; padding: 10px 24px;
   background: rgba(0,210,255,0.1); border: 1px solid rgba(0,210,255,0.2);
-  color: #00d2ff; border-radius: 8px; cursor: pointer; font-size: 0.9rem;
+  color: var(--accent); border-radius: 8px; cursor: pointer; font-size: 0.9rem;
 }
 
 /* ── Responsive ── */

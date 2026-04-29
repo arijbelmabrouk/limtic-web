@@ -10,42 +10,38 @@
         <div class="publication-meta">
           <span class="publication-date">{{ pub.annee }}</span>
           @if (pub.type) {
-            <span class="publication-type" [class]="pub.type === 'JOURNAL' ? 'type-journal' : 'type-conf'">
+            <span class="publication-type" [class]="pub.type === 'Journal' ? 'type-journal' : pub.type === 'Conference' ? 'type-conf' : 'type-other'">
               {{ pub.type }}
             </span>
           }
-          @if (pub.classement) {
-            <span class="badge-classement badge-{{ pub.classement!.toLowerCase() }}">
-              {{ pub.classement }}
-            </span>
-          }
-          @if (pub.sourceClassement) {
-            <span class="source-classement">{{ pub.sourceClassement }}</span>
-          }
           @if (pub.statut === 'PUBLIE') {
-            <span class="statut-publie">✅ Publié</span>
+            <span class="statut-publie">Publié</span>
+          } @else if (pub.statut === 'SOUMIS') {
+            <span class="statut-soumis">Soumis</span>
           } @else if (pub.statut === 'BROUILLON') {
-            <span class="statut-brouillon">📝 Brouillon</span>
+            <span class="statut-brouillon">Brouillon</span>
           }
         </div>
       </div>
 
-      <!-- Auteur -->
-      @if (pub.chercheur) {
+      <!-- Auteurs -->
+      @if (pub.chercheurs && pub.chercheurs.length > 0) {
         <div class="publication-authors">
-          <h3>Auteur</h3>
+          <h3>Auteurs</h3>
           <div class="authors-list">
-            <div class="author-chip" (click)="navigateToChercheur(pub.chercheur.id)">
-              <div class="author-avatar">
-                {{ pub.chercheur.prenom.charAt(0) }}{{ pub.chercheur.nom.charAt(0) }}
+            @for (auteur of pub.chercheurs; track auteur.id) {
+              <div class="author-chip" (click)="navigateToChercheur(auteur.id)">
+                <div class="author-avatar">
+                  {{ auteur.prenom.charAt(0) }}{{ auteur.nom.charAt(0) }}
+                </div>
+                <div class="author-info">
+                  <span class="author-name">{{ auteur.prenom }} {{ auteur.nom }}</span>
+                  @if (auteur.grade) {
+                    <span class="author-grade">{{ auteur.grade }}</span>
+                  }
+                </div>
               </div>
-              <div class="author-info">
-                <span class="author-name">{{ pub.chercheur.prenom }} {{ pub.chercheur.nom }}</span>
-                @if (pub.chercheur.grade) {
-                  <span class="author-grade">{{ pub.chercheur.grade }}</span>
-                }
-              </div>
-            </div>
+            }
           </div>
         </div>
       }
@@ -58,13 +54,80 @@
         </div>
       }
 
+      <!-- Mots-clés -->
+      @if (pub.motsCles) {
+        <div class="publication-keywords">
+          <h3>Mots-clés</h3>
+          <div class="keywords-list">
+            @for (keyword of pub.motsCles.split(',').map(k => k.trim()); track keyword) {
+              <span class="keyword-badge">{{ keyword }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Métriques et Classement -->
+      <div class="publication-metrics">
+        <h3>Métriques et Classement</h3>
+        <div class="metrics-grid">
+          @if (pub.facteurImpact) {
+            <div class="metric-card">
+              <div class="metric-icon">IF</div>
+              <div class="metric-content">
+                <label>Impact Factor (JCR)</label>
+                <span class="metric-value">{{ pub.facteurImpact }}</span>
+              </div>
+            </div>
+          }
+          @if (pub.scimagoQuartile) {
+            <div class="metric-card">
+              <div class="metric-icon">SJR</div>
+              <div class="metric-content">
+                <label>Quartile Scimago (SJR)</label>
+                <span class="metric-value">{{ pub.scimagoQuartile }}</span>
+              </div>
+            </div>
+          }
+          @if (pub.snip) {
+            <div class="metric-card">
+              <div class="metric-icon">SNIP</div>
+              <div class="metric-content">
+                <label>SNIP (Scopus)</label>
+                <span class="metric-value">{{ pub.snip }}</span>
+              </div>
+            </div>
+          }
+          @if (pub.classementCORE) {
+            <div class="metric-card">
+              <div class="metric-icon">CORE</div>
+              <div class="metric-content">
+                <label>Classement CORE</label>
+                <span class="metric-value">{{ pub.classementCORE }}</span>
+              </div>
+            </div>
+          }
+          @if (pub.sourceClassement) {
+            <div class="metric-card">
+              <div class="metric-icon">SRC</div>
+              <div class="metric-content">
+                <label>Source du classement</label>
+                <span class="metric-value-small">{{ pub.sourceClassement }}</span>
+              </div>
+            </div>
+          }
+        </div>
+        @if (!pub.facteurImpact && !pub.scimagoQuartile && !pub.snip && !pub.classementCORE) {
+          <p class="no-metrics">Aucune métrique d'impact disponible</p>
+        }
+      </div>
+
       @if (publication()?.pdfUrl) {
         <div class="publication-pdf-viewer">
           <div class="pdf-viewer-header">
-            <h3>📄 Document PDF</h3>
+            <h3>Document PDF</h3>
             <a [href]="'https://localhost:8443' + publication()!.pdfUrl!"
               target="_blank" rel="noopener" class="btn-pdf-download">
-              ⬇ Télécharger
+              Télécharger
             </a>
           </div>
 
@@ -91,36 +154,30 @@
       }
       <!-- Détails -->
       <div class="publication-details">
-        <h3>Détails de publication</h3>
+        <h3>📋 Informations de publication</h3>
         <div class="details-grid">
+          @if (pub.type) {
+            <div class="detail-item">
+              <label>Type</label>
+              <span class="detail-value">{{ pub.type }}</span>
+            </div>
+          }
           @if (pub.journal) {
             <div class="detail-item">
               <label>Revue / Journal</label>
-              <span>{{ pub.journal }}</span>
+              <span class="detail-value">{{ pub.journal }}</span>
             </div>
           }
           @if (pub.annee) {
             <div class="detail-item">
-              <label>Année</label>
-              <span>{{ pub.annee }}</span>
-            </div>
-          }
-          @if (pub.classement) {
-            <div class="detail-item">
-              <label>Classement</label>
-              <span>{{ pub.classement }}</span>
-            </div>
-          }
-          @if (pub.sourceClassement) {
-            <div class="detail-item">
-              <label>Source classement</label>
-              <span>{{ pub.sourceClassement }}</span>
+              <label>Année de publication</label>
+              <span class="detail-value">{{ pub.annee }}</span>
             </div>
           }
           @if (pub.doi) {
             <div class="detail-item">
               <label>DOI</label>
-              <a [href]="'https://doi.org/' + pub.doi" target="_blank" rel="noopener">
+              <a [href]="'https://doi.org/' + pub.doi" target="_blank" rel="noopener" class="detail-link">
                 {{ pub.doi }}
               </a>
             </div>
@@ -128,16 +185,18 @@
           @if (pub.lienUrl) {
             <div class="detail-item">
               <label>Lien externe</label>
-              <a [href]="pub.lienUrl" target="_blank" rel="noopener">Accéder à la publication →</a>
+              <a [href]="pub.lienUrl" target="_blank" rel="noopener" class="detail-link">
+                Accéder à la publication →
+              </a>
             </div>
           }
           @if (pub.pdfUrl) {
             <div class="detail-item">
               <label>Fichier PDF</label>
-              <a class="btn-pdf-download"
+              <a class="detail-link btn-pdf-download"
                 [href]="'https://localhost:8443' + pub.pdfUrl"
                 target="_blank" rel="noopener">
-                📄 Télécharger le PDF
+                Télécharger le PDF
               </a>
             </div>
           }
@@ -155,6 +214,7 @@
                 <p class="axe-description">{{ pub.axe.description }}</p>
               }
             </div>
+            <div class="axe-link-icon">→</div>
           </div>
         </div>
       }

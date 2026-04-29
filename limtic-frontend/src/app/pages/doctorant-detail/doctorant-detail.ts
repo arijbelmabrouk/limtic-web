@@ -20,16 +20,25 @@ export class DoctorantDetail implements OnInit {
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    // FIXE: utilise l'endpoint GET /api/doctorants/{id} au lieu de charger toute la liste
-    this.api.getDoctorant(id).subscribe({
-      next: (doc: any) => this.doctorant.set(doc),
-      error: () => this.router.navigate(['/doctorants'])
+    this.api.getDoctorants().subscribe((data: any[]) => {
+      const doc = data.find(d => d.id === id);
+      if (doc) {
+        this.doctorant.set(doc);
+      } else {
+        this.router.navigate(['/doctorants']);
+      }
     });
   }
 
   retour() { this.router.navigate(['/doctorants']); }
 
-  navigateToChercheur(id: number) { this.router.navigate(['/chercheurs', id]); }
+  navigateToChercheur(id: number) {
+    this.router.navigate(['/chercheurs', id]);
+  }
+
+  navigateToPublication(id: number) {
+    this.router.navigate(['/publications', id]);
+  }
 
   formatDate(date: string): string {
     if (!date) return '-';

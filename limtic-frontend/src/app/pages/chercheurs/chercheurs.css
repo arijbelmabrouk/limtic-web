@@ -1,24 +1,25 @@
 .page {
   min-height: 100vh;
-  background: #111827;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   padding: 3rem 5rem;
 }
 
 .page-header {
   margin-bottom: 3rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(0,210,255,0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .page-header h1 {
   font-size: 2.5rem;
   font-weight: 800;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .page-header p {
-  color: rgba(255,255,255,0.4);
+  color: var(--text-secondary);
   font-size: 1rem;
 }
 
@@ -29,8 +30,8 @@
 }
 
 .card {
-  background: #1f2937;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 2rem;
   cursor: pointer;
@@ -77,30 +78,30 @@
 .card-info h3 {
   font-size: 1.2rem;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
 
 .grade {
   display: block;
   font-size: 0.85rem;
-  color: #00d2ff;
+  color: var(--accent);
   font-weight: 500;
 }
 
 .institution {
   display: block;
   font-size: 0.8rem;
-  color: rgba(255,255,255,0.4);
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
 .specialite {
   margin-top: 0.75rem;
   font-size: 0.85rem;
-  color: rgba(255,255,255,0.6);
-  background: rgba(0,210,255,0.06);
-  border: 1px solid rgba(0,210,255,0.1);
+  color: var(--text-secondary);
+  background: var(--accent-soft);
+  border: 1px solid var(--border-color);
   padding: 6px 12px;
   border-radius: 8px;
 }
@@ -120,8 +121,8 @@
 }
 
 .filters-bar {
-  background: #1f2937;
-  border: 1px solid rgba(0,210,255,0.1);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 14px;
   padding: 1.5rem;
   margin-bottom: 2rem;
@@ -134,8 +135,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #111827;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0 1rem;
   transition: border-color 0.2s;
@@ -148,13 +149,13 @@
   flex: 1;
   background: none;
   border: none;
-  color: white;
+  color: var(--text-primary);
   padding: 12px 0;
   font-size: 0.9rem;
   outline: none;
 }
 
-.search-box input::placeholder { color: rgba(255,255,255,0.25); }
+.search-box input::placeholder { color: var(--text-muted); }
 
 .filters-row {
   display: flex;
@@ -164,11 +165,11 @@
 }
 
 .filters-row select {
-  background: #111827;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 8px 12px;
-  color: white;
+  color: var(--text-primary);
   font-size: 0.85rem;
   cursor: pointer;
   transition: border-color 0.2s;
@@ -176,10 +177,10 @@
 
 .filters-row select:focus {
   outline: none;
-  border-color: #00d2ff;
+  border-color: var(--accent);
 }
 
-.filters-row select option { background: #1f2937; }
+.filters-row select option { background: var(--bg-secondary); color: var(--text-primary); }
 
 .btn-reset {
   background: rgba(248,113,113,0.1);

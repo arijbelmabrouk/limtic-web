@@ -15,8 +15,15 @@
     </select>
     <input [(ngModel)]="filterAnnee" (ngModelChange)="applyFilters()"
            placeholder="Année inscription (ex: 2022)" class="filter-input" />
+    <select [(ngModel)]="filterAxe" (ngModelChange)="applyFilters()" class="filter-select">
+      <option value="">Tous les axes</option>
+      @for (axe of axes(); track axe) {
+        <option [value]="axe">{{ axe }}</option>
+      }
+    </select>
     <button class="btn-reset" (click)="resetFilters()">✕ Réinitialiser</button>
   </div>
+
 
   @if (loading()) {
     <div class="loading-state">Chargement...</div>
@@ -45,7 +52,7 @@
 
         @if (d.directeur) {
           <div class="directeur">
-            <span class="label">Encadreur :</span>
+            <span class="label">Directeur de thèse :</span>
             <a [routerLink]="['/chercheurs', d.directeur.id]" [queryParams]="{from: 'doctorants'}" class="link">
               {{ d.directeur.prenom }} {{ d.directeur.nom }}
             </a>

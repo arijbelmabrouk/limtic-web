@@ -4,14 +4,16 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
+import { ThemeService } from '../../services/theme.service';
 import { SafePipe } from '../../pipes/Safepipe';
+import { AdminEvenementsComponent } from '../admin-evenements/admin-evenements.component';
 
 @Component({
   selector: 'app-dashboard-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AdminEvenementsComponent],
   templateUrl: './dashboard-admin.html',
-  styleUrl: './dashboard-admin.css'
+  styleUrls: ['./dashboard-admin.css']
 })
 export class DashboardAdmin implements OnInit {
   email     = signal('');
@@ -78,7 +80,7 @@ export class DashboardAdmin implements OnInit {
   csvFile = signal<File | null>(null);
   csvImportReport = signal<{ importes: number; ignores: number; erreurs: string[] } | null>(null);
 
-  constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer) {}
+  constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer, public themeService: ThemeService) {}
 
   private handleError(error: any) {
     const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
@@ -751,6 +753,15 @@ export class DashboardAdmin implements OnInit {
     });
   }
 
+  fermerTout() {
+  this.showForm.set('');
+  this.message.set('');
+  this.erreur.set('');
+  this.editingAxe.set(null);
+  this.editingDoctorant.set(null);
+  this.editingMasterien.set(null);
+  this.editingPublication.set(null);
+}
   // ── Auth ──────────────────────────────────────────────────
   logout() {
     this.api.logout().subscribe({

@@ -3,6 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } fro
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { ApiService } from './services/api.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -18,8 +19,8 @@ export class App implements OnInit {
   dropdownOuvert = signal<string | null>(null);
   menuOuvert     = signal(false);
 
-  // Un seul constructeur avec ApiService
-  constructor(private router: Router, private api: ApiService) {}
+  // Un seul constructeur avec ApiService et ThemeService
+  constructor(private router: Router, private api: ApiService, public themeService: ThemeService) {}
 
   ngOnInit() {
     this.checkAuth();
