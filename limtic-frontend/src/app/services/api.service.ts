@@ -238,14 +238,53 @@ export class ApiService {
   }
 
   // ── Paramètres système ────────────────────────────────────────────────────
+
+  /** Paramètres publics (labo, seo, contact, theme) — sans authentification */
   getParametresPublics(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/admin/parametres/public`, this.options);
   }
+
+  /** Tous les paramètres — admin uniquement */
   getParametres(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/admin/parametres`, this.options);
   }
+
+  /** Mise à jour d'un paramètre individuel par sa clé */
   updateParametre(cle: string, valeur: string): Observable<any> {
     return this.http.put(`${this.base}/admin/parametres/${cle}`, { valeur }, this.options);
+  }
+
+  /**
+   * §4.3.6 — Mise à jour en lot de plusieurs paramètres en une seule requête.
+   * Envoie un dictionnaire { "labo.nom": "LIMTIC", "theme.couleurPrimaire": "#00d2ff", ... }
+   * Crée les clés absentes (upsert côté backend).
+   */
+  updateParametresLot(params: Record<string, string>): Observable<void> {
+    return this.http.put<void>(`${this.base}/admin/parametres/lot`, params, this.options);
+  }
+
+  /**
+   * §4.3.6 — Upload du logo du laboratoire.
+   * Retourne { logoUrl: "/uploads/logos/logo-xxx.png" }
+   */
+  uploadLogo(file: File): Observable<{ logoUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ logoUrl: string }>(
+      `${this.base}/admin/parametres/logo`,
+      formData,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * §4.3.6 — Construit l'URL absolue d'un logo stocké côté backend.
+   * Exemple : "/uploads/logos/logo-abc123.png" → "https://localhost:8443/uploads/logos/logo-abc123.png"
+   */
+  getLogoUrl(relativePath: string): string {
+    if (!relativePath) return '';
+    if (relativePath.startsWith('http')) return relativePath;
+    return `https://localhost:8443${relativePath}`;
   }
 
   // ── Journal d'audit ───────────────────────────────────────────────────────
@@ -302,4 +341,4 @@ export class ApiService {
     return this.http.delete(`${this.base}/${endpoint}`, this.options);
   }
 
-}
+  }
