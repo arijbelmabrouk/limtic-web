@@ -75,11 +75,15 @@ export class DashboardAdmin implements OnInit {
   message  = signal('');
   erreur   = signal('');
 
+  csvFile = signal<File | null>(null);
+  csvImportReport = signal<{ importes: number; ignores: number; erreurs: string[] } | null>(null);
+
   constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer) {}
 
   private handleError(error: any) {
     const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
-    this.message.set('Erreur : ' + message);
+    this.message.set('');
+    this.erreur.set('Erreur : ' + message);
   }
 
   ngOnInit() {
@@ -115,6 +119,9 @@ export class DashboardAdmin implements OnInit {
     this.activeTab.set(tab);
     this.showForm.set('');
     this.message.set('');
+    this.erreur.set('');
+    this.csvFile.set(null);
+    this.csvImportReport.set(null);
     this.editingAxe.set(null);
     this.editingDoctorant.set(null);
     this.editingMasterien.set(null);
@@ -417,6 +424,48 @@ export class DashboardAdmin implements OnInit {
   }
 
   // ── Chercheurs ────────────────────────────────────────────
+  exportChercheursCsv() {
+    this.message.set('Téléchargement du CSV en cours...');
+    this.erreur.set('');
+    this.api.exportChercheursCsv();
+  }
+
+  onCsvFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    this.csvFile.set(file);
+    this.csvImportReport.set(null);
+    this.message.set('');
+    this.erreur.set('');
+    if (input) input.value = '';
+  }
+
+  importChercheursCsv() {
+    const file = this.csvFile();
+    if (!file) {
+      this.erreur.set('Veuillez sélectionner un fichier CSV.');
+      return;
+    }
+
+    this.api.importChercheursCsv(file).subscribe({
+      next: (res: any) => {
+        this.csvImportReport.set({
+          importes: res.importes ?? 0,
+          ignores: res.ignores ?? 0,
+          erreurs: res.erreurs ?? []
+        });
+        this.message.set(res.message || 'Import CSV terminé.');
+        this.erreur.set('');
+        this.csvFile.set(null);
+        this.api.getChercheurs().subscribe(data => {
+          this.chercheurs.set(data);
+          this.stats.update(s => ({ ...s, chercheurs: data.length }));
+        });
+      },
+      error: err => this.handleError(err)
+    });
+  }
+
   supprimerChercheur(id: number) {
     if (!confirm('Supprimer ce chercheur ?')) return;
     this.api.delete('chercheurs/' + id).subscribe({

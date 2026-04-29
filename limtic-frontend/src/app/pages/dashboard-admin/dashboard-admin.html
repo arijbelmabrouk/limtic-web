@@ -50,6 +50,10 @@
       <div class="alert-success">✅ {{ message() }}</div>
     }
 
+    @if (erreur()) {
+      <div class="alert-error">⚠️ {{ erreur() }}</div>
+    }
+
     <!-- TAB: DASHBOARD -->
     @if (activeTab() === 'dashboard') {
       <div class="tab-header">
@@ -141,10 +145,48 @@
 
     <!-- TAB: MEMBRES -->
     @if (activeTab() === 'membres') {
-      <div class="tab-header">
-        <h1>Gestion des Membres</h1>
-        <p>Chercheurs permanents du laboratoire</p>
+      <div class="tab-header-row">
+        <div>
+          <h1>Gestion des Membres</h1>
+          <p>Chercheurs permanents du laboratoire</p>
+        </div>
+        <div class="membres-actions">
+          <button class="btn-add" (click)="exportChercheursCsv()">⬇ Exporter CSV</button>
+
+          <input
+            type="file"
+            accept=".csv"
+            id="csvInput"
+            class="csv-file-input"
+            (change)="onCsvFileSelected($event)" />
+          <label for="csvInput" class="btn-add btn-add-secondary">📄 Choisir CSV</label>
+
+          <button class="btn-add" [disabled]="!csvFile()" (click)="importChercheursCsv()">
+            ⬆ Importer CSV
+          </button>
+        </div>
       </div>
+
+      @if (csvFile()) {
+        <div class="csv-file-name">Fichier sélectionné : {{ csvFile()?.name }}</div>
+      }
+
+      @if (csvImportReport()) {
+        <div class="csv-report">
+          <div>Importés : <strong>{{ csvImportReport()?.importes }}</strong></div>
+          <div>Ignorés : <strong>{{ csvImportReport()?.ignores }}</strong></div>
+          @if (csvImportReport()?.erreurs?.length) {
+            <div class="csv-errors">
+              <div>Erreurs :</div>
+              <ul>
+                @for (e of csvImportReport()?.erreurs; track e) {
+                  <li>{{ e }}</li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      }
       <div class="table-container">
         <table class="data-table">
           <thead>
