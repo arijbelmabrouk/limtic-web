@@ -38,6 +38,52 @@ public class PublicationService {
         return publicationRepository.save(publication);
     }
 
+    /**
+     * Safe update: loads the existing entity and patches only the scalar /
+     * user-editable fields.  Relations (axe, chercheurs) are intentionally
+     * preserved from the DB so they are never accidentally nulled out by the
+     * flat DTO that comes from the edit form.
+     *
+     * This is the method the PUT endpoint must call instead of save().
+     */
+    public Publication update(Long id, Publication incoming) {
+        Publication existing = publicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Publication introuvable : id=" + id));
+
+        // ── Scalar fields ──────────────────────────────────────────────────
+        existing.setTitre(incoming.getTitre());
+        existing.setType(incoming.getType());
+        existing.setAnnee(incoming.getAnnee());
+        existing.setJournal(incoming.getJournal());
+        existing.setResume(incoming.getResume());
+        existing.setLienUrl(incoming.getLienUrl());
+        existing.setDoi(incoming.getDoi());
+        existing.setMotsCles(incoming.getMotsCles());
+        existing.setStatut(incoming.getStatut() != null ? incoming.getStatut() : existing.getStatut());
+
+        // ── §3.7 Classement / score ────────────────────────────────────────
+        existing.setFacteurImpact(incoming.getFacteurImpact());
+        existing.setScimagoQuartile(incoming.getScimagoQuartile());
+        existing.setSnip(incoming.getSnip());
+        existing.setClassementCORE(incoming.getClassementCORE());
+        existing.setSourceClassement(incoming.getSourceClassement());
+
+        // ── PDF URL: only overwrite when the caller explicitly provides one ─
+        // (the upload-pdf endpoint manages pdfUrl separately; here we preserve
+        //  the existing value unless the edit form explicitly clears it)
+        if (incoming.getPdfUrl() != null) {
+            existing.setPdfUrl(incoming.getPdfUrl());
+        }
+        // If incoming.getPdfUrl() == null we leave existing.pdfUrl untouched.
+        // The DELETE /pdf endpoint handles explicit removal.
+
+        // ── Relations: axe & chercheurs are NOT touched ────────────────────
+        // The edit form does not send relation objects, so we must never
+        // overwrite them here — that would break all axe/chercheur links.
+
+        return publicationRepository.save(existing);
+    }
+
     public void delete(Long id) {
         publicationRepository.deleteById(id);
     }

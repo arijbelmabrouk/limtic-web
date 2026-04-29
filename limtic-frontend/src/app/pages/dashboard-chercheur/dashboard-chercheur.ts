@@ -65,8 +65,10 @@ export class DashboardChercheur implements OnInit {
   editPubPdfPreviewUrl: SafeResourceUrl | null = null;
   private _editPdfBlobUrl: string | null = null;
   get editPdfBlobUrl(): string | null { return this._editPdfBlobUrl; }
+  editPdfViewerUrl = signal<SafeResourceUrl | null>(null);
   editRemovePdf = false;
   private _editExistingPdfSafeUrl: SafeResourceUrl | null = null;
+  private _editExistingPdfBlobUrl: string | null = null;
 
   pubBrouillons = computed(() => this.publications().filter(p => p.statut === 'BROUILLON' || !p.statut).length);
   pubSoumises   = computed(() => this.publications().filter(p => p.statut === 'SOUMIS').length);
@@ -253,9 +255,9 @@ export class DashboardChercheur implements OnInit {
       resume: p.resume || '',
       doi: p.doi || '',
       lienUrl: p.lienUrl || '',
-      statut: p.statut || 'BROUILLON',
-      scimagoQuartile: p.scimagoQuartile || '',
-      classementCORE: p.classementCORE || '',
+      motsCles: p.motsCles || '',
+      scimagoQuartile: p.scimagoQuartile ?? null,
+      classementCORE: p.classementCORE ?? null,
       facteurImpact: p.facteurImpact ?? null,
       snip: p.snip ?? null,
       sourceClassement: p.sourceClassement || '',
@@ -264,6 +266,14 @@ export class DashboardChercheur implements OnInit {
     this.clearEditPdfSelection();
     this.editRemovePdf = false;
     this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
+    if (p.pdfUrl) {
+      this.loadEditExistingPdf();
+    }
     this.activeTab.set('publications'); // reste sur l'onglet publications
   }
 
@@ -281,7 +291,18 @@ export class DashboardChercheur implements OnInit {
       p.pdfUrl = null;
     }
 
-    this.api.updatePublication(p.id, p).subscribe({
+    // Sanitize CHECK-constrained enum fields: the DB rejects empty strings —
+    // they must be NULL when no value is selected.
+    const { statut: _statut, ...rest } = p;
+    const payload = {
+      ...rest,
+      scimagoQuartile: p.scimagoQuartile || null,
+      classementCORE:  p.classementCORE  || null,
+      facteurImpact:   p.facteurImpact   ?? null,
+      snip:            p.snip            ?? null,
+    };
+
+    this.api.updatePublication(p.id, payload).subscribe({
       next: (saved: any) => {
         // Uploader le nouveau PDF si sélectionné
         if (this.editPubPdfFile) {
@@ -313,6 +334,11 @@ export class DashboardChercheur implements OnInit {
     this.clearEditPdfSelection();
     this.editRemovePdf = false;
     this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
     this.editingPublication.set(null);
   }
 
@@ -324,6 +350,7 @@ export class DashboardChercheur implements OnInit {
     this.editPubPdfFile = input.files[0];
     this._editPdfBlobUrl = URL.createObjectURL(this.editPubPdfFile);
     this.editPubPdfPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editPdfBlobUrl);
+    this.editPdfViewerUrl.set(this.editPubPdfPreviewUrl);
     this.editRemovePdf = false; // un nouveau fichier annule la demande de suppression
   }
 
@@ -334,10 +361,27 @@ export class DashboardChercheur implements OnInit {
     }
     this.editPubPdfPreviewUrl = null;
     this.editPubPdfFile = null;
+    if (!this.editRemovePdf) {
+      this.loadEditExistingPdf();
+    } else {
+      this.editPdfViewerUrl.set(null);
+    }
   }
 
-  markRemoveEditPdf() { this.editRemovePdf = true; }
-  undoRemoveEditPdf() { this.editRemovePdf = false; }
+  markRemoveEditPdf() {
+    this.editRemovePdf = true;
+    this.clearEditPdfSelection();
+    this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
+  }
+  undoRemoveEditPdf() {
+    this.editRemovePdf = false;
+    this.loadEditExistingPdf();
+  }
 
   getFullPdfUrl(relativePath: string): string {
     return this.api.getUploadUrl(relativePath);
@@ -347,11 +391,43 @@ export class DashboardChercheur implements OnInit {
     const p = this.editingPublication();
     if (!p?.pdfUrl) return this.sanitizer.bypassSecurityTrustResourceUrl('');
     if (!this._editExistingPdfSafeUrl) {
-      this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-        this.api.getUploadUrl(p.pdfUrl)
-      );
+      // Load the PDF via XHR as a blob and create an object URL to avoid cross-origin/embed issues.
+      // Start with an empty safe URL and trigger a fetch — template will update when the blob is ready.
+      this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+      this.api.getPdfBlob(p.pdfUrl).subscribe({
+        next: (blob) => {
+          if (this._editExistingPdfBlobUrl) URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+          this._editExistingPdfBlobUrl = URL.createObjectURL(blob);
+          this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editExistingPdfBlobUrl);
+        },
+        error: () => {
+          this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+        }
+      });
     }
     return this._editExistingPdfSafeUrl;
+  }
+
+  getEditPdfViewerUrl(): SafeResourceUrl | null {
+    return this.editPdfViewerUrl();
+  }
+
+  private loadEditExistingPdf() {
+    const p = this.editingPublication();
+    if (!p?.pdfUrl || this.editRemovePdf || this.editPubPdfFile) return;
+    this.api.getPdfBlob(p.pdfUrl).subscribe({
+      next: (blob) => {
+        if (this._editExistingPdfBlobUrl) URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+        const pdfBlob = blob.type ? blob : new Blob([blob], { type: 'application/pdf' });
+        this._editExistingPdfBlobUrl = URL.createObjectURL(pdfBlob);
+        this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editExistingPdfBlobUrl);
+        this.editPdfViewerUrl.set(this._editExistingPdfSafeUrl);
+      },
+      error: () => {
+        this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+        this.editPdfViewerUrl.set(null);
+      }
+    });
   }
 
   soumettre(id: number) {

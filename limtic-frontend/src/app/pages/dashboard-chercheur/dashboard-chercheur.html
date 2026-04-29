@@ -351,6 +351,8 @@
                 <option value="Journal">Article de journal</option>
                 <option value="Conference">Conférence internationale</option>
                 <option value="Conference Nationale">Conférence nationale</option>
+                <option value="Book Chapter">Chapitre d'ouvrage</option>
+                <option value="Thesis">Rapport / Thèse</option>
               </select>
             </div>
             <div class="field">
@@ -361,10 +363,6 @@
               <label>Journal / Conférence</label>
               <input [(ngModel)]="editingPublication().journal" placeholder="IEEE, ACM…" />
             </div>
-            <div class="field full">
-              <label>Résumé</label>
-              <textarea [(ngModel)]="editingPublication().resume" rows="3" placeholder="Résumé…"></textarea>
-            </div>
             <div class="field">
               <label>DOI</label>
               <input [(ngModel)]="editingPublication().doi" placeholder="ex. 10.1000/xyz123" />
@@ -373,23 +371,39 @@
               <label>URL externe</label>
               <input [(ngModel)]="editingPublication().lienUrl" placeholder="https://…" />
             </div>
-                        <!-- §3.7.2 CDC — PDF dans le formulaire d'édition -->
+            <div class="field">
+              <label>Mots-clés</label>
+              <input [(ngModel)]="editingPublication().motsCles" placeholder="IA, ML, NLP…" />
+            </div>
+            <div class="field full">
+              <label>Résumé</label>
+              <textarea [(ngModel)]="editingPublication().resume" rows="3" placeholder="Résumé…"></textarea>
+            </div>
+
+            <!-- §3.7.2 CDC — PDF dans le formulaire d'édition -->
             <div class="field full">
               <label>Fichier PDF</label>
 
-              <!-- PDF existant -->
-              @if (editingPublication().pdfUrl && !editRemovePdf) {
+              <!-- PDF viewer unique (existant ou nouveau) -->
+              @if (!editRemovePdf && editPdfViewerUrl()) {
                 <div class="pdf-existing-row">
-                  <span class="pdf-existing-label">📄 PDF actuel</span>
-                  <a [href]="getFullPdfUrl(editingPublication().pdfUrl)" target="_blank" class="btn-pdf-open">↗ Ouvrir</a>
-                  <button class="pdf-clear" (click)="markRemoveEditPdf()">✕ Supprimer</button>
+                  <span class="pdf-existing-label">
+                    📄 {{ editPubPdfFile ? 'Nouveau PDF' : 'PDF actuel' }}
+                  </span>
+                  <a [href]="editPubPdfFile ? editPdfBlobUrl : getFullPdfUrl(editingPublication().pdfUrl)"
+                     target="_blank" class="btn-pdf-open">↗ Ouvrir</a>
+                  @if (editPubPdfFile) {
+                    <button class="pdf-clear" (click)="clearEditPdfSelection()">✕ Retirer</button>
+                  } @else {
+                    <button class="pdf-clear" (click)="markRemoveEditPdf()">✕ Supprimer</button>
+                  }
                 </div>
                 <div class="pdf-preview-panel" style="margin-top:0.75rem;">
                   <iframe
-                    [src]="getEditExistingPdfUrl()"
+                    [src]="editPdfViewerUrl()!"
                     class="pdf-preview-frame"
                     type="application/pdf"
-                    title="PDF actuel">
+                    title="Prévisualisation PDF">
                   </iframe>
                 </div>
               }
@@ -403,9 +417,9 @@
 
               <!-- Upload nouveau PDF -->
               <div class="pdf-upload-zone" style="margin-top: 0.5rem;">
-                <input type="file" accept="application/pdf" id="pdfInputEdit"
+                <input type="file" accept="application/pdf" id="pdfInputEditChercheur"
                        class="pdf-file-input" (change)="onEditPdfFileSelected($event)" />
-                <label for="pdfInputEdit" class="pdf-upload-label">
+                <label for="pdfInputEditChercheur" class="pdf-upload-label">
                   @if (editPubPdfFile) {
                     <span class="pdf-selected">📄 {{ editPubPdfFile.name }}</span>
                   } @else {
@@ -418,35 +432,14 @@
               </div>
               <span class="field-hint">Vous pouvez remplacer le PDF existant ou en supprimer un.</span>
 
-              <!-- Prévisualisation du nouveau fichier sélectionné -->
-              @if (editPubPdfPreviewUrl) {
-                <div class="pdf-preview-panel">
-                  <div class="pdf-preview-header">
-                    <span class="pdf-preview-title">👁 Prévisualisation — {{ editPubPdfFile?.name }}</span>
-                    <div class="pdf-preview-actions">
-                      <a [href]="editPdfBlobUrl" target="_blank" class="btn-pdf-open">↗ Ouvrir dans un onglet</a>
-                      <button class="pdf-preview-close" (click)="clearEditPdfSelection()">✕</button>
-                    </div>
-                  </div>
-                  <iframe
-                    [src]="editPubPdfPreviewUrl"
-                    class="pdf-preview-frame"
-                    type="application/pdf"
-                    title="Prévisualisation PDF">
-                  </iframe>
-                </div>
-              }
             </div>
             
             <!-- §3.7.2 CDC — Classement -->
             <div class="field full ranking-section-header">
               <label class="ranking-title">Classement / Score de la venue</label>
-              <span class="ranking-hint">Mettez à jour le classement selon la source officielle (Scimago, CORE, JCR…)</span>
             </div>
             <div class="field">
-              <label>Quartile Scimago (SJR)
-                <a href="https://www.scimagojr.com" target="_blank" class="source-link">↗</a>
-              </label>
+              <label>Quartile Scimago (SJR)</label>
               <select [(ngModel)]="editingPublication().scimagoQuartile">
                 <option value="">— Non renseigné —</option>
                 <option value="Q1">Q1 — Top 25 %</option>
@@ -456,9 +449,7 @@
               </select>
             </div>
             <div class="field">
-              <label>Classement CORE (Conférences)
-                <a href="http://portal.core.edu.au/conf-ranks/" target="_blank" class="source-link">↗</a>
-              </label>
+              <label>Classement CORE (Conférences)</label>
               <select [(ngModel)]="editingPublication().classementCORE">
                 <option value="">— Non renseigné —</option>
                 <option value="A*">A* — Excellence</option>
@@ -468,17 +459,13 @@
               </select>
             </div>
             <div class="field">
-              <label>Impact Factor JCR
-                <a href="https://jcr.clarivate.com" target="_blank" class="source-link">↗</a>
-              </label>
+              <label>Impact Factor JCR</label>
               <input type="number" step="0.01" min="0"
                      [(ngModel)]="editingPublication().facteurImpact"
                      placeholder="ex. 4.58" />
             </div>
             <div class="field">
-              <label>SNIP (Scopus/Elsevier)
-                <a href="https://www.journalindicators.com" target="_blank" class="source-link">↗</a>
-              </label>
+              <label>SNIP (Scopus/Elsevier)</label>
               <input type="number" step="0.01" min="0"
                      [(ngModel)]="editingPublication().snip"
                      placeholder="ex. 1.23" />
@@ -486,8 +473,7 @@
             <div class="field full">
               <label>Source de référence</label>
               <input [(ngModel)]="editingPublication().sourceClassement"
-                     placeholder="ex. Scimago 2024, CORE 2023, JCR Clarivate…" />
-              <span class="field-hint">Indiquez l'année et la source consultée pour faciliter la vérification.</span>
+                     placeholder="ex. Scimago 2024, CORE 2023…" />
             </div>
           </div>
           <div class="edit-actions">

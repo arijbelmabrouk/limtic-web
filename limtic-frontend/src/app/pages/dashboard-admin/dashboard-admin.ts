@@ -9,7 +9,7 @@ import { SafePipe } from '../../pipes/Safepipe';
 @Component({
   selector: 'app-dashboard-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SafePipe],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './dashboard-admin.html',
   styleUrl: './dashboard-admin.css'
 })
@@ -190,8 +190,8 @@ export class DashboardAdmin implements OnInit {
       lienUrl: p.lienUrl || '',
       motsCles: p.motsCles || '',
       statut: p.statut || 'BROUILLON',
-      scimagoQuartile: p.scimagoQuartile || '',
-      classementCORE: p.classementCORE || '',
+      scimagoQuartile: p.scimagoQuartile ?? null,
+      classementCORE: p.classementCORE ?? null,
       facteurImpact: p.facteurImpact ?? null,
       snip: p.snip ?? null,
       sourceClassement: p.sourceClassement || '',
@@ -225,7 +225,17 @@ export class DashboardAdmin implements OnInit {
       p.pdfUrl = null;
     }
 
-    this.api.updatePublication(p.id, p).subscribe({
+    // Sanitize CHECK-constrained enum fields: the DB rejects empty strings —
+    // they must be NULL when no value is selected.
+    const payload = {
+      ...p,
+      scimagoQuartile: p.scimagoQuartile || null,
+      classementCORE:  p.classementCORE  || null,
+      facteurImpact:   p.facteurImpact   ?? null,
+      snip:            p.snip            ?? null,
+    };
+
+    this.api.updatePublication(p.id, payload).subscribe({
       next: () => {
         if (this.editPubPdfFile) {
           this.api.uploadPdfPublication(p.id, this.editPubPdfFile).subscribe({
