@@ -362,10 +362,6 @@
   100% { background-position: -200% 0; }
 }
 
-/* ══════════════════════════════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════════════════════════════ */
-
 @media (max-width: 1200px) {
   .hero            { padding: 5rem 5rem; }
   .hero-content h1 { font-size: 4.5rem; }

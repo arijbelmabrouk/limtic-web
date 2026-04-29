@@ -3,20 +3,20 @@
   <div class="hero-content">
     <div class="hero-badge">Laboratoire de Recherche</div>
     <h1>{{ nomLabo() }}</h1>
-    <p class="hero-sub">{{ descriptionLabo() }}</p>
+    <p class="hero-sub hero-description">{{ descriptionLabo() }}</p>
     <div class="hero-actions">
       <a routerLink="/chercheurs" class="btn-primary">Nos Chercheurs</a>
-      <a routerLink="/publications" class="btn-outline">Publications</a>
+      <a routerLink="/publications" class="btn-outline btn-outline-hero">Publications</a>
     </div>
   </div>
   <div class="hero-visual">
     <div class="hex-grid">
-      <div class="hex">IA</div>
-      <div class="hex accent">IoT</div>
-      <div class="hex">ML</div>
-      <div class="hex accent">NLP</div>
-      <div class="hex">Cyber</div>
-      <div class="hex accent">Big Data</div>
+      <div class="hex keyword-box">IA</div>
+      <div class="hex accent keyword-box">IoT</div>
+      <div class="hex keyword-box">ML</div>
+      <div class="hex accent keyword-box">NLP</div>
+      <div class="hex keyword-box">Cyber</div>
+      <div class="hex accent keyword-box">Big Data</div>
     </div>
   </div>
 </div>
@@ -48,28 +48,28 @@
 
 <!-- Navigation rapide -->
 <div class="sections">
-  <div class="section-card" routerLink="/chercheurs">
+  <div class="section-card feature-card" routerLink="/chercheurs">
     <div class="card-icon">👨‍🔬</div>
     <h3>Chercheurs</h3>
-    <p>Découvrez les membres de notre équipe de recherche et leurs spécialités.</p>
+    <p class="card-description">Découvrez les membres de notre équipe de recherche et leurs spécialités.</p>
     <span class="card-link">Voir tous →</span>
   </div>
-  <div class="section-card" routerLink="/publications">
+  <div class="section-card feature-card" routerLink="/publications">
     <div class="card-icon">📄</div>
     <h3>Publications</h3>
-    <p>Accédez aux travaux scientifiques publiés par notre laboratoire.</p>
+    <p class="card-description">Accédez aux travaux scientifiques publiés par notre laboratoire.</p>
     <span class="card-link">Voir toutes →</span>
   </div>
-  <div class="section-card" routerLink="/evenements">
+  <div class="section-card feature-card" routerLink="/evenements">
     <div class="card-icon">📅</div>
     <h3>Événements</h3>
-    <p>Séminaires, workshops et soutenances à venir au LIMTIC.</p>
+    <p class="card-description">Séminaires, workshops et soutenances à venir au LIMTIC.</p>
     <span class="card-link">Voir tous →</span>
   </div>
-  <div class="section-card" routerLink="/outils">
+  <div class="section-card feature-card" routerLink="/outils">
     <div class="card-icon">🛠️</div>
     <h3>Outils</h3>
-    <p>Logiciels et outils développés par notre laboratoire.</p>
+    <p class="card-description">Logiciels et outils développés par notre laboratoire.</p>
     <span class="card-link">Voir tous →</span>
   </div>
 </div>
