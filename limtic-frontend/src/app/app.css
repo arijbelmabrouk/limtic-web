@@ -31,9 +31,27 @@ body {
   flex-shrink: 0;
   text-decoration: none;
 }
-.nav-logo  { font-size: 1.4rem; color: #00d2ff; }
-.nav-isi-logo { height: 40px; width: auto; object-fit: contain; }
-.nav-limtic-logo { height: 23px; width: auto; object-fit: contain; }
+.brand-logos {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-logo  { font-size: 1.2rem; color: #00d2ff; opacity: 0.8; }
+.nav-limtic-logo {
+  margin-top:-10px;
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+.nav-isi-logo,
+.nav-utm-logo {
+  height: 35px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  opacity: 0.9;
+}
 .nav-title { font-size: 1.4rem; font-weight: 700; color: white; letter-spacing: 3px; }
 
 /* Hamburger — caché sur desktop */
@@ -371,4 +389,7 @@ body {
   .nav-title  { font-size: 1.1rem; letter-spacing: 2px; }
   .nav-logo   { font-size: 1.5rem; }
   .nav-toggle { width: 36px; height: 36px; font-size: 1rem; }
+  .nav-limtic-logo { height: 32px; }
+  .nav-isi-logo,
+  .nav-utm-logo { height: 24px; }
 }
