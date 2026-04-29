@@ -126,7 +126,7 @@ export class DashboardAdmin implements OnInit {
   logoPreviewUrl = signal<string>('');
 
   /** Fichier logo sélectionné en attente d'upload */
-  private logoFile: File | null = null;
+  logoFile: File | null = null;
 
   /** Indicateur de sauvegarde en cours */
   parametresSaving = signal(false);
@@ -883,6 +883,40 @@ export class DashboardAdmin implements OnInit {
    */
   onCouleurChange() {
     this.appliquerCouleursTheme(this.themeForm);
+  }
+
+  /**
+   * Liaison (input) du color picker natif → met à jour themeForm et
+   * prévisualise immédiatement la couleur choisie.
+   * Appelé par : (input)="onColorInput('couleurPrimaire', $event)"
+   */
+  onColorInput(key: keyof ThemeForm, event: Event) {
+    const val = (event.target as HTMLInputElement).value;
+    this.themeForm = { ...this.themeForm, [key]: val };
+    this.appliquerCouleursTheme(this.themeForm);
+  }
+
+  /**
+   * Liaison (change) du champ texte hexadécimal → valide le format
+   * et synchronise le color picker avec la valeur saisie.
+   * Appelé par : (change)="onColorText('couleurPrimaire', $event)"
+   */
+  onColorText(key: keyof ThemeForm, event: Event) {
+    const raw = (event.target as HTMLInputElement).value.trim();
+    // Accepter uniquement #rrggbb ou #rgb valides
+    const hexRegex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+    if (!hexRegex.test(raw)) return; // ignorer les valeurs invalides
+    this.themeForm = { ...this.themeForm, [key]: raw };
+    this.appliquerCouleursTheme(this.themeForm);
+  }
+
+  /**
+   * Alias public pour le bouton "Réinitialiser les couleurs par défaut"
+   * dans le template HTML (dashboard-admin.html ligne ~1294).
+   * Délègue à reinitialiserCouleurs() qui contient la logique réelle.
+   */
+  resetCouleursDefaut() {
+    this.reinitialiserCouleurs();
   }
 
   /**
