@@ -86,15 +86,25 @@ public class PublicationController {
         return ResponseEntity.ok(saved);
     }
 
+    /**
+     * PUT /api/publications/{id}
+     *
+     * Uses publicationService.update() instead of save() so that existing
+     * relations (axe, chercheurs) are preserved when the flat edit-form DTO
+     * arrives without those fields.  This is the fix for the 500 error.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<Publication> update(@PathVariable Long id,
                                                @RequestBody Publication publication,
                                                HttpServletRequest request) {
-        publication.setId(id);
-        Publication saved = publicationService.save(publication);
-        auditService.log(request, "UPDATE", "Publication", id,
-            "Publication modifiée : " + saved.getTitre(), true);
-        return ResponseEntity.ok(saved);
+        try {
+            Publication saved = publicationService.update(id, publication);
+            auditService.log(request, "UPDATE", "Publication", id,
+                "Publication modifiée : " + saved.getTitre(), true);
+            return ResponseEntity.ok(saved);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/statut")
@@ -150,7 +160,6 @@ public class PublicationController {
             Path dest = dir.resolve(fileName);
             Files.copy(file.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
 
-            // Pointer vers l'endpoint de serving direct (plus fiable que /uploads/**)
             pub.setPdfUrl("/api/publications/pdf/" + fileName);
             publicationService.save(pub);
 
@@ -162,6 +171,28 @@ public class PublicationController {
             return ResponseEntity.internalServerError()
                 .body(Map.of("error", "Erreur lors de l'upload : " + e.getMessage()));
         }
+    }
+
+    @DeleteMapping("/{id}/pdf")
+    public ResponseEntity<?> deletePdf(@PathVariable Long id, HttpServletRequest request) {
+        Publication pub = publicationService.getById(id);
+        if (pub == null) return ResponseEntity.notFound().build();
+
+        String pdfUrl = pub.getPdfUrl();
+        if (pdfUrl != null && !pdfUrl.isBlank()) {
+            String filename = pdfUrl.substring(pdfUrl.lastIndexOf('/') + 1);
+            try {
+                Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                // Log but don't fail — still clear the DB reference
+            }
+            pub.setPdfUrl(null);
+            publicationService.save(pub);
+            auditService.log(request, "DELETE_PDF", "Publication", id,
+                "PDF supprimé pour publication id=" + id, true);
+        }
+        return ResponseEntity.ok(Map.of("message", "PDF supprimé"));
     }
 
     @GetMapping("/pdf/{filename:.+}")
@@ -178,7 +209,6 @@ public class PublicationController {
                     .contentType(MediaType.APPLICATION_PDF)
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" + filename + "\"")
-                    // ↓ Allow framing from your Angular dev server
                     .header("X-Frame-Options", "ALLOW-FROM https://localhost:4200")
                     .header("Content-Security-Policy",
                             "frame-ancestors 'self' https://localhost:4200 http://localhost:4200")

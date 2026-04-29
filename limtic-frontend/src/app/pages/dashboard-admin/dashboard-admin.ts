@@ -2,7 +2,9 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
+import { SafePipe } from '../../pipes/Safepipe';
 
 @Component({
   selector: 'app-dashboard-admin',
@@ -36,20 +38,52 @@ export class DashboardAdmin implements OnInit {
   newUser      = { email: '', motDePasse: '', role: 'CHERCHEUR' };
   newDoctorant = { nom: '', prenom: '', sujetThese: '', directeurId: null as number | null, dateInscription: '', statut: 'EN_COURS', mention: '', photoUrl: '' };
   newMasterien = { nom: '', prenom: '', sujetMemoire: '', encadrantId: null as number | null, promotion: '', statut: 'EN_COURS' };
-  newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: ''};
+  newPub: {
+    titre: string; type: string; annee: number; journal: string; resume: string;
+    statut: string; doi: string; pdfUrl: string; lienUrl: string; motsCles: string;
+    // §3.7.2 CDC — Score / classement de la venue
+    scimagoQuartile: string; classementCORE: string;
+    facteurImpact: number | null; snip: number | null;
+    sourceClassement: string;
+  } = {
+    titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '',
+    resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: '',
+    // §3.7.2 — champs classement
+    scimagoQuartile: '', classementCORE: '',
+    facteurImpact: null, snip: null, sourceClassement: ''
+  };
   newPubPdfFile: File | null = null;   // fichier PDF sélectionné avant création
-  editingDoctorant = signal<any | null>(null);
-  editingMasterien = signal<any | null>(null);
+  newPubPdfPreviewUrl: SafeResourceUrl | null = null; // URL sécurisée pour l'iframe
+  editingDoctorant    = signal<any | null>(null);
+  editingMasterien    = signal<any | null>(null);
+  editingPublication  = signal<any | null>(null);
+
+  // §3.7.2 — PDF dans le formulaire d'édition de publication
+  editPubPdfFile: File | null = null;
+  editPubPdfPreviewUrl: SafeResourceUrl | null = null;
+  private _editPdfBlobUrl: string | null = null;
+  get editPdfBlobUrl(): string | null { return this._editPdfBlobUrl; }
+  editPdfViewerUrl = signal<SafeResourceUrl | null>(null);
+  editRemovePdf = false;
+  private _editExistingPdfSafeUrl: SafeResourceUrl | null = null;
+  private _editExistingPdfBlobUrl: string | null = null;
+
+  // Expose blob URL to template
+  get editExistingPdfBlobUrl(): string | null { return this._editExistingPdfBlobUrl; }
 
   showForm = signal('');
   message  = signal('');
   erreur   = signal('');
 
-  constructor(private router: Router, private api: ApiService) {}
+  csvFile = signal<File | null>(null);
+  csvImportReport = signal<{ importes: number; ignores: number; erreurs: string[] } | null>(null);
+
+  constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer) {}
 
   private handleError(error: any) {
     const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
-    this.message.set('Erreur : ' + message);
+    this.message.set('');
+    this.erreur.set('Erreur : ' + message);
   }
 
   ngOnInit() {
@@ -85,9 +119,13 @@ export class DashboardAdmin implements OnInit {
     this.activeTab.set(tab);
     this.showForm.set('');
     this.message.set('');
+    this.erreur.set('');
+    this.csvFile.set(null);
+    this.csvImportReport.set(null);
     this.editingAxe.set(null);
     this.editingDoctorant.set(null);
     this.editingMasterien.set(null);
+    this.editingPublication.set(null);
   }
 
   // ── Publications ──────────────────────────────────────────
@@ -105,16 +143,225 @@ export class DashboardAdmin implements OnInit {
         }
         this.message.set('Publication ajoutée !');
         this.showForm.set('');
-        this.newPub = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: ''};
-        this.newPubPdfFile = null;
+        this.newPub = {
+          titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '',
+          resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: '',
+          scimagoQuartile: '', classementCORE: '', facteurImpact: null, snip: null, sourceClassement: ''
+        };
+        this.clearPdfSelection();
       },
       error: err => this.handleError(err)
     });
   }
 
+  // Raw blob URL kept separately so we can revoke it and use it in <a href>
+  private _pdfBlobUrl: string | null = null;
+  get pdfBlobUrl(): string | null { return this._pdfBlobUrl; }
+
   onPdfFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) this.newPubPdfFile = input.files[0];
+    if (input.files && input.files[0]) {
+      if (this._pdfBlobUrl) URL.revokeObjectURL(this._pdfBlobUrl);
+      this.newPubPdfFile = input.files[0];
+      this._pdfBlobUrl = URL.createObjectURL(this.newPubPdfFile);
+      this.newPubPdfPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._pdfBlobUrl);
+    }
+  }
+
+  clearPdfSelection() {
+    if (this._pdfBlobUrl) {
+      URL.revokeObjectURL(this._pdfBlobUrl);
+      this._pdfBlobUrl = null;
+    }
+    this.newPubPdfPreviewUrl = null;
+    this.newPubPdfFile = null;
+  }
+
+  // ── Édition de publication ────────────────────────────────
+  startEditPublication(p: any) {
+    this.editingPublication.set({
+      id: p.id,
+      titre: p.titre || '',
+      type: p.type || 'Journal',
+      annee: p.annee || new Date().getFullYear(),
+      journal: p.journal || '',
+      resume: p.resume || '',
+      doi: p.doi || '',
+      lienUrl: p.lienUrl || '',
+      motsCles: p.motsCles || '',
+      statut: p.statut || 'BROUILLON',
+      scimagoQuartile: p.scimagoQuartile ?? null,
+      classementCORE: p.classementCORE ?? null,
+      facteurImpact: p.facteurImpact ?? null,
+      snip: p.snip ?? null,
+      sourceClassement: p.sourceClassement || '',
+      pdfUrl: p.pdfUrl || null
+    });
+    this.clearEditPdfSelection();
+    this.editRemovePdf = false;
+    this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
+    if (p.pdfUrl) {
+      this.loadEditExistingPdf();
+    }
+    this.showForm.set('');   // ferme le formulaire d'ajout si ouvert
+  }
+
+  saveEditPublication() {
+    const p = this.editingPublication();
+    if (!p) return;
+    if (!p.titre?.trim()) { this.message.set('Le titre est obligatoire.'); return; }
+
+    // Suppression du PDF existant sans remplacement
+    if (this.editRemovePdf && !this.editPubPdfFile) {
+      this.api.deletePdfPublication(p.id).subscribe({
+        next: () => {},
+        error: () => {}
+      });
+      p.pdfUrl = null;
+    }
+
+    // Sanitize CHECK-constrained enum fields: the DB rejects empty strings —
+    // they must be NULL when no value is selected.
+    const payload = {
+      ...p,
+      scimagoQuartile: p.scimagoQuartile || null,
+      classementCORE:  p.classementCORE  || null,
+      facteurImpact:   p.facteurImpact   ?? null,
+      snip:            p.snip            ?? null,
+    };
+
+    this.api.updatePublication(p.id, payload).subscribe({
+      next: () => {
+        if (this.editPubPdfFile) {
+          this.api.uploadPdfPublication(p.id, this.editPubPdfFile).subscribe({
+            next: () => {
+              this.message.set('Publication mise à jour avec le nouveau PDF !');
+              this.clearEditPdfSelection();
+              this.editingPublication.set(null);
+              this.api.getPublications().subscribe(data => this.publications.set(data));
+            },
+            error: () => {
+              this.message.set('Publication mise à jour, mais erreur lors de l\'upload PDF.');
+              this.clearEditPdfSelection();
+              this.editingPublication.set(null);
+              this.api.getPublications().subscribe(data => this.publications.set(data));
+            }
+          });
+        } else {
+          this.message.set('Publication mise à jour !');
+          this.editingPublication.set(null);
+          this.api.getPublications().subscribe(data => this.publications.set(data));
+        }
+      },
+      error: err => this.handleError(err)
+    });
+  }
+
+  cancelEditPublication() {
+    this.clearEditPdfSelection();
+    this.editRemovePdf = false;
+    this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
+    this.editingPublication.set(null);
+  }
+
+  // ── Helpers PDF édition ───────────────────────────────────
+  onEditPdfFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    if (this._editPdfBlobUrl) URL.revokeObjectURL(this._editPdfBlobUrl);
+    this.editPubPdfFile = input.files[0];
+    this._editPdfBlobUrl = URL.createObjectURL(this.editPubPdfFile);
+    this.editPubPdfPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editPdfBlobUrl);
+    this.editPdfViewerUrl.set(this.editPubPdfPreviewUrl);
+    this.editRemovePdf = false;
+  }
+
+  clearEditPdfSelection() {
+    if (this._editPdfBlobUrl) {
+      URL.revokeObjectURL(this._editPdfBlobUrl);
+      this._editPdfBlobUrl = null;
+    }
+    this.editPubPdfPreviewUrl = null;
+    this.editPubPdfFile = null;
+    if (!this.editRemovePdf) {
+      this.loadEditExistingPdf();
+    } else {
+      this.editPdfViewerUrl.set(null);
+    }
+  }
+
+  markRemoveEditPdf() {
+    this.editRemovePdf = true;
+    this.clearEditPdfSelection();
+    this._editExistingPdfSafeUrl = null;
+    if (this._editExistingPdfBlobUrl) {
+      URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+      this._editExistingPdfBlobUrl = null;
+    }
+    this.editPdfViewerUrl.set(null);
+  }
+  undoRemoveEditPdf() {
+    this.editRemovePdf = false;
+    this.loadEditExistingPdf();
+  }
+
+  getFullPdfUrl(relativePath: string): string {
+    return this.api.getUploadUrl(relativePath);
+  }
+
+  getEditExistingPdfUrl(): SafeResourceUrl {
+    const p = this.editingPublication();
+    if (!p?.pdfUrl) return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    if (!this._editExistingPdfSafeUrl) {
+      // Load the PDF via XHR as a blob and create an object URL to avoid cross-origin/embed issues.
+      // Start with an empty safe URL and trigger a fetch — template will update when the blob is ready.
+      this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+      this.api.getPdfBlob(p.pdfUrl).subscribe({
+        next: (blob) => {
+          // revoke previous blob URL if any
+          if (this._editExistingPdfBlobUrl) URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+          this._editExistingPdfBlobUrl = URL.createObjectURL(blob);
+          this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editExistingPdfBlobUrl);
+        },
+        error: () => {
+          // keep safeUrl empty — template shows an error link to open in new tab
+          this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+        }
+      });
+    }
+    return this._editExistingPdfSafeUrl;
+  }
+
+  getEditPdfViewerUrl(): SafeResourceUrl | null {
+    return this.editPdfViewerUrl();
+  }
+
+  private loadEditExistingPdf() {
+    const p = this.editingPublication();
+    if (!p?.pdfUrl || this.editRemovePdf || this.editPubPdfFile) return;
+    this.api.getPdfBlob(p.pdfUrl).subscribe({
+      next: (blob) => {
+        if (this._editExistingPdfBlobUrl) URL.revokeObjectURL(this._editExistingPdfBlobUrl);
+        const pdfBlob = blob.type ? blob : new Blob([blob], { type: 'application/pdf' });
+        this._editExistingPdfBlobUrl = URL.createObjectURL(pdfBlob);
+        this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editExistingPdfBlobUrl);
+        this.editPdfViewerUrl.set(this._editExistingPdfSafeUrl);
+      },
+      error: () => {
+        this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+        this.editPdfViewerUrl.set(null);
+      }
+    });
   }
 
   validerPublication(id: number) {
@@ -187,6 +434,48 @@ export class DashboardAdmin implements OnInit {
   }
 
   // ── Chercheurs ────────────────────────────────────────────
+  exportChercheursCsv() {
+    this.message.set('Téléchargement du CSV en cours...');
+    this.erreur.set('');
+    this.api.exportChercheursCsv();
+  }
+
+  onCsvFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    this.csvFile.set(file);
+    this.csvImportReport.set(null);
+    this.message.set('');
+    this.erreur.set('');
+    if (input) input.value = '';
+  }
+
+  importChercheursCsv() {
+    const file = this.csvFile();
+    if (!file) {
+      this.erreur.set('Veuillez sélectionner un fichier CSV.');
+      return;
+    }
+
+    this.api.importChercheursCsv(file).subscribe({
+      next: (res: any) => {
+        this.csvImportReport.set({
+          importes: res.importes ?? 0,
+          ignores: res.ignores ?? 0,
+          erreurs: res.erreurs ?? []
+        });
+        this.message.set(res.message || 'Import CSV terminé.');
+        this.erreur.set('');
+        this.csvFile.set(null);
+        this.api.getChercheurs().subscribe(data => {
+          this.chercheurs.set(data);
+          this.stats.update(s => ({ ...s, chercheurs: data.length }));
+        });
+      },
+      error: err => this.handleError(err)
+    });
+  }
+
   supprimerChercheur(id: number) {
     if (!confirm('Supprimer ce chercheur ?')) return;
     this.api.delete('chercheurs/' + id).subscribe({

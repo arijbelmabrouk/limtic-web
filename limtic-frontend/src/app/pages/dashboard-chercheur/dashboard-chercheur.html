@@ -176,7 +176,7 @@
             <input [(ngModel)]="newPub.lienUrl" placeholder="https://..." />
           </div>
 
-          <!-- §3.7.2 CDC — Upload PDF -->
+          <!-- §3.7.2 CDC — Upload PDF + prévisualisation -->
           <div class="field full">
             <label>Fichier PDF</label>
             <div class="pdf-upload-zone">
@@ -190,10 +190,100 @@
                 }
               </label>
               @if (newPubPdfFile) {
-                <button class="pdf-clear" (click)="newPubPdfFile = null">✕</button>
+                <button class="pdf-clear" (click)="clearPdfSelection()">✕ Retirer</button>
               }
             </div>
             <span class="field-hint">Le fichier sera uploadé après enregistrement.</span>
+
+            <!-- ── Prévisualisation inline du PDF sélectionné ── -->
+            @if (newPubPdfPreviewUrl) {
+              <div class="pdf-preview-panel">
+                <div class="pdf-preview-header">
+                  <span class="pdf-preview-title">👁 Prévisualisation — {{ newPubPdfFile?.name }}</span>
+                  <div class="pdf-preview-actions">
+                    <a [href]="pdfBlobUrl" target="_blank" class="btn-pdf-open">
+                      ↗ Ouvrir dans un onglet
+                    </a>
+                    <button class="pdf-preview-close" (click)="clearPdfSelection()">✕</button>
+                  </div>
+                </div>
+                <iframe
+                  [src]="newPubPdfPreviewUrl"
+                  class="pdf-preview-frame"
+                  type="application/pdf"
+                  title="Prévisualisation PDF">
+                </iframe>
+              </div>
+            }
+          </div>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               §3.7.2 CDC — Score / classement de la venue
+               Source de référence : Scimago SJR, CORE, JCR/Clarivate
+               ═══════════════════════════════════════════════════════════════ -->
+          <div class="field full ranking-section-header">
+            <label class="ranking-title">Classement / Score de la venue</label>
+            <span class="ranking-hint">Renseignez le classement selon la source officielle (Scimago, CORE, JCR…)</span>
+          </div>
+
+          <!-- Scimago Quartile — pour les journaux -->
+          <div class="field">
+            <label>
+              Quartile Scimago (SJR)
+              <a href="https://www.scimagojr.com" target="_blank" class="source-link" title="Voir Scimago Journal Rank">↗</a>
+            </label>
+            <select [(ngModel)]="newPub.scimagoQuartile">
+              <option value="">— Non renseigné —</option>
+              <option value="Q1">Q1 — Top 25 %</option>
+              <option value="Q2">Q2 — Top 50 %</option>
+              <option value="Q3">Q3 — Top 75 %</option>
+              <option value="Q4">Q4 — Reste</option>
+            </select>
+          </div>
+
+          <!-- CORE Ranking — pour les conférences -->
+          <div class="field">
+            <label>
+              Classement CORE (Conférences)
+              <a href="http://portal.core.edu.au/conf-ranks/" target="_blank" class="source-link" title="Voir CORE Portal">↗</a>
+            </label>
+            <select [(ngModel)]="newPub.classementCORE">
+              <option value="">— Non renseigné —</option>
+              <option value="A*">A* — Excellence</option>
+              <option value="A">A — Très bonne</option>
+              <option value="B">B — Bonne</option>
+              <option value="C">C — Reconnue</option>
+            </select>
+          </div>
+
+          <!-- Impact Factor JCR -->
+          <div class="field">
+            <label>
+              Impact Factor JCR
+              <a href="https://jcr.clarivate.com" target="_blank" class="source-link" title="Voir Clarivate JCR">↗</a>
+            </label>
+            <input type="number" step="0.01" min="0"
+                   [(ngModel)]="newPub.facteurImpact"
+                   placeholder="ex. 4.58" />
+          </div>
+
+          <!-- SNIP (Scopus) -->
+          <div class="field">
+            <label>
+              SNIP (Scopus/Elsevier)
+              <a href="https://www.journalindicators.com" target="_blank" class="source-link" title="Voir Journal Indicators">↗</a>
+            </label>
+            <input type="number" step="0.01" min="0"
+                   [(ngModel)]="newPub.snip"
+                   placeholder="ex. 1.23" />
+          </div>
+
+          <!-- Source de référence (libre) -->
+          <div class="field full">
+            <label>Source de référence (précision libre)</label>
+            <input [(ngModel)]="newPub.sourceClassement"
+                   placeholder="ex. Scimago 2024, CORE 2023, JCR Q1 Clarivate..." />
+            <span class="field-hint">Indiquez l'année et la source consultée pour faciliter la vérification.</span>
           </div>
         </div>
 
@@ -246,6 +336,153 @@
         </div>
       </div>
 
+      <!-- ── Formulaire d'édition de publication (affiché au-dessus du tableau) ── -->
+      @if (editingPublication()) {
+        <div class="form-card edit-card">
+          <h2>Modifier la publication</h2>
+          <div class="form-grid">
+            <div class="field full">
+              <label>Titre *</label>
+              <input [(ngModel)]="editingPublication().titre" placeholder="Titre de la publication" />
+            </div>
+            <div class="field">
+              <label>Type</label>
+              <select [(ngModel)]="editingPublication().type">
+                <option value="Journal">Article de journal</option>
+                <option value="Conference">Conférence internationale</option>
+                <option value="Conference Nationale">Conférence nationale</option>
+                <option value="Book Chapter">Chapitre d'ouvrage</option>
+                <option value="Thesis">Rapport / Thèse</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Année</label>
+              <input type="number" [(ngModel)]="editingPublication().annee" />
+            </div>
+            <div class="field">
+              <label>Journal / Conférence</label>
+              <input [(ngModel)]="editingPublication().journal" placeholder="IEEE, ACM…" />
+            </div>
+            <div class="field">
+              <label>DOI</label>
+              <input [(ngModel)]="editingPublication().doi" placeholder="ex. 10.1000/xyz123" />
+            </div>
+            <div class="field">
+              <label>URL externe</label>
+              <input [(ngModel)]="editingPublication().lienUrl" placeholder="https://…" />
+            </div>
+            <div class="field">
+              <label>Mots-clés</label>
+              <input [(ngModel)]="editingPublication().motsCles" placeholder="IA, ML, NLP…" />
+            </div>
+            <div class="field full">
+              <label>Résumé</label>
+              <textarea [(ngModel)]="editingPublication().resume" rows="3" placeholder="Résumé…"></textarea>
+            </div>
+
+            <!-- §3.7.2 CDC — PDF dans le formulaire d'édition -->
+            <div class="field full">
+              <label>Fichier PDF</label>
+
+              <!-- PDF viewer unique (existant ou nouveau) -->
+              @if (!editRemovePdf && editPdfViewerUrl()) {
+                <div class="pdf-existing-row">
+                  <span class="pdf-existing-label">
+                    📄 {{ editPubPdfFile ? 'Nouveau PDF' : 'PDF actuel' }}
+                  </span>
+                  <a [href]="editPubPdfFile ? editPdfBlobUrl : getFullPdfUrl(editingPublication().pdfUrl)"
+                     target="_blank" class="btn-pdf-open">↗ Ouvrir</a>
+                  @if (editPubPdfFile) {
+                    <button class="pdf-clear" (click)="clearEditPdfSelection()">✕ Retirer</button>
+                  } @else {
+                    <button class="pdf-clear" (click)="markRemoveEditPdf()">✕ Supprimer</button>
+                  }
+                </div>
+                <div class="pdf-preview-panel" style="margin-top:0.75rem;">
+                  <iframe
+                    [src]="editPdfViewerUrl()!"
+                    class="pdf-preview-frame"
+                    type="application/pdf"
+                    title="Prévisualisation PDF">
+                  </iframe>
+                </div>
+              }
+
+              @if (editRemovePdf && !editPubPdfFile) {
+                <div class="pdf-remove-notice">
+                  ⚠️ Le PDF sera supprimé à l'enregistrement.
+                  <button class="btn-pdf-undo" (click)="undoRemoveEditPdf()">Annuler la suppression</button>
+                </div>
+              }
+
+              <!-- Upload nouveau PDF -->
+              <div class="pdf-upload-zone" style="margin-top: 0.5rem;">
+                <input type="file" accept="application/pdf" id="pdfInputEditChercheur"
+                       class="pdf-file-input" (change)="onEditPdfFileSelected($event)" />
+                <label for="pdfInputEditChercheur" class="pdf-upload-label">
+                  @if (editPubPdfFile) {
+                    <span class="pdf-selected">📄 {{ editPubPdfFile.name }}</span>
+                  } @else {
+                    <span class="pdf-placeholder">📎 {{ editingPublication().pdfUrl ? 'Remplacer le PDF…' : 'Choisir un PDF…' }}</span>
+                  }
+                </label>
+                @if (editPubPdfFile) {
+                  <button class="pdf-clear" (click)="clearEditPdfSelection()">✕ Retirer</button>
+                }
+              </div>
+              <span class="field-hint">Vous pouvez remplacer le PDF existant ou en supprimer un.</span>
+
+            </div>
+            
+            <!-- §3.7.2 CDC — Classement -->
+            <div class="field full ranking-section-header">
+              <label class="ranking-title">Classement / Score de la venue</label>
+            </div>
+            <div class="field">
+              <label>Quartile Scimago (SJR)</label>
+              <select [(ngModel)]="editingPublication().scimagoQuartile">
+                <option value="">— Non renseigné —</option>
+                <option value="Q1">Q1 — Top 25 %</option>
+                <option value="Q2">Q2 — Top 50 %</option>
+                <option value="Q3">Q3 — Top 75 %</option>
+                <option value="Q4">Q4 — Reste</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Classement CORE (Conférences)</label>
+              <select [(ngModel)]="editingPublication().classementCORE">
+                <option value="">— Non renseigné —</option>
+                <option value="A*">A* — Excellence</option>
+                <option value="A">A — Très bonne</option>
+                <option value="B">B — Bonne</option>
+                <option value="C">C — Reconnue</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Impact Factor JCR</label>
+              <input type="number" step="0.01" min="0"
+                     [(ngModel)]="editingPublication().facteurImpact"
+                     placeholder="ex. 4.58" />
+            </div>
+            <div class="field">
+              <label>SNIP (Scopus/Elsevier)</label>
+              <input type="number" step="0.01" min="0"
+                     [(ngModel)]="editingPublication().snip"
+                     placeholder="ex. 1.23" />
+            </div>
+            <div class="field full">
+              <label>Source de référence</label>
+              <input [(ngModel)]="editingPublication().sourceClassement"
+                     placeholder="ex. Scimago 2024, CORE 2023…" />
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button class="btn-submit" (click)="saveEditPublication()">Enregistrer la publication</button>
+            <button class="btn-cancel" (click)="cancelEditPublication()">Annuler</button>
+          </div>
+        </div>
+      }
+
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -254,6 +491,7 @@
               <th>Type</th>
               <th>Journal / Conf.</th>
               <th>Année</th>
+              <th>Classement</th>
               <th>Statut</th>
               <th>Actions</th>
             </tr>
@@ -270,6 +508,26 @@
                 <td class="cell-muted">{{ p.journal }}</td>
                 <td class="cell-muted">{{ p.annee }}</td>
                 <td>
+                  @if (p.scimagoQuartile) {
+                    <span class="badge-ranking" [ngClass]="{
+                      'q1': p.scimagoQuartile === 'Q1',
+                      'q2': p.scimagoQuartile === 'Q2',
+                      'q3': p.scimagoQuartile === 'Q3',
+                      'q4': p.scimagoQuartile === 'Q4'
+                    }">{{ p.scimagoQuartile }}</span>
+                  }
+                  @if (p.classementCORE) {
+                    <span class="badge-ranking" [ngClass]="{
+                      'astar': p.classementCORE === 'A*',
+                      'core-a': p.classementCORE === 'A',
+                      'core-b': p.classementCORE === 'B'
+                    }">CORE {{ p.classementCORE }}</span>
+                  }
+                  @if (!p.scimagoQuartile && !p.classementCORE) {
+                    <span class="cell-muted">—</span>
+                  }
+                </td>
+                <td>
                   <span class="badge-statut-pub" [class]="getStatutClass(p.statut || 'BROUILLON')">
                     {{ getStatutLabel(p.statut || 'BROUILLON') }}
                   </span>
@@ -277,8 +535,11 @@
                 <td>
                   <div class="actions-row">
                     @if (p.statut === 'BROUILLON' || !p.statut) {
+                      <button class="btn-action btn-edit" (click)="startEditPublication(p); $event.stopPropagation()">
+                        Éditer
+                      </button>
                       <button class="btn-action btn-soumettre" (click)="soumettre(p.id); $event.stopPropagation()">
-                        🚀 Soumettre
+                        Soumettre
                       </button>
                     }
                     @if (p.statut === 'SOUMIS') {

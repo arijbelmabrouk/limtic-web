@@ -79,12 +79,26 @@ export class ApiService {
   getUploadUrl(relativePath: string): string {
   return `https://localhost:8443${relativePath}`;
   }
+  
+  getPdfBlob(relativePath: string): Observable<Blob> {
+  return this.http.get(`https://localhost:8443${relativePath}`, {
+    responseType: 'blob',
+    withCredentials: true
+  });
+}
   uploadPdfPublication(publicationId: number, file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post(
       `${this.base}/publications/${publicationId}/upload-pdf`,
       formData,
+      { withCredentials: true }
+    );
+  }
+
+  deletePdfPublication(publicationId: number): Observable<any> {
+    return this.http.delete(
+      `${this.base}/publications/${publicationId}/pdf`,
       { withCredentials: true }
     );
   }
