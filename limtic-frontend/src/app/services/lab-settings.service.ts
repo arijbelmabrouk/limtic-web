@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { ThemeService } from './theme.service';
+import { Injectable, signal, inject } from '@angular/core'; // Added inject
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -15,7 +16,11 @@ export class LabSettingsService {
 
   private loaded = false;
 
-  constructor(private api: ApiService) {}
+  // Inject ThemeService here
+  constructor(
+    private api: ApiService,
+    private themeService: ThemeService 
+  ) {}
 
   loadPublic(): void {
     if (this.loaded) return;
@@ -30,10 +35,15 @@ export class LabSettingsService {
 
   logoUrlResolved(): string {
     const raw = this.logoUrl();
-    if (!raw) return 'limtic-dark.png';
+    
+    // Use the injected instance and call it as a signal ()
+    const currentTheme = this.themeService.theme(); 
+    
+    if ((!raw || raw.startsWith('/assets/')) && currentTheme === 'dark') return 'limtic-dark.png';
+    if ((!raw || raw.startsWith('/assets/')) && currentTheme === 'light') return 'limtic-light.png';
+    
     if (raw.startsWith('http')) return raw;
     if (raw.startsWith('/uploads/')) return this.api.getLogoUrl(raw);
-    if (raw.startsWith('/assets/')) return 'limtic-dark.png';
     if (raw.startsWith('/')) return raw;
     return raw;
   }
@@ -42,23 +52,17 @@ export class LabSettingsService {
     this.api.getParametresPublics().subscribe({
       next: (params: any[]) => {
         const get = (cle: string) => params.find(p => p.cle === cle)?.valeur ?? '';
-        const nom = get('labo.nom');
-        const acronyme = get('labo.acronyme');
-        const description = get('labo.description');
-        const email = get('labo.email');
-        const telephone = get('labo.telephone');
-        const adresse = get('labo.adresse');
-        const logoUrl = get('labo.logoUrl');
-
-        if (nom) this.nom.set(nom);
-        if (acronyme) this.acronyme.set(acronyme);
-        if (description) this.description.set(description);
-        if (email) this.email.set(email);
-        if (telephone) this.telephone.set(telephone);
-        if (adresse) this.adresse.set(adresse);
-        if (logoUrl) this.logoUrl.set(logoUrl);
+        
+        // Update signals
+        this.nom.set(get('labo.nom') || 'LIMTIC');
+        this.acronyme.set(get('labo.acronyme') || 'LIMTIC');
+        this.description.set(get('labo.description') || "Laboratoire d'Informatique...");
+        this.email.set(get('labo.email') || 'contact@limtic.tn');
+        this.telephone.set(get('labo.telephone'));
+        this.adresse.set(get('labo.adresse'));
+        this.logoUrl.set(get('labo.logoUrl'));
       },
-      error: () => {}
+      error: (err) => console.error('Could not load lab settings', err)
     });
   }
 }
