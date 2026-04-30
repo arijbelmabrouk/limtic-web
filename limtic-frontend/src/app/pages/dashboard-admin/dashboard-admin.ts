@@ -83,6 +83,7 @@ type SeoForm = Record<string, SeoPageForm>;
 export class DashboardAdmin implements OnInit {
 
   email     = signal('');
+  userRole  = signal('');
   activeTab = signal('dashboard');
 
   stats = signal({ chercheurs: 0, publications: 0, evenements: 0, outils: 0, axes: 0, users: 0, doctorants: 0, masteriens: 0 });
@@ -356,10 +357,11 @@ export class DashboardAdmin implements OnInit {
 
   ngOnInit() {
     const role = localStorage.getItem('role');
-    if (!role || role !== 'ADMIN') {
+    if (!role || (role !== 'ADMIN' && role !== 'SUPER_ADMIN')) {
       this.router.navigate(['/login']);
       return;
     }
+    this.userRole.set(role);
     this.email.set(localStorage.getItem('email') || '');
     this.loadAll();
   }
@@ -384,6 +386,10 @@ export class DashboardAdmin implements OnInit {
   }
 
   setTab(tab: string) {
+    if (this.userRole() !== 'SUPER_ADMIN' && ['comptes', 'axes', 'parametres'].includes(tab)) {
+      return;
+    }
+    
     this.activeTab.set(tab);
     this.showForm.set('');
     this.message.set('');
@@ -780,6 +786,11 @@ export class DashboardAdmin implements OnInit {
   }
 
   changerRole(id: number, event: Event) {
+    const userToModify = this.users().find(u => u.id === id);
+    if (userToModify && userToModify.email === this.email()) {
+      this.erreur.set("Vous ne pouvez pas modifier votre propre rôle.");
+      return;
+    }
     const role = (event.target as HTMLSelectElement).value;
     this.api.patch(`users/${id}/role`, { role }).subscribe({
       next: () => {
@@ -791,6 +802,11 @@ export class DashboardAdmin implements OnInit {
   }
 
   toggleActif(id: number) {
+    const userToModify = this.users().find(u => u.id === id);
+    if (userToModify && userToModify.email === this.email()) {
+      this.erreur.set("Vous ne pouvez pas désactiver votre propre compte.");
+      return;
+    }
     this.api.patch(`users/${id}/toggle`, {}).subscribe({
       next: () => {
         this.message.set('Statut modifié.');
@@ -801,6 +817,11 @@ export class DashboardAdmin implements OnInit {
   }
 
   supprimerUser(id: number) {
+    const userToModify = this.users().find(u => u.id === id);
+    if (userToModify && userToModify.email === this.email()) {
+      this.erreur.set("Vous ne pouvez pas supprimer votre propre compte.");
+      return;
+    }
     if (!confirm('Supprimer ce compte définitivement ?')) return;
     this.api.delete('users/' + id).subscribe({
       next: () => {

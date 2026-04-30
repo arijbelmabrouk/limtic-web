@@ -35,6 +35,6 @@ public class User {
     private LocalDateTime creeLe = LocalDateTime.now();
 
     public enum Role {
-        VISITEUR, CHERCHEUR, ADMIN
+        VISITEUR, CHERCHEUR, ADMIN, SUPER_ADMIN
     }
 }

@@ -43,6 +43,8 @@ export class LabSettingsService {
   logoLightUrl = signal('');
   logoDarkUrl = signal('');
 
+  seoData = signal<Record<string, { titre: string; description: string; motsCles: string }>>({});
+
   private loaded = false;
   private themeColors: Record<ThemeKey, ThemePalette> = { dark: {}, light: {} };
 
@@ -134,6 +136,17 @@ export class LabSettingsService {
         this.adresse.set(get('labo.adresse'));
         this.logoLightUrl.set(get('labo.logoUrlLight'));
         this.logoDarkUrl.set(get('labo.logoUrlDark'));
+
+        const newSeoData: Record<string, { titre: string; description: string; motsCles: string }> = {};
+        const seoKeys = ['home', 'chercheurs', 'publications', 'evenements', 'axes', 'doctorants', 'masteriens', 'directeur', 'contact', 'outils'];
+        for (const k of seoKeys) {
+          newSeoData[k] = {
+            titre: get(`seo.${k}.titre`),
+            description: get(`seo.${k}.description`),
+            motsCles: get(`seo.${k}.motsCles`)
+          };
+        }
+        this.seoData.set(newSeoData);
 
         this.themeColors = {
           dark: this.readThemePalette(get, 'theme.dark'),

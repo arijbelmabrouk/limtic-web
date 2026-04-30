@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from './services/api.service';
 import { ThemeService } from './services/theme.service';
 import { LabSettingsService } from './services/lab-settings.service';
+import { SeoService } from './services/seo.service';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,8 @@ export class App implements OnInit {
     private router: Router,
     private api: ApiService,
     public themeService: ThemeService,
-    public settings: LabSettingsService
+    public settings: LabSettingsService,
+    private seoService: SeoService
   ) {}
 
   ngOnInit() {

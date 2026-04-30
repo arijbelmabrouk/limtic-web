@@ -187,7 +187,13 @@ body {
   background: var(--accent-soft);
   color: var(--accent);
 }
-.dd-icon { font-size: 1rem; }
+.dd-icon {
+  font-size: 1rem;
+  width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
 
 @keyframes fadeDown {
   from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
@@ -222,10 +228,6 @@ body {
 .user-email {
   color: var(--text-muted);
   font-size: 0.82rem;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .btn-logout {

@@ -35,7 +35,7 @@ export class Login {
         localStorage.setItem('role', data.role);
         localStorage.setItem('email', data.email);
 
-        if (data.role === 'ADMIN') {
+        if (data.role === 'ADMIN' || data.role === 'SUPER_ADMIN') {
           this.router.navigate(['/dashboard-admin']);
         } else if (data.role === 'CHERCHEUR') {
           this.router.navigate(['/dashboard-chercheur']);

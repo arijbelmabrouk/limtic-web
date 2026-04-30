@@ -76,7 +76,7 @@ public class SecurityConfig {
 
                 // ── Swagger protégé ADMIN ────────────────────────────────────
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html")
-                    .hasRole("ADMIN")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                 // ── Paramètres publics ───────────────────────────────────────
                 .requestMatchers(HttpMethod.GET, "/api/admin/parametres/public").permitAll()
@@ -99,8 +99,14 @@ public class SecurityConfig {
                 // ── Contact (captcha) ────────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
 
+                // ── Droits exclusifs SUPER_ADMIN ─────────────────────────────
+                .requestMatchers("/api/admin/parametres/**", "/api/admin/audit/**", "/api/users/**").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/axes/**").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/axes/**").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/axes/**").hasRole("SUPER_ADMIN")
+
                 // ── Administration ───────────────────────────────────────────
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                 // ── Tout le reste → authentifié ──────────────────────────────
                 .anyRequest().authenticated()

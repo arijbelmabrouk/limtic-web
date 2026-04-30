@@ -31,7 +31,6 @@ psql -U postgres -d limtic_db -f database/limtic_backup.sql
 ### 2. Backend — HTTPS port 8443
 ```bash
 cd limtic-backend
-./mvnw spring-boot:run
 powershell.exe -ExecutionPolicy Bypass -File start.ps1
 ```
 ➡ API sur **https://localhost:8443**  
@@ -51,6 +50,7 @@ ng serve --ssl
 ## Comptes de test
 | Email | Mot de passe | Rôle |
 |-------|-------------|------|
+| superadmin@limtic.tn | admin123 | SUPER_ADMIN |
 | admin@limtic.tn | admin123 | ADMIN |
 | ben.ali@limtic.tn | pass1 | CHERCHEUR |
 | trabelsi@limtic.tn | pass1 | CHERCHEUR |
@@ -78,6 +78,7 @@ ng serve --ssl
 - ✅ Page Directeur du laboratoire
 - ✅ Contact avec formulaire sécurisé
 - ✅ Réinitialisation mot de passe par email
+- ✅ Navigation responsive avec menu utilisateur (dropdown) unifié pour l'auth
 
 ### Espace Chercheur
 - ✅ Dashboard avec statistiques publications
@@ -89,7 +90,10 @@ ng serve --ssl
 - ✅ Dashboard avec alertes publications en attente
 - ✅ CRUD : chercheurs, publications, événements, axes, doctorants, mastériens
 - ✅ Validation/rejet des publications soumises
-- ✅ Gestion des comptes utilisateurs et rôles
+- ✅ **Sécurité et RBAC** :
+  - **SUPER_ADMIN** : Accès total (gestion des comptes, sécurité, audit, thème global, axes).
+  - **ADMIN** : Accès restreint au contenu (chercheurs, publications, événements, doctorants...).
+  - Protection système empêchant l'administrateur de supprimer/désactiver son propre compte.
 
 ## API REST
 | Méthode | Endpoint | Auth |

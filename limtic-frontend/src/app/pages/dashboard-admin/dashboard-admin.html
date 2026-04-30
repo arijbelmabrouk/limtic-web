@@ -13,9 +13,11 @@
       <button [class.active]="activeTab() === 'membres'" (click)="setTab('membres')">
         Membres
       </button>
-      <button [class.active]="activeTab() === 'comptes'" (click)="setTab('comptes')">
-        Comptes
-      </button>
+      @if (userRole() === 'SUPER_ADMIN') {
+        <button [class.active]="activeTab() === 'comptes'" (click)="setTab('comptes')">
+          Comptes
+        </button>
+      }
       <button [class.active]="activeTab() === 'publications'" (click)="setTab('publications')">
         Publications
         @if (publicationsEnAttente().length > 0) {
@@ -25,9 +27,11 @@
       <button [class.active]="activeTab() === 'evenements'" (click)="setTab('evenements')">
         Événements
       </button>
-      <button [class.active]="activeTab() === 'axes'" (click)="setTab('axes')">
-        Axes
-      </button>
+      @if (userRole() === 'SUPER_ADMIN') {
+        <button [class.active]="activeTab() === 'axes'" (click)="setTab('axes')">
+          Axes
+        </button>
+      }
       <button [class.active]="activeTab() === 'doctorants'" (click)="setTab('doctorants')">
         Doctorants
       </button>
@@ -35,14 +39,16 @@
         Mastériens
       </button>
       <!-- §4.3.6 — Paramètres généraux -->
-      <button [class.active]="activeTab() === 'parametres'" (click)="setTab('parametres')" class="nav-btn-settings">
-        ⚙ Paramètres
-      </button>
+      @if (userRole() === 'SUPER_ADMIN') {
+        <button [class.active]="activeTab() === 'parametres'" (click)="setTab('parametres')" class="nav-btn-settings">
+          ⚙ Paramètres
+        </button>
+      }
       <button class="btn-logout-mobile" (click)="logout()">⏻ Quitter</button>
     </nav>
     <div class="sidebar-footer">
       <span class="admin-email">{{ email() }}</span>
-      <span class="admin-role">ADMIN</span>
+      <span class="admin-role">{{ userRole() }}</span>
       <a routerLink="/home" class="btn-site-link">Retour au site</a>
       <button class="btn-logout-side" (click)="logout()">⏻ Déconnexion</button>
     </div>
@@ -105,16 +111,18 @@
           <div class="stat-label">Événements</div>
           <div class="stat-action">Gérer →</div>
         </div>
-        <div class="stat-card" (click)="setTab('axes')">
-          <div class="stat-num">{{ stats().axes }}</div>
-          <div class="stat-label">Axes</div>
-          <div class="stat-action">Gérer →</div>
-        </div>
-        <div class="stat-card" (click)="setTab('comptes')">
-          <div class="stat-num">{{ users().length }}</div>
-          <div class="stat-label">Comptes</div>
-          <div class="stat-action">Gérer →</div>
-        </div>
+        @if (userRole() === 'SUPER_ADMIN') {
+          <div class="stat-card" (click)="setTab('axes')">
+            <div class="stat-num">{{ stats().axes }}</div>
+            <div class="stat-label">Axes</div>
+            <div class="stat-action">Gérer →</div>
+          </div>
+          <div class="stat-card" (click)="setTab('comptes')">
+            <div class="stat-num">{{ users().length }}</div>
+            <div class="stat-label">Comptes</div>
+            <div class="stat-action">Gérer →</div>
+          </div>
+        }
         <div class="stat-card" (click)="setTab('doctorants')">
           <div class="stat-num">{{ stats().doctorants }}</div>
           <div class="stat-label">Doctorants</div>
@@ -136,12 +144,14 @@
           <div class="quick-card" (click)="setTab('evenements'); showForm.set('event')">
             <span>➕</span> Nouvel événement
           </div>
-          <div class="quick-card" (click)="setTab('axes'); showForm.set('axe')">
-            <span>➕</span> Nouvel axe
-          </div>
-          <div class="quick-card" (click)="setTab('comptes'); showForm.set('user')">
-            <span>➕</span> Nouveau compte
-          </div>
+          @if (userRole() === 'SUPER_ADMIN') {
+            <div class="quick-card" (click)="setTab('axes'); showForm.set('axe')">
+              <span>➕</span> Nouvel axe
+            </div>
+            <div class="quick-card" (click)="setTab('comptes'); showForm.set('user')">
+              <span>➕</span> Nouveau compte
+            </div>
+          }
           <div class="quick-card" (click)="setTab('doctorants'); showForm.set('doc')">
             <span>➕</span> Nouveau doctorant
           </div>
@@ -263,6 +273,7 @@
                 <option value="CHERCHEUR">Chercheur</option>
                 <option value="ADMIN">Admin</option>
                 <option value="VISITEUR">Visiteur</option>
+                <option value="SUPER_ADMIN">Super Admin</option>
               </select>
             </div>
             <div class="field">
@@ -290,12 +301,18 @@
           <tbody>
             @for (u of users(); track u.id) {
               <tr>
-                <td class="cell-title">{{ u.email }}</td>
+                <td class="cell-title">
+                  {{ u.email }}
+                  @if (u.email === email()) {
+                    <strong style="margin-left: 0.5rem; color: var(--accent); font-size: 0.85em;">(Moi)</strong>
+                  }
+                </td>
                 <td>
-                  <select class="role-select" [value]="u.role" (change)="changerRole(u.id, $event)">
+                  <select class="role-select" [value]="u.role" (change)="changerRole(u.id, $event)" [disabled]="u.email === email()">
                     <option value="CHERCHEUR">CHERCHEUR</option>
                     <option value="ADMIN">ADMIN</option>
                     <option value="VISITEUR">VISITEUR</option>
+                    <option value="SUPER_ADMIN">SUPER_ADMIN</option>
                   </select>
                 </td>
                 <td>
@@ -305,10 +322,10 @@
                 </td>
                 <td>
                   <div class="actions-row">
-                    <button class="btn-action btn-view" (click)="toggleActif(u.id)">
+                    <button class="btn-action btn-view" (click)="toggleActif(u.id)" [disabled]="u.email === email()">
                       {{ u.actif ? 'Désactiver' : 'Activer' }}
                     </button>
-                    <button class="btn-action btn-delete" (click)="supprimerUser(u.id)">Suppr.</button>
+                    <button class="btn-action btn-delete" (click)="supprimerUser(u.id)" [disabled]="u.email === email()">Suppr.</button>
                   </div>
                 </td>
               </tr>

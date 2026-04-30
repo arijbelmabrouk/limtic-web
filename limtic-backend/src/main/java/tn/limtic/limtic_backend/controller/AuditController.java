@@ -28,7 +28,7 @@ public class AuditController {
      * Nécessite le rôle ADMIN (configuré dans SecurityConfig).
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Page<AuditLog>> getAuditLog(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
