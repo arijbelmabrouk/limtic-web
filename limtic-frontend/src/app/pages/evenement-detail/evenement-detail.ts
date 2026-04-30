@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
 import { Evenement, PhotoEvenement } from '../../models/chercheur.model';
 
@@ -11,9 +12,10 @@ import { Evenement, PhotoEvenement } from '../../models/chercheur.model';
   styleUrl: './evenement-detail.css'
 })
 export class EvenementDetail implements OnInit {
-  private api    = inject(ApiService);
-  private route  = inject(ActivatedRoute);
-  private router = inject(Router);
+  private api       = inject(ApiService);
+  private route     = inject(ActivatedRoute);
+  private router    = inject(Router);
+  private sanitizer = inject(DomSanitizer);
 
   evenement       = signal<Evenement | null>(null);
   isAdmin         = false;
@@ -43,7 +45,8 @@ export class EvenementDetail implements OnInit {
   private normalizeEvenement(data: any): Evenement {
     return {
       ...data,
-      photos: (data.photos ?? []).map((img: any) => this.normalizePhoto(img))
+      photos: (data.photos ?? []).map((img: any) => this.normalizePhoto(img)),
+      intervenants: data.intervenants ?? []
     };
   }
 
@@ -56,6 +59,22 @@ export class EvenementDetail implements OnInit {
         this.photoActiveIdx.set(0);
       }
     });
+  }
+
+  getStatutEvenement(start: string, end?: string, statutField?: string): 'avenir' | 'passe' | 'annule' {
+    if (statutField === 'ANNULE') {
+      return 'annule';
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const fin = end ? new Date(end) : new Date(start);
+    return fin >= today ? 'avenir' : 'passe';
+  }
+
+  statutLabel(start: string, end?: string, statutField?: string): string {
+    const statut = this.getStatutEvenement(start, end, statutField);
+    if (statut === 'annule') return 'Annulé';
+    return statut === 'avenir' ? 'À venir' : 'Passé';
   }
 
   // ── Lightbox ───────────────────────────────────────────────────────────────
@@ -163,6 +182,10 @@ export class EvenementDetail implements OnInit {
       next: () => this.chargerEvenement(this.evenement()!.id)
     });
     this.dragIndex.set(null);
+  }
+
+  safeHtml(html: string | undefined): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html ?? '');
   }
 
   retour() { this.router.navigate(['/evenements']); }

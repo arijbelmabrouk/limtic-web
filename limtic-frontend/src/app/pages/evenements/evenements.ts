@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { SlicePipe } from '@angular/common';
+import { DatePipe, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -7,7 +7,7 @@ import { Evenement } from '../../models/chercheur.model';
 
 @Component({
   selector: 'app-evenements',
-  imports: [SlicePipe, FormsModule, RouterLink],
+  imports: [DatePipe, SlicePipe, FormsModule, RouterLink],
   templateUrl: './evenements.html',
   styleUrl: './evenements.css'
 })

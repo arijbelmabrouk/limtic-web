@@ -101,6 +101,7 @@ export interface Evenement {
   type?: string;
   statut?: 'PLANIFIE' | 'EN_COURS' | 'TERMINE' | 'ANNULE';
   programmeUrl?: string;
+  programmeTexte?: string;
   photos?: PhotoEvenement[];        // ← galerie photos
   intervenants?: Intervenant[];     // ← intervenants invités
 }

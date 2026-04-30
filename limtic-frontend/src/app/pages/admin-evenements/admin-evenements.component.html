@@ -108,6 +108,31 @@
             <input [(ngModel)]="form.programmeUrl" placeholder="https://..." />
           </div>
 
+          <!-- Programme scientifique riche -->
+          <div class="fg">
+            <label>Texte du programme scientifique</label>
+            <div class="quill-wrap"><div id="quill-programme"></div></div>
+          </div>
+
+          <!-- Intervenants invités -->
+          <div class="fg">
+            <label>Intervenants invités</label>
+            <div class="intervenants-list">
+              @if (form.intervenants && form.intervenants.length > 0) {
+                @for (inv of form.intervenants; track inv.id; let i = $index) {
+                  <div class="intervenant-row">
+                    <input name="intervenant-prenom-{{i}}" [(ngModel)]="inv.prenom" placeholder="Prénom" />
+                    <input name="intervenant-nom-{{i}}" [(ngModel)]="inv.nom" placeholder="Nom" />
+                    <input name="intervenant-affiliation-{{i}}" [(ngModel)]="inv.affiliation" placeholder="Affiliation" />
+                    <input name="intervenant-titre-{{i}}" [(ngModel)]="inv.titrePresentation" placeholder="Titre de l'intervention" />
+                    <button type="button" class="btn-small btn-remove" (click)="supprimerIntervenant(i)">✕</button>
+                  </div>
+                }
+              }
+              <button type="button" class="btn-add" (click)="ajouterIntervenant()">Ajouter un intervenant</button>
+            </div>
+          </div>
+
           <!-- Statut calculé (lecture seule) -->
           <div class="fg">
             <label>Statut (mis à jour automatiquement)</label>

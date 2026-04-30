@@ -17,6 +17,14 @@ export interface ImageEvenement {
   preview?: string;
 }
 
+export interface Intervenant {
+  id?: number;
+  prenom?: string;
+  nom: string;
+  affiliation?: string;
+  titrePresentation?: string;
+}
+
 export interface Evenement {
   id?:           number;
   titre:         string;
@@ -26,9 +34,11 @@ export interface Evenement {
   lieu:          string;
   type?:         string;
   programmeUrl?: string;
+  programmeTexte?: string;
   statut:        StatutEvenement;
   photos?:       ImageEvenement[];
   images:        ImageEvenement[];
+  intervenants?: Intervenant[];
 }
 
 @Component({
@@ -63,6 +73,7 @@ export class AdminEvenementsComponent implements OnInit, OnDestroy {
 
   // ── Quill ──────────────────────────────────────────────────────────
   private quillInstance: any = null;
+  private quillProgrammeInstance: any = null;
 
   // ── drag & drop ────────────────────────────────────────────────────
   dragIndex:     number | null = null;
@@ -86,7 +97,8 @@ export class AdminEvenementsComponent implements OnInit, OnDestroy {
   private normalizeEvenement(data: any): Evenement {
     return {
       ...data,
-      images: (data.photos ?? data.images ?? []).map((img: any) => this.normalizeImage(img))
+      images: (data.photos ?? data.images ?? []).map((img: any) => this.normalizeImage(img)),
+      intervenants: data.intervenants ?? []
     };
   }
 
@@ -108,6 +120,20 @@ export class AdminEvenementsComponent implements OnInit, OnDestroy {
     );
     this.fermerModal();
     this.enregistrement.set(false);
+  }
+
+  ajouterIntervenant() {
+    this.form.intervenants = [...(this.form.intervenants ?? []), {
+      id: undefined,
+      nom: '',
+      prenom: '',
+      affiliation: '',
+      titrePresentation: ''
+    }];
+  }
+
+  supprimerIntervenant(index: number) {
+    this.form.intervenants = this.form.intervenants?.filter((_, i) => i !== index) ?? [];
   }
 
   chargerEvenements() {
@@ -141,17 +167,23 @@ export class AdminEvenementsComponent implements OnInit, OnDestroy {
     this.form = this.formVide();
     this.modeEdition.set(false);
     this.modalOuvert.set(true);
-    setTimeout(() => this.initQuill(), 60);
+    setTimeout(() => {
+      this.initQuill('', 'quill-editor', 'description');
+      this.initQuill('', 'quill-programme', 'programmeTexte');
+    }, 60);
   }
 
   ouvrirEdition(e: Evenement) {
     this.form = this.normalizeEvenement(e);
     this.modeEdition.set(true);
     this.modalOuvert.set(true);
-    setTimeout(() => this.initQuill(this.form.description), 60);
+    setTimeout(() => {
+      this.initQuill(this.form.description, 'quill-editor', 'description');
+      this.initQuill(this.form.programmeTexte ?? '', 'quill-programme', 'programmeTexte');
+    }, 60);
   }
 
-  fermerModal() { this.modalOuvert.set(false); this.quillInstance = null; }
+  fermerModal() { this.modalOuvert.set(false); this.quillInstance = null; this.quillProgrammeInstance = null; }
 
   // ── Quill (chargé dynamiquement) ──────────────────────────────────
   private chargerQuill() {
@@ -165,12 +197,12 @@ export class AdminEvenementsComponent implements OnInit, OnDestroy {
     document.head.appendChild(script);
   }
 
-  private initQuill(contenu = '') {
-    if (!(window as any).Quill) { setTimeout(() => this.initQuill(contenu), 200); return; }
-    const el = document.getElementById('quill-editor');
+  private initQuill(contenu = '', containerId = 'quill-editor', formField: 'description' | 'programmeTexte' = 'description') {
+    if (!(window as any).Quill) { setTimeout(() => this.initQuill(contenu, containerId, formField), 200); return; }
+    const el = document.getElementById(containerId);
     if (!el) return;
     el.innerHTML = '';
-    this.quillInstance = new (window as any).Quill('#quill-editor', {
+    const instance = new (window as any).Quill(`#${containerId}`, {
       theme: 'snow',
       modules: { toolbar: [
         [{ header: [1, 2, 3, false] }],
@@ -181,10 +213,16 @@ export class AdminEvenementsComponent implements OnInit, OnDestroy {
         ['clean']
       ]}
     });
-    if (contenu) this.quillInstance.clipboard.dangerouslyPasteHTML(contenu);
-    this.quillInstance.on('text-change', () => {
-      this.form.description = this.quillInstance.root.innerHTML;
+    if (contenu) instance.clipboard.dangerouslyPasteHTML(contenu);
+    instance.on('text-change', () => {
+      (this.form as any)[formField] = instance.root.innerHTML;
     });
+
+    if (formField === 'description') {
+      this.quillInstance = instance;
+    } else {
+      this.quillProgrammeInstance = instance;
+    }
   }
 
   safeHtml(html: string): SafeHtml {
@@ -276,9 +314,9 @@ export class AdminEvenementsComponent implements OnInit, OnDestroy {
   private formVide(): Evenement {
     const today = new Date().toISOString().split('T')[0];
     return {
-      titre: '', description: '', lieu: '', type: '', programmeUrl: '',
+      titre: '', description: '', lieu: '', type: '', programmeUrl: '', programmeTexte: '',
       dateEvenement: today, dateFin: today,
-      statut: 'A_VENIR', images: []
+      statut: 'A_VENIR', images: [], intervenants: []
     };
   }
 

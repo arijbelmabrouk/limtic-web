@@ -40,6 +40,10 @@ public class Evenement {
     /** URL du programme PDF (upload serveur ou lien externe) */
     private String programmeUrl;
 
+    /** Programme scientifique saisi en texte riche HTML */
+    @Column(columnDefinition = "TEXT")
+    private String programmeTexte;
+
     // ── Galerie photos ─────────────────────────────────────────────────────
     /**
      * Photos de l'événement.

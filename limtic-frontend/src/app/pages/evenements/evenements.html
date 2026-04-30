@@ -74,6 +74,12 @@
         <div class="event-body">
           <span class="event-type">{{ e.type }}</span>
           <h3>{{ e.titre }}</h3>
+          <p class="event-dates">
+            📅 {{ e.dateEvenement | date:'dd MMM yyyy' }}
+            @if (e.dateFin && e.dateFin !== e.dateEvenement) {
+              <span>→ {{ e.dateFin | date:'dd MMM yyyy' }}</span>
+            }
+          </p>
           <p class="event-lieu">📍 {{ e.lieu }}</p>
           <p class="event-desc">{{ e.description }}</p>
         </div>

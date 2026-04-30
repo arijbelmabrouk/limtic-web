@@ -11,9 +11,12 @@
       @if (evenement()!.type) {
         <span class="evt-type-badge">{{ evenement()!.type }}</span>
       }
-      <span class="evt-statut {{ evenement()!.statut?.toLowerCase() }}">
-        {{ evenement()!.statut }}
+      <span class="evt-statut {{ getStatutEvenement(evenement()!.dateEvenement, evenement()!.dateFin, evenement()!.statut) }}">
+        {{ statutLabel(evenement()!.dateEvenement, evenement()!.dateFin, evenement()!.statut) }}
       </span>
+      @if (evenement()!.statut && evenement()!.statut !== 'ANNULE') {
+        <span class="evt-statut-raw">({{ evenement()!.statut }})</span>
+      }
     </div>
     <h1>{{ evenement()!.titre }}</h1>
     <div class="evt-dates">
@@ -31,17 +34,24 @@
   @if (evenement()!.description) {
     <div class="detail-section">
       <h2>Description</h2>
-      <p class="evt-description">{{ evenement()!.description }}</p>
+      <div class="evt-description" [innerHTML]="safeHtml(evenement()!.description)"></div>
     </div>
   }
 
-  <!-- Programme PDF -->
-  @if (evenement()!.programmeUrl) {
+  <!-- Programme scientifique -->
+  @if (evenement()!.programmeTexte || evenement()!.programmeUrl) {
     <div class="detail-section">
-      <h2>Programme</h2>
-      <a [href]="evenement()!.programmeUrl" target="_blank" class="btn-programme">
-        📋 Télécharger le programme (PDF)
-      </a>
+      <h2>Programme scientifique</h2>
+
+      @if (evenement()!.programmeTexte) {
+        <div class="programme-text" [innerHTML]="safeHtml(evenement()!.programmeTexte)"></div>
+      }
+
+      @if (evenement()!.programmeUrl) {
+        <a [href]="evenement()!.programmeUrl" target="_blank" class="btn-programme">
+          📋 Télécharger le programme (PDF)
+        </a>
+      }
     </div>
   }
 

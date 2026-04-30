@@ -4,16 +4,16 @@
 
 .axe-detail-container {
   min-height: 100vh;
-  background: #111827;
+  background: var(--bg-primary);
   padding: 3rem 5rem;
-  color: white;
+  color: var(--text-primary);
 }
 
 /* Back button */
 .btn-retour {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.6);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   border-radius: 8px;
   padding: 9px 18px;
   cursor: pointer;
@@ -24,15 +24,15 @@
   display: inline-block;
 }
 .btn-retour:hover {
-  background: rgba(0,210,255,0.08);
-  border-color: rgba(0,210,255,0.3);
-  color: #00d2ff;
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 /* Hero card */
 .axe-content {
-  background: #1f2937;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 3rem;
   position: relative;
@@ -49,18 +49,18 @@
 .axe-header {
   margin-bottom: 3rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid rgba(0,210,255,0.1);
+  border-bottom: 1px solid var(--border-color);
   text-align: center;
 }
 .axe-header h1 {
   font-size: 2.4rem;
   font-weight: 900;
-  color: white;
+  color: var(--text-primary);
   margin: 0 0 1rem 0;
   line-height: 1.3;
 }
 .axe-description {
-  color: rgba(255,255,255,0.5);
+  color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1.8;
   max-width: 720px;
@@ -73,12 +73,12 @@
 .axe-publications h3,
 .axe-doctorants h3,
 .axe-masteriens h3 {
-  color: white;
+  color: var(--text-primary);
   font-size: 1.2rem;
   font-weight: 700;
   margin: 0 0 1.25rem 0;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(0,210,255,0.1);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -94,8 +94,8 @@
 
 /* Responsable card */
 .responsable-card {
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
@@ -105,18 +105,18 @@
   gap: 1rem;
 }
 .responsable-card:hover {
-  border-color: rgba(0,210,255,0.25);
-  background: rgba(0,210,255,0.04);
+  border-color: var(--accent);
+  background: var(--accent-soft);
   transform: translateY(-2px);
 }
 .responsable-info h4 {
-  color: white;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
   font-size: 1.1rem;
   font-weight: 700;
 }
 .responsable-info p {
-  color: rgba(255,255,255,0.45);
+  color: var(--text-secondary);
   margin: 0 0 4px 0;
   font-size: 0.875rem;
 }
@@ -129,33 +129,33 @@
   gap: 1rem;
 }
 .chercheur-card {
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   cursor: pointer;
   transition: all 0.3s;
 }
 .chercheur-card:hover {
-  border-color: rgba(0,210,255,0.25);
-  background: rgba(0,210,255,0.04);
+  border-color: var(--accent);
+  background: var(--accent-soft);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-md);
 }
 .chercheur-info h4 {
-  color: white;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
   font-size: 1rem;
   font-weight: 700;
 }
-.chercheur-info p { color: rgba(255,255,255,0.45); margin: 0 0 4px 0; font-size: 0.85rem; }
+.chercheur-info p { color: var(--text-secondary); margin: 0 0 4px 0; font-size: 0.85rem; }
 .chercheur-info .email { color: #00d2ff; font-style: italic; }
 
 /* Publications list */
 .publications-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .publication-item {
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   cursor: pointer;
@@ -165,19 +165,19 @@
   gap: 1rem;
 }
 .publication-item:hover {
-  border-color: rgba(0,210,255,0.2);
+  border-color: var(--accent);
   transform: translateX(4px);
 }
 .publication-info h4 {
-  color: white;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.4;
 }
-.publication-authors { color: rgba(255,255,255,0.45); font-size: 0.85rem; margin: 0 0 4px 0; }
+.publication-authors { color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 4px 0; }
 .publication-date,
-.publication-journal { color: rgba(255,255,255,0.35); font-size: 0.82rem; margin: 0 0 4px 0; }
+.publication-journal { color: var(--text-muted); font-size: 0.82rem; margin: 0 0 4px 0; }
 .publication-journal { font-style: italic; }
 
 /* Doctorants & Masteriens */
@@ -186,26 +186,26 @@
 
 .doctorant-item,
 .masterien-item {
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   transition: border-color 0.2s;
 }
 .doctorant-item:hover,
-.masterien-item:hover { border-color: rgba(0,210,255,0.15); }
+.masterien-item:hover { border-color: var(--accent); }
 
 .doctorant-item h4,
-.masterien-item h4 { color: white; margin: 0 0 8px 0; font-size: 1rem; font-weight: 700; }
-.sujet { color: rgba(255,255,255,0.5); margin: 0 0 6px 0; font-style: italic; font-size: 0.875rem; }
+.masterien-item h4 { color: var(--text-primary); margin: 0 0 8px 0; font-size: 1rem; font-weight: 700; }
+.sujet { color: var(--text-secondary); margin: 0 0 6px 0; font-style: italic; font-size: 0.875rem; }
 .directeur,
-.encadrant { color: rgba(255,255,255,0.35); margin: 0; font-size: 0.85rem; }
+.encadrant { color: var(--text-muted); margin: 0; font-size: 0.85rem; }
 
 /* Loading */
 .loading {
   text-align: center;
   padding: 60px 24px;
-  color: rgba(255,255,255,0.4);
+  color: var(--text-secondary);
   font-size: 1rem;
 }
 
@@ -245,22 +245,39 @@
 .statut-brouillon { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; font-weight: 700; }
 .promo-badge  { background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); color: #a78bfa; padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
 .mention      { color: #fbbf24; font-size: 0.85rem; font-weight: 600; }
-.source-classement { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; }
+.source-classement {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
 
 /* ── Item header (doctorant/masterien dans axe) ─────────── */
 .item-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 6px; }
-.item-header h4 { color: white; font-size: 1rem; font-weight: 700; margin: 0; }
-.grade { color: #00d2ff; font-size: 0.875rem; }
-.institution { color: rgba(255,255,255,0.4); font-size: 0.82rem; }
-.specialite { font-size: 0.85rem; color: rgba(255,255,255,0.55); background: rgba(0,210,255,0.06); border: 1px solid rgba(0,210,255,0.1); padding: 4px 10px; border-radius: 6px; margin-top: 4px; display: inline-block; }
-.meta { color: rgba(255,255,255,0.35); font-size: 0.82rem; margin: 3px 0 0; }
+.item-header h4 { color: var(--text-primary); font-size: 1rem; font-weight: 700; margin: 0; }
+.grade { color: var(--accent); font-size: 0.875rem; }
+.institution { color: var(--text-secondary); font-size: 0.82rem; }
+.specialite {
+  font-size: 0.85rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-top: 4px;
+  display: inline-block;
+}
+.meta { color: var(--text-muted); font-size: 0.82rem; margin: 3px 0 0; }
 
 /* ── Hero section (doctorant/masterien detail) ──────────── */
 .hero-section {
   display: flex; gap: 2rem; align-items: flex-start;
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(0,210,255,0.08);
-  border-radius: 14px; padding: 2rem; margin-bottom: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 2rem;
+  margin-bottom: 0;
 }
 .photo-container { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
 .photo-placeholder {
@@ -271,12 +288,15 @@
   border: 3px solid rgba(0,210,255,0.3);
 }
 .photo-badge {
-  background: rgba(0,210,255,0.1); border: 1px solid rgba(0,210,255,0.3);
-  color: #00d2ff; padding: 3px 12px; border-radius: 20px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(0,210,255,0.3);
+  color: var(--accent);
+  padding: 3px 12px;
+  border-radius: 20px;
   font-size: 0.72rem; font-weight: 700; white-space: nowrap;
 }
 .hero-right { flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
-.hero-right h1 { font-size: 2rem; font-weight: 900; color: white; margin: 0; }
+.hero-right h1 { font-size: 2rem; font-weight: 900; color: var(--text-primary); margin: 0; }
 
 /* ── Publication item enrichi ───────────────────────────── */
 .pub-left { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; flex-shrink: 0; }
@@ -286,17 +306,18 @@
 .badge-classement { padding: 3px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; }
 .badge-q1   { background: rgba(52,211,153,0.2); color: #34d399; border: 1px solid rgba(52,211,153,0.4); }
 .badge-q2   { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); }
-.pub-year   { font-size: 1.4rem; font-weight: 900; color: rgba(255,255,255,0.08); min-width: 50px; text-align: right; align-self: center; }
+.pub-year   { font-size: 1.4rem; font-weight: 900; color: var(--text-muted); min-width: 50px; text-align: right; align-self: center; }
 
 /* ── Auteurs chips (publication detail) ─────────────────── */
 .authors-list { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 .author-chip {
   display: flex; align-items: center; gap: 0.75rem;
-  background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 10px; padding: 0.75rem 1rem;
   cursor: pointer; transition: all 0.2s;
 }
-.author-chip:hover { border-color: rgba(0,210,255,0.25); background: rgba(0,210,255,0.04); transform: translateY(-2px); }
+.author-chip:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-2px); }
 .author-avatar {
   width: 36px; height: 36px; border-radius: 50%;
   background: linear-gradient(135deg, #00d2ff, #0077b6);
@@ -304,23 +325,24 @@
   font-size: 0.85rem; font-weight: 800; color: white; flex-shrink: 0;
 }
 .author-info { display: flex; flex-direction: column; gap: 2px; }
-.author-name { color: white; font-size: 0.9rem; font-weight: 600; }
-.author-grade { color: #00d2ff; font-size: 0.78rem; }
+.author-name { color: var(--text-primary); font-size: 0.9rem; font-weight: 600; }
+.author-grade { color: var(--accent); font-size: 0.78rem; }
 
 /* ── Axe card (dans publication/doctorant detail) ───────── */
 .axe-card {
-  background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.3s;
 }
-.axe-card:hover { border-color: rgba(0,210,255,0.25); background: rgba(0,210,255,0.04); transform: translateY(-2px); }
-.axe-info h4 { color: white; margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 700; }
-.axe-info p  { color: rgba(255,255,255,0.45); margin: 0; line-height: 1.6; font-size: 0.875rem; }
-.axe-description { color: rgba(255,255,255,0.4) !important; font-style: italic; font-size: 0.875rem; }
+.axe-card:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-2px); }
+.axe-info h4 { color: var(--text-primary); margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 700; }
+.axe-info p  { color: var(--text-secondary); margin: 0; line-height: 1.6; font-size: 0.875rem; }
+.axe-description { color: var(--text-muted); font-style: italic; font-size: 0.875rem; }
 
 /* ── Photos grid (événement detail) ─────────────────────── */
 .evenement-photos { margin-bottom: 2rem; }
 .evenement-photos h3 {
-  color: white; font-size: 1.1rem; font-weight: 700;
+  color: var(--text-primary); font-size: 1.1rem; font-weight: 700;
   margin: 0 0 1.25rem; padding-bottom: 0.75rem;
   border-bottom: 1px solid rgba(0,210,255,0.1);
 }
@@ -330,12 +352,13 @@
   gap: 1rem;
 }
 .photo-item {
-  background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 10px; overflow: hidden; transition: all 0.3s;
 }
-.photo-item:hover { border-color: rgba(0,210,255,0.2); transform: scale(1.02); }
+.photo-item:hover { border-color: var(--accent); transform: scale(1.02); }
 .photo-item img { width: 100%; height: 160px; object-fit: cover; display: block; }
-.photo-legende { padding: 8px 12px; color: rgba(255,255,255,0.5); font-size: 0.8rem; }
+.photo-legende { padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem; }
 
 /* ── Responsive additions ───────────────────────────────── */
 @media (max-width: 768px) {
