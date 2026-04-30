@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -16,7 +17,11 @@ export class ResetPassword implements OnInit {
   erreur = signal('');
   loading = signal(false);
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    public settings: LabSettingsService
+  ) {}
 
   ngOnInit() {
     this.token = this.route.snapshot.queryParamMap.get('token') || '';

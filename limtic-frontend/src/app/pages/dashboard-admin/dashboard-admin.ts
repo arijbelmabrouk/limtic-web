@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
+import { LabSettingsService } from '../../services/lab-settings.service';
 import { SafePipe } from '../../pipes/Safepipe';
 import { AdminEvenementsComponent } from '../admin-evenements/admin-evenements.component';
 
@@ -27,6 +28,15 @@ interface ThemeForm {
   couleurDanger:    string;   // --danger
   couleurSucces:    string;   // --success
   couleurWarning:   string;   // --warning
+}
+
+/** Valeurs du formulaire "Parametres SMTP" */
+interface SmtpForm {
+  host: string;
+  port: string;
+  username: string;
+  destinataire: string;
+  password: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -119,6 +129,15 @@ export class DashboardAdmin implements OnInit {
     couleurWarning:    '#f59e0b',
   };
 
+  /** Formulaire SMTP */
+  smtpForm: SmtpForm = {
+    host: '',
+    port: '',
+    username: '',
+    destinataire: '',
+    password: ''
+  };
+
   /** URL courante du logo (relative, ex: /uploads/logos/logo-abc.png) */
   logoUrlCourante = signal<string>('');
 
@@ -140,7 +159,8 @@ export class DashboardAdmin implements OnInit {
     private router: Router,
     private api: ApiService,
     private sanitizer: DomSanitizer,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    public settings: LabSettingsService
   ) {}
 
   private handleError(error: any) {
@@ -857,6 +877,15 @@ export class DashboardAdmin implements OnInit {
           couleurWarning:    map['theme.couleurWarning']    ?? '#f59e0b',
         };
 
+        // Parametres SMTP (mot de passe vide tant qu'il n'est pas change)
+        this.smtpForm = {
+          host: map['smtp.host'] ?? '',
+          port: map['smtp.port'] ?? '',
+          username: map['smtp.username'] ?? '',
+          destinataire: map['smtp.destinataire'] ?? '',
+          password: ''
+        };
+
         // Logo existant
         const logoUrl = map['labo.logoUrl'] ?? '';
         this.logoUrlCourante.set(logoUrl);
@@ -1031,6 +1060,11 @@ export class DashboardAdmin implements OnInit {
       'labo.email':       this.laboForm.email,
       'labo.telephone':   this.laboForm.telephone,
       'labo.adresse':     this.laboForm.adresse,
+      // SMTP
+      'smtp.host': this.smtpForm.host,
+      'smtp.port': String(this.smtpForm.port || ''),
+      'smtp.username': this.smtpForm.username,
+      'smtp.destinataire': this.smtpForm.destinataire,
       // Couleurs du thème
       'theme.couleurPrimaire':   this.themeForm.couleurPrimaire,
       'theme.couleurSecondaire': this.themeForm.couleurSecondaire,
@@ -1039,10 +1073,16 @@ export class DashboardAdmin implements OnInit {
       'theme.couleurWarning':    this.themeForm.couleurWarning,
     };
 
+    if (this.smtpForm.password.trim()) {
+      payload['smtp.password'] = this.smtpForm.password.trim();
+    }
+
     this.api.updateParametresLot(payload).subscribe({
       next: () => {
         this.parametresSaving.set(false);
         this.message.set('Paramètres sauvegardés avec succès !');
+        this.settings.refresh();
+        this.smtpForm = { ...this.smtpForm, password: '' };
       },
       error: err => {
         this.parametresSaving.set(false);

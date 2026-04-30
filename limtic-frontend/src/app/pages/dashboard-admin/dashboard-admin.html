@@ -70,7 +70,7 @@
     @if (activeTab() === 'dashboard') {
       <div class="tab-header">
         <h1>Tableau de bord</h1>
-        <p>Vue d'ensemble du laboratoire LIMTIC</p>
+        <p>Vue d'ensemble du laboratoire {{ settings.acronyme() }}</p>
       </div>
 
       <!-- Alerte publications en attente -->
@@ -1188,6 +1188,45 @@
               @if (!logoPreviewUrl() && !logoFile) {
                 <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
               }
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Section 3 : SMTP ── -->
+        <div class="params-section">
+          <div class="params-section-header">
+            <span class="params-section-icon">✉️</span>
+            <div>
+              <h2>Paramètres SMTP</h2>
+              <p>Adresse destinataire et mot de passe applicatif</p>
+            </div>
+          </div>
+
+          <div class="form-grid params-grid">
+            <div class="field">
+              <label>Serveur SMTP</label>
+              <input [(ngModel)]="smtpForm.host"
+                     placeholder="smtp.gmail.com" />
+            </div>
+            <div class="field">
+              <label>Port SMTP</label>
+              <input type="number" [(ngModel)]="smtpForm.port"
+                     placeholder="587" min="1" />
+            </div>
+            <div class="field">
+              <label>Utilisateur SMTP</label>
+              <input type="email" [(ngModel)]="smtpForm.username"
+                     placeholder="user@domaine.tn" />
+            </div>
+            <div class="field">
+              <label>Destinataire</label>
+              <input type="email" [(ngModel)]="smtpForm.destinataire"
+                     placeholder="contact@limtic.tn" />
+            </div>
+            <div class="field">
+              <label>Mot de passe SMTP</label>
+              <input type="password" [(ngModel)]="smtpForm.password"
+                     placeholder="Laissez vide pour ne pas changer" />
             </div>
           </div>
         </div>

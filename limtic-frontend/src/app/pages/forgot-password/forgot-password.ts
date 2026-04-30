@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -14,7 +15,7 @@ export class ForgotPassword {
   erreur = signal('');
   loading = signal(false);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, public settings: LabSettingsService) {}
 
   onSubmit() {
     if (!this.email) { this.erreur.set('Veuillez entrer votre email.'); return; }

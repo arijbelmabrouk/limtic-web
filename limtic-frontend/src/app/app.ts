@@ -4,6 +4,7 @@ import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { ApiService } from './services/api.service';
 import { ThemeService } from './services/theme.service';
+import { LabSettingsService } from './services/lab-settings.service';
 
 @Component({
   selector: 'app-root',
@@ -20,9 +21,15 @@ export class App implements OnInit {
   menuOuvert     = signal(false);
 
   // Un seul constructeur avec ApiService et ThemeService
-  constructor(private router: Router, private api: ApiService, public themeService: ThemeService) {}
+  constructor(
+    private router: Router,
+    private api: ApiService,
+    public themeService: ThemeService,
+    public settings: LabSettingsService
+  ) {}
 
   ngOnInit() {
+    this.settings.loadPublic();
     this.checkAuth();
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd)

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Evenement } from '../../models/chercheur.model';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 @Component({
   selector: 'app-evenements',
@@ -66,7 +67,7 @@ export class Evenements implements OnInit {
     this.evenements().filter(e => this.getStatut(e.dateEvenement) === 'passe').length
   );
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, public settings: LabSettingsService) {}
 
   ngOnInit() {
     this.api.getEvenements().subscribe(data => this.evenements.set(data));

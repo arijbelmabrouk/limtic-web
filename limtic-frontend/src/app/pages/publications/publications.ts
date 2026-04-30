@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { Publication } from '../../models/chercheur.model';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 @Component({
   selector: 'app-publications',
@@ -104,7 +105,7 @@ export class Publications implements OnInit {
     return list;
   });
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, public settings: LabSettingsService) {}
 
   ngOnInit() {
     this.api.getPublications().subscribe(data => this.publications.set(data));

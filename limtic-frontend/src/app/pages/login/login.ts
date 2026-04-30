@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,11 @@ export class Login {
   erreur = signal('');
   loading = signal(false);
 
-  constructor(private router: Router, private api: ApiService) {}
+  constructor(
+    private router: Router,
+    private api: ApiService,
+    public settings: LabSettingsService
+  ) {}
 
   onSubmit() {
     this.loading.set(true);

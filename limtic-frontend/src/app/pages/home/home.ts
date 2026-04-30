@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { Publication, Evenement } from '../../models/chercheur.model';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 @Component({
   selector: 'app-home',
@@ -12,6 +13,7 @@ import { Publication, Evenement } from '../../models/chercheur.model';
 })
 export class HomeComponent implements OnInit {
   private api = inject(ApiService);
+  public settings = inject(LabSettingsService);
 
   statsLoading      = signal(true);
   statsChercheurs   = signal(0);
