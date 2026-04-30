@@ -109,36 +109,12 @@ public class ParametreController {
     }
 
     /**
-     * Modifie la valeur d'un paramètre par sa clé.
-     * Body : { "valeur": "nouvelle valeur" }
-     * Pour les valeurs sensibles, si le body contient "***", on ne modifie pas.
-     */
-    @PutMapping("/{cle}")
-    public ResponseEntity<ParametreSysteme> update(@PathVariable String cle,
-                                                    @RequestBody Map<String, String> body,
-                                                    HttpServletRequest request) {
-        Optional<ParametreSysteme> opt = repo.findByCle(cle);
-        if (opt.isEmpty()) return ResponseEntity.notFound().build();
-
-        ParametreSysteme p = opt.get();
-        String nouvelleValeur = body.get("valeur");
-
-        if (!"***".equals(nouvelleValeur)) {
-            p.setValeur(nouvelleValeur);
-        }
-
-        repo.save(p);
-        auditService.log(request, "UPDATE", "ParametreSysteme", p.getId(),
-            "Paramètre modifié : " + cle, true);
-
-        if (p.isSensible()) p.setValeur("***");
-        return ResponseEntity.ok(p);
-    }
-
-    /**
      * §4.3.6 — Mise à jour en lot de plusieurs paramètres labo/thème en une seule requête.
      * Body : { "labo.nom": "LIMTIC", "theme.couleurPrimaire": "#00d2ff", ... }
      * Crée le paramètre s'il n'existe pas encore (upsert).
+     *
+     * IMPORTANT: Ce mapping doit rester AVANT @PutMapping("/{cle}") pour que Spring MVC
+     * donne la priorité au chemin littéral "/lot" sur le paramètre de chemin "/{cle}".
      */
     @PutMapping("/lot")
     public ResponseEntity<Void> updateLot(@RequestBody Map<String, String> params,
@@ -165,6 +141,33 @@ public class ParametreController {
         auditService.log(request, "UPDATE", "ParametreSysteme", null,
             "Mise à jour en lot : " + String.join(", ", params.keySet()), true);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Modifie la valeur d'un paramètre par sa clé.
+     * Body : { "valeur": "nouvelle valeur" }
+     * Pour les valeurs sensibles, si le body contient "***", on ne modifie pas.
+     */
+    @PutMapping("/{cle:^(?!lot$).+}")
+    public ResponseEntity<ParametreSysteme> update(@PathVariable String cle,
+                                                    @RequestBody Map<String, String> body,
+                                                    HttpServletRequest request) {
+        Optional<ParametreSysteme> opt = repo.findByCle(cle);
+        if (opt.isEmpty()) return ResponseEntity.notFound().build();
+
+        ParametreSysteme p = opt.get();
+        String nouvelleValeur = body.get("valeur");
+
+        if (!"***".equals(nouvelleValeur)) {
+            p.setValeur(nouvelleValeur);
+        }
+
+        repo.save(p);
+        auditService.log(request, "UPDATE", "ParametreSysteme", p.getId(),
+            "Paramètre modifié : " + cle, true);
+
+        if (p.isSensible()) p.setValeur("***");
+        return ResponseEntity.ok(p);
     }
 
     /**
