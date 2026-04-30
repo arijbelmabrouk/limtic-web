@@ -1088,7 +1088,7 @@
 
       <div class="tab-header">
         <h1>⚙ Paramètres généraux</h1>
-        <p>Configuration du laboratoire, du logo et des couleurs du thème</p>
+        <p>Configuration du laboratoire, logo, couleurs du thème et métadonnées SEO</p>
       </div>
 
       @if (parametresLoading()) {
@@ -1192,46 +1192,7 @@
           </div>
         </div>
 
-        <!-- ── Section 3 : SMTP ── -->
-        <div class="params-section">
-          <div class="params-section-header">
-            <span class="params-section-icon">✉️</span>
-            <div>
-              <h2>Paramètres SMTP</h2>
-              <p>Adresse destinataire et mot de passe applicatif</p>
-            </div>
-          </div>
-
-          <div class="form-grid params-grid">
-            <div class="field">
-              <label>Serveur SMTP</label>
-              <input [(ngModel)]="smtpForm.host"
-                     placeholder="smtp.gmail.com" />
-            </div>
-            <div class="field">
-              <label>Port SMTP</label>
-              <input type="number" [(ngModel)]="smtpForm.port"
-                     placeholder="587" min="1" />
-            </div>
-            <div class="field">
-              <label>Utilisateur SMTP</label>
-              <input type="email" [(ngModel)]="smtpForm.username"
-                     placeholder="user@domaine.tn" />
-            </div>
-            <div class="field">
-              <label>Destinataire</label>
-              <input type="email" [(ngModel)]="smtpForm.destinataire"
-                     placeholder="contact@limtic.tn" />
-            </div>
-            <div class="field">
-              <label>Mot de passe SMTP</label>
-              <input type="password" [(ngModel)]="smtpForm.password"
-                     placeholder="Laissez vide pour ne pas changer" />
-            </div>
-          </div>
-        </div>
-
-        <!-- ── Section 3 : Couleurs du thème ── -->
+                <!-- ── Section 3 : Couleurs du thème ── -->
         <div class="params-section">
           <div class="params-section-header">
             <span class="params-section-icon">🎨</span>
@@ -1332,6 +1293,124 @@
           <button class="btn-colors-reset" (click)="resetCouleursDefaut()">
             ↺ Réinitialiser les couleurs par défaut
           </button>
+        </div>
+        
+        <!-- ── Section 3 : SMTP ── -->
+        <div class="params-section">
+          <div class="params-section-header">
+            <span class="params-section-icon">✉️</span>
+            <div>
+              <h2>Paramètres SMTP</h2>
+              <p>Adresse destinataire et mot de passe applicatif</p>
+            </div>
+          </div>
+
+          <div class="form-grid params-grid">
+            <div class="field">
+              <label>Serveur SMTP</label>
+              <input [(ngModel)]="smtpForm.host"
+                     placeholder="smtp.gmail.com" />
+            </div>
+            <div class="field">
+              <label>Port SMTP</label>
+              <input type="number" [(ngModel)]="smtpForm.port"
+                     placeholder="587" min="1" />
+            </div>
+            <div class="field">
+              <label>Utilisateur SMTP</label>
+              <input type="email" [(ngModel)]="smtpForm.username"
+                     placeholder="user@domaine.tn" />
+            </div>
+            <div class="field">
+              <label>Destinataire</label>
+              <input type="email" [(ngModel)]="smtpForm.destinataire"
+                     placeholder="contact@limtic.tn" />
+            </div>
+            <div class="field">
+              <label>Mot de passe SMTP</label>
+              <input type="password" [(ngModel)]="smtpForm.password"
+                     placeholder="Laissez vide pour ne pas changer" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Section 4 : SEO par page ── -->
+        <div class="params-section">
+          <div class="params-section-header">
+            <span class="params-section-icon">🔍</span>
+            <div>
+              <h2>Métadonnées SEO</h2>
+              <p>Titre, description et mots-clés pour chaque page publique du site</p>
+            </div>
+          </div>
+
+          <div class="seo-accordion">
+            @for (page of SEO_PAGES; track page.key) {
+              <div class="seo-accordion-item"
+                   [class.open]="seoPageActive() === page.key">
+
+                <!-- En-tête cliquable -->
+                <button class="seo-accordion-header"
+                        (click)="toggleSeoPage(page.key)"
+                        type="button">
+                  <span class="seo-page-icon">{{ page.icon }}</span>
+                  <span class="seo-page-label">{{ page.label }}</span>
+                  <span class="seo-status-badge"
+                        [class.filled]="seoForm[page.key].titre || seoForm[page.key].description">
+                    {{ (seoForm[page.key].titre || seoForm[page.key].description) ? 'Configuré' : 'Non configuré' }}
+                  </span>
+                  <span class="seo-chevron">{{ seoPageActive() === page.key ? '▲' : '▼' }}</span>
+                </button>
+
+                <!-- Panneau de champs -->
+                @if (seoPageActive() === page.key) {
+                  <div class="seo-accordion-body">
+                    <div class="form-grid params-grid">
+
+                      <div class="field full">
+                        <label>Titre de la page
+                          <span class="seo-counter"
+                                [class.warn]="seoForm[page.key].titre.length > 60">
+                            {{ seoForm[page.key].titre.length }}/60
+                          </span>
+                        </label>
+                        <input [(ngModel)]="seoForm[page.key].titre"
+                               [name]="'seo-titre-' + page.key"
+                               maxlength="80"
+                               placeholder="ex. LIMTIC — Accueil" />
+                        <span class="field-hint">Affiché dans l'onglet du navigateur et les résultats Google (recommandé : 50–60 car.)</span>
+                      </div>
+
+                      <div class="field full">
+                        <label>Description
+                          <span class="seo-counter"
+                                [class.warn]="seoForm[page.key].description.length > 160">
+                            {{ seoForm[page.key].description.length }}/160
+                          </span>
+                        </label>
+                        <textarea [(ngModel)]="seoForm[page.key].description"
+                                  [name]="'seo-desc-' + page.key"
+                                  rows="3"
+                                  maxlength="300"
+                                  placeholder="Courte description visible dans les résultats de recherche…"></textarea>
+                        <span class="field-hint">Recommandé : 120–160 caractères pour un bon affichage dans Google.</span>
+                      </div>
+
+                      <div class="field full">
+                        <label>Mots-clés <span class="field-optional">(séparés par des virgules)</span></label>
+                        <input [(ngModel)]="seoForm[page.key].motsCles"
+                               [name]="'seo-kw-' + page.key"
+                               placeholder="ex. laboratoire, informatique, recherche, Tunis" />
+                        <span class="field-hint">Les moteurs de recherche modernes les utilisent peu, mais ils restent utiles pour la cohérence sémantique.</span>
+                      </div>
+
+                    </div>
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
         </div>
 
         <!-- ── Barre d'actions globale ── -->

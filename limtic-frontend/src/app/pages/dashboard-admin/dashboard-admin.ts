@@ -39,6 +39,16 @@ interface SmtpForm {
   password: string;
 }
 
+/** Métadonnées SEO pour une page */
+interface SeoPageForm {
+  titre:       string;
+  description: string;
+  motsCles:    string;
+}
+
+/** Map page-clé → métadonnées SEO */
+type SeoForm = Record<string, SeoPageForm>;
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Component({
@@ -137,6 +147,30 @@ export class DashboardAdmin implements OnInit {
     destinataire: '',
     password: ''
   };
+
+  /** Pages publiques pour lesquelles on peut configurer le SEO */
+  readonly SEO_PAGES: { key: string; label: string; icon: string }[] = [
+    { key: 'home',         label: 'Accueil',            icon: '🏠' },
+    { key: 'chercheurs',   label: 'Chercheurs',         icon: '👥' },
+    { key: 'publications', label: 'Publications',       icon: '📄' },
+    { key: 'evenements',   label: 'Événements',         icon: '📅' },
+    { key: 'axes',         label: 'Axes de recherche',  icon: '🔬' },
+    { key: 'doctorants',   label: 'Doctorants',         icon: '🎓' },
+    { key: 'masteriens',   label: 'Mastériens',         icon: '📚' },
+    { key: 'directeur',    label: 'Mot du directeur',   icon: '🏛' },
+    { key: 'contact',      label: 'Contact',            icon: '✉️' },
+    { key: 'outils',       label: 'Outils & logiciels', icon: '🛠' },
+  ];
+
+  /** Formulaire SEO indexé par clé de page */
+  seoForm: SeoForm = Object.fromEntries(
+    ['home','chercheurs','publications','evenements','axes',
+     'doctorants','masteriens','directeur','contact','outils']
+      .map(k => [k, { titre: '', description: '', motsCles: '' }])
+  );
+
+  /** Page SEO actuellement ouverte dans l'accordéon */
+  seoPageActive = signal<string>('home');
 
   /** URL courante du logo (relative, ex: /uploads/logos/logo-abc.png) */
   logoUrlCourante = signal<string>('');
@@ -894,7 +928,15 @@ export class DashboardAdmin implements OnInit {
           this.logoPreviewUrl.set(logoUrl ? this.api.getLogoUrl(logoUrl) : '');
         }
 
-        // Appliquer les couleurs en prévisualisation immédiate
+        // SEO — charger chaque page
+        for (const page of this.SEO_PAGES) {
+          this.seoForm[page.key] = {
+            titre:       map[`seo.${page.key}.titre`]       ?? '',
+            description: map[`seo.${page.key}.description`] ?? '',
+            motsCles:    map[`seo.${page.key}.motsCles`]    ?? '',
+          };
+        }
+
         this.appliquerCouleursTheme(this.themeForm);
 
         this.parametresLoading.set(false);
@@ -946,6 +988,11 @@ export class DashboardAdmin implements OnInit {
    */
   resetCouleursDefaut() {
     this.reinitialiserCouleurs();
+  }
+
+  /** Ouvre/ferme un panneau de la liste SEO (accordéon) */
+  toggleSeoPage(key: string) {
+    this.seoPageActive.set(this.seoPageActive() === key ? '' : key);
   }
 
   /**
@@ -1072,6 +1119,14 @@ export class DashboardAdmin implements OnInit {
       'theme.couleurSucces':     this.themeForm.couleurSucces,
       'theme.couleurWarning':    this.themeForm.couleurWarning,
     };
+
+    // SEO par page
+    for (const page of this.SEO_PAGES) {
+      const f = this.seoForm[page.key];
+      payload[`seo.${page.key}.titre`]       = f.titre;
+      payload[`seo.${page.key}.description`] = f.description;
+      payload[`seo.${page.key}.motsCles`]    = f.motsCles;
+    }
 
     if (this.smtpForm.password.trim()) {
       payload['smtp.password'] = this.smtpForm.password.trim();
