@@ -1,5 +1,5 @@
 import { ThemeService } from './theme.service';
-import { Injectable, signal, inject } from '@angular/core'; // Added inject
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -33,20 +33,28 @@ export class LabSettingsService {
     this.fetchPublic();
   }
 
-  logoUrlResolved(): string {
+  /**
+   * Computed signal — se recalcule automatiquement quand logoUrl() ou theme() change.
+   * Retourne l'URL résolue du logo :
+   *   - Aucun logo en base → logo par défaut selon le thème actif (dark/light)
+   *   - URL absolue (http/https) → retournée telle quelle
+   *   - Chemin relatif /uploads/ → préfixé par l'URL du backend
+   *   - Autre chemin absolu → retourné tel quel
+   */
+  logoUrlResolved = computed<string>(() => {
     const raw = this.logoUrl();
-    
-    // Use the injected instance and call it as a signal ()
-    const currentTheme = this.themeService.theme(); 
-    
-    if ((!raw || raw.startsWith('/assets/')) && currentTheme === 'dark') return 'limtic-dark.png';
-    if ((!raw || raw.startsWith('/assets/')) && currentTheme === 'light') return 'limtic-light.png';
-    
-    if (raw.startsWith('http')) return raw;
+    const currentTheme = this.themeService.theme();
+
+    // Aucun logo configuré en base (ou valeur par défaut /assets/) → logo statique
+    const hasNoCustomLogo = !raw || raw.trim() === '' || raw.startsWith('/assets/');
+    if (hasNoCustomLogo) {
+      return currentTheme === 'light' ? '/limtic-light.png' : '/limtic-dark.png';
+    }
+
+    if (raw.startsWith('http'))      return raw;
     if (raw.startsWith('/uploads/')) return this.api.getLogoUrl(raw);
-    if (raw.startsWith('/')) return raw;
     return raw;
-  }
+  });
 
   private fetchPublic(): void {
     this.api.getParametresPublics().subscribe({
