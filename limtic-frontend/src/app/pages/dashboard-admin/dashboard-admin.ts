@@ -5,8 +5,41 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
+import { LabSettingsService } from '../../services/lab-settings.service';
 import { SafePipe } from '../../pipes/Safepipe';
 import { AdminEvenementsComponent } from '../admin-evenements/admin-evenements.component';
+
+// ── Types internes pour §4.3.6 ────────────────────────────────────────────────
+
+/** Valeurs du formulaire "Identité du laboratoire" */
+interface LaboForm {
+  nom:        string;
+  acronyme:   string;
+  description: string;
+  email:      string;
+  telephone:  string;
+  adresse:    string;
+}
+
+/** Valeurs du formulaire "Couleurs du thème" */
+interface ThemeForm {
+  couleurPrimaire:  string;   // --accent
+  couleurSecondaire: string;  // --accent-hover
+  couleurDanger:    string;   // --danger
+  couleurSucces:    string;   // --success
+  couleurWarning:   string;   // --warning
+}
+
+/** Valeurs du formulaire "Parametres SMTP" */
+interface SmtpForm {
+  host: string;
+  port: string;
+  username: string;
+  destinataire: string;
+  password: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-dashboard-admin',
@@ -16,6 +49,7 @@ import { AdminEvenementsComponent } from '../admin-evenements/admin-evenements.c
   styleUrls: ['./dashboard-admin.css']
 })
 export class DashboardAdmin implements OnInit {
+
   email     = signal('');
   activeTab = signal('dashboard');
 
@@ -35,7 +69,6 @@ export class DashboardAdmin implements OnInit {
   );
 
   newAxe       = { nom: '', description: '', responsableId: null as number | null };
-  //newPub       = { titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '', resume: '', statut: 'PUBLIE',
   newEvent     = { titre: '', type: 'Séminaire', dateEvenement: '', lieu: '', description: '' };
   newUser      = { email: '', motDePasse: '', role: 'CHERCHEUR' };
   newDoctorant = { nom: '', prenom: '', sujetThese: '', directeurId: null as number | null, dateInscription: '', statut: 'EN_COURS', mention: '', photoUrl: '' };
@@ -43,24 +76,21 @@ export class DashboardAdmin implements OnInit {
   newPub: {
     titre: string; type: string; annee: number; journal: string; resume: string;
     statut: string; doi: string; pdfUrl: string; lienUrl: string; motsCles: string;
-    // §3.7.2 CDC — Score / classement de la venue
     scimagoQuartile: string; classementCORE: string;
     facteurImpact: number | null; snip: number | null;
     sourceClassement: string;
   } = {
     titre: '', type: 'Journal', annee: new Date().getFullYear(), journal: '',
     resume: '', statut: 'PUBLIE', doi: '', pdfUrl: '', lienUrl: '', motsCles: '',
-    // §3.7.2 — champs classement
     scimagoQuartile: '', classementCORE: '',
     facteurImpact: null, snip: null, sourceClassement: ''
   };
-  newPubPdfFile: File | null = null;   // fichier PDF sélectionné avant création
-  newPubPdfPreviewUrl: SafeResourceUrl | null = null; // URL sécurisée pour l'iframe
+  newPubPdfFile: File | null = null;
+  newPubPdfPreviewUrl: SafeResourceUrl | null = null;
   editingDoctorant    = signal<any | null>(null);
   editingMasterien    = signal<any | null>(null);
   editingPublication  = signal<any | null>(null);
 
-  // §3.7.2 — PDF dans le formulaire d'édition de publication
   editPubPdfFile: File | null = null;
   editPubPdfPreviewUrl: SafeResourceUrl | null = null;
   private _editPdfBlobUrl: string | null = null;
@@ -69,8 +99,6 @@ export class DashboardAdmin implements OnInit {
   editRemovePdf = false;
   private _editExistingPdfSafeUrl: SafeResourceUrl | null = null;
   private _editExistingPdfBlobUrl: string | null = null;
-
-  // Expose blob URL to template
   get editExistingPdfBlobUrl(): string | null { return this._editExistingPdfBlobUrl; }
 
   showForm = signal('');
@@ -80,7 +108,60 @@ export class DashboardAdmin implements OnInit {
   csvFile = signal<File | null>(null);
   csvImportReport = signal<{ importes: number; ignores: number; erreurs: string[] } | null>(null);
 
-  constructor(private router: Router, private api: ApiService, private sanitizer: DomSanitizer, public themeService: ThemeService) {}
+  // ── §4.3.6 — Paramètres généraux ────────────────────────────────────────
+
+  /** Formulaire identité labo */
+  laboForm: LaboForm = {
+    nom:         '',
+    acronyme:    '',
+    description: '',
+    email:       '',
+    telephone:   '',
+    adresse:     '',
+  };
+
+  /** Formulaire couleurs du thème */
+  themeForm: ThemeForm = {
+    couleurPrimaire:   '#00d2ff',
+    couleurSecondaire: '#00a8cc',
+    couleurDanger:     '#f87171',
+    couleurSucces:     '#34d399',
+    couleurWarning:    '#f59e0b',
+  };
+
+  /** Formulaire SMTP */
+  smtpForm: SmtpForm = {
+    host: '',
+    port: '',
+    username: '',
+    destinataire: '',
+    password: ''
+  };
+
+  /** URL courante du logo (relative, ex: /uploads/logos/logo-abc.png) */
+  logoUrlCourante = signal<string>('');
+
+  /** Prévisualisation locale du logo avant upload */
+  logoPreviewUrl = signal<string>('');
+
+  /** Fichier logo sélectionné en attente d'upload */
+  logoFile: File | null = null;
+
+  /** Indicateur de sauvegarde en cours */
+  parametresSaving = signal(false);
+
+  /** Indicateur de chargement initial des paramètres */
+  parametresLoading = signal(false);
+
+  // ─────────────────────────────────────────────────────────────────────────
+
+  constructor(
+    private router: Router,
+    private api: ApiService,
+    private sanitizer: DomSanitizer,
+    public themeService: ThemeService,
+    public settings: LabSettingsService
+  ) {}
 
   private handleError(error: any) {
     const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
@@ -128,13 +209,18 @@ export class DashboardAdmin implements OnInit {
     this.editingDoctorant.set(null);
     this.editingMasterien.set(null);
     this.editingPublication.set(null);
+
+    // Charger les paramètres quand on arrive sur l'onglet
+    if (tab === 'parametres') {
+      this.loadParametres();
+    }
   }
 
-  // ── Publications ──────────────────────────────────────────
+  // ── Publications ──────────────────────────────────────────────────────────
+
   ajouterPublication() {
     this.api.post('publications', this.newPub).subscribe({
       next: (pub: any) => {
-        // Si un PDF a été sélectionné, l'uploader maintenant qu'on a l'ID
         if (this.newPubPdfFile) {
           this.api.uploadPdfPublication(pub.id, this.newPubPdfFile).subscribe({
             next: () => this.api.getPublications().subscribe(data => this.publications.set(data)),
@@ -156,7 +242,6 @@ export class DashboardAdmin implements OnInit {
     });
   }
 
-  // Raw blob URL kept separately so we can revoke it and use it in <a href>
   private _pdfBlobUrl: string | null = null;
   get pdfBlobUrl(): string | null { return this._pdfBlobUrl; }
 
@@ -179,7 +264,8 @@ export class DashboardAdmin implements OnInit {
     this.newPubPdfFile = null;
   }
 
-  // ── Édition de publication ────────────────────────────────
+  // ── Édition de publication ────────────────────────────────────────────────
+
   startEditPublication(p: any) {
     this.editingPublication.set({
       id: p.id,
@@ -210,7 +296,7 @@ export class DashboardAdmin implements OnInit {
     if (p.pdfUrl) {
       this.loadEditExistingPdf();
     }
-    this.showForm.set('');   // ferme le formulaire d'ajout si ouvert
+    this.showForm.set('');
   }
 
   saveEditPublication() {
@@ -218,17 +304,11 @@ export class DashboardAdmin implements OnInit {
     if (!p) return;
     if (!p.titre?.trim()) { this.message.set('Le titre est obligatoire.'); return; }
 
-    // Suppression du PDF existant sans remplacement
     if (this.editRemovePdf && !this.editPubPdfFile) {
-      this.api.deletePdfPublication(p.id).subscribe({
-        next: () => {},
-        error: () => {}
-      });
+      this.api.deletePdfPublication(p.id).subscribe({ next: () => {}, error: () => {} });
       p.pdfUrl = null;
     }
 
-    // Sanitize CHECK-constrained enum fields: the DB rejects empty strings —
-    // they must be NULL when no value is selected.
     const payload = {
       ...p,
       scimagoQuartile: p.scimagoQuartile || null,
@@ -276,7 +356,6 @@ export class DashboardAdmin implements OnInit {
     this.editingPublication.set(null);
   }
 
-  // ── Helpers PDF édition ───────────────────────────────────
   onEditPdfFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
@@ -312,6 +391,7 @@ export class DashboardAdmin implements OnInit {
     }
     this.editPdfViewerUrl.set(null);
   }
+
   undoRemoveEditPdf() {
     this.editRemovePdf = false;
     this.loadEditExistingPdf();
@@ -325,18 +405,14 @@ export class DashboardAdmin implements OnInit {
     const p = this.editingPublication();
     if (!p?.pdfUrl) return this.sanitizer.bypassSecurityTrustResourceUrl('');
     if (!this._editExistingPdfSafeUrl) {
-      // Load the PDF via XHR as a blob and create an object URL to avoid cross-origin/embed issues.
-      // Start with an empty safe URL and trigger a fetch — template will update when the blob is ready.
       this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
       this.api.getPdfBlob(p.pdfUrl).subscribe({
         next: (blob) => {
-          // revoke previous blob URL if any
           if (this._editExistingPdfBlobUrl) URL.revokeObjectURL(this._editExistingPdfBlobUrl);
           this._editExistingPdfBlobUrl = URL.createObjectURL(blob);
           this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this._editExistingPdfBlobUrl);
         },
         error: () => {
-          // keep safeUrl empty — template shows an error link to open in new tab
           this._editExistingPdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
         }
       });
@@ -411,7 +487,8 @@ export class DashboardAdmin implements OnInit {
     return statut || '-';
   }
 
-  // ── Événements ────────────────────────────────────────────
+  // ── Événements ────────────────────────────────────────────────────────────
+
   ajouterEvenement() {
     this.api.post('evenements', this.newEvent).subscribe({
       next: () => {
@@ -435,7 +512,8 @@ export class DashboardAdmin implements OnInit {
     });
   }
 
-  // ── Chercheurs ────────────────────────────────────────────
+  // ── Chercheurs ────────────────────────────────────────────────────────────
+
   exportChercheursCsv() {
     this.message.set('Téléchargement du CSV en cours...');
     this.erreur.set('');
@@ -458,7 +536,6 @@ export class DashboardAdmin implements OnInit {
       this.erreur.set('Veuillez sélectionner un fichier CSV.');
       return;
     }
-
     this.api.importChercheursCsv(file).subscribe({
       next: (res: any) => {
         this.csvImportReport.set({
@@ -489,7 +566,8 @@ export class DashboardAdmin implements OnInit {
     });
   }
 
-  // ── Comptes ───────────────────────────────────────────────
+  // ── Comptes ───────────────────────────────────────────────────────────────
+
   loadUsers() {
     this.api.getUsers().subscribe(data => {
       this.users.set(data);
@@ -548,7 +626,8 @@ export class DashboardAdmin implements OnInit {
     });
   }
 
-  // ── Axes ──────────────────────────────────────────────────
+  // ── Axes ──────────────────────────────────────────────────────────────────
+
   loadAxes() {
     this.api.getAxes().subscribe(data => {
       this.axes.set(data);
@@ -630,7 +709,8 @@ export class DashboardAdmin implements OnInit {
     });
   }
 
-  // ── Doctorants ────────────────────────────────────────────
+  // ── Doctorants ────────────────────────────────────────────────────────────
+
   loadDoctorants() {
     this.api.getDoctorants().subscribe(data => {
       this.doctorants.set(data);
@@ -693,7 +773,8 @@ export class DashboardAdmin implements OnInit {
     });
   }
 
-  // ── Masteriens ────────────────────────────────────────────
+  // ── Mastériens ────────────────────────────────────────────────────────────
+
   loadMasteriens() {
     this.api.getMasteriens().subscribe(data => {
       this.masteriens.set(data);
@@ -754,15 +835,264 @@ export class DashboardAdmin implements OnInit {
   }
 
   fermerTout() {
-  this.showForm.set('');
-  this.message.set('');
-  this.erreur.set('');
-  this.editingAxe.set(null);
-  this.editingDoctorant.set(null);
-  this.editingMasterien.set(null);
-  this.editingPublication.set(null);
-}
-  // ── Auth ──────────────────────────────────────────────────
+    this.showForm.set('');
+    this.message.set('');
+    this.erreur.set('');
+    this.editingAxe.set(null);
+    this.editingDoctorant.set(null);
+    this.editingMasterien.set(null);
+    this.editingPublication.set(null);
+  }
+
+  // ── §4.3.6 — Paramètres généraux ─────────────────────────────────────────
+
+  /**
+   * Charge tous les paramètres depuis le backend et remplit les formulaires.
+   * Appelé automatiquement à l'arrivée sur l'onglet "Paramètres".
+   */
+  loadParametres() {
+    this.parametresLoading.set(true);
+    this.api.getParametres().subscribe({
+      next: (params: any[]) => {
+        // Construire un dictionnaire cle → valeur pour un accès facile
+        const map: Record<string, string> = {};
+        params.forEach(p => { map[p.cle] = p.valeur ?? ''; });
+
+        // Peupler le formulaire labo
+        this.laboForm = {
+          nom:         map['labo.nom']         ?? '',
+          acronyme:    map['labo.acronyme']     ?? '',
+          description: map['labo.description']  ?? '',
+          email:       map['labo.email']        ?? '',
+          telephone:   map['labo.telephone']    ?? '',
+          adresse:     map['labo.adresse']      ?? '',
+        };
+
+        // Peupler le formulaire thème (garder les valeurs par défaut si absent)
+        this.themeForm = {
+          couleurPrimaire:   map['theme.couleurPrimaire']   ?? '#00d2ff',
+          couleurSecondaire: map['theme.couleurSecondaire'] ?? '#00a8cc',
+          couleurDanger:     map['theme.couleurDanger']     ?? '#f87171',
+          couleurSucces:     map['theme.couleurSucces']     ?? '#34d399',
+          couleurWarning:    map['theme.couleurWarning']    ?? '#f59e0b',
+        };
+
+        // Parametres SMTP (mot de passe vide tant qu'il n'est pas change)
+        this.smtpForm = {
+          host: map['smtp.host'] ?? '',
+          port: map['smtp.port'] ?? '',
+          username: map['smtp.username'] ?? '',
+          destinataire: map['smtp.destinataire'] ?? '',
+          password: ''
+        };
+
+        // Logo existant
+        const logoUrl = map['labo.logoUrl'] ?? '';
+        this.logoUrlCourante.set(logoUrl);
+        // Ne pas écraser la preview locale si l'admin a déjà sélectionné un fichier
+        if (!this.logoFile) {
+          this.logoPreviewUrl.set(logoUrl ? this.api.getLogoUrl(logoUrl) : '');
+        }
+
+        // Appliquer les couleurs en prévisualisation immédiate
+        this.appliquerCouleursTheme(this.themeForm);
+
+        this.parametresLoading.set(false);
+      },
+      error: err => {
+        this.parametresLoading.set(false);
+        this.handleError(err);
+      }
+    });
+  }
+
+  /**
+   * Appelé à chaque changement d'un color picker pour prévisualiser
+   * les nouvelles couleurs en temps réel sans sauvegarder.
+   */
+  onCouleurChange() {
+    this.appliquerCouleursTheme(this.themeForm);
+  }
+
+  /**
+   * Liaison (input) du color picker natif → met à jour themeForm et
+   * prévisualise immédiatement la couleur choisie.
+   * Appelé par : (input)="onColorInput('couleurPrimaire', $event)"
+   */
+  onColorInput(key: keyof ThemeForm, event: Event) {
+    const val = (event.target as HTMLInputElement).value;
+    this.themeForm = { ...this.themeForm, [key]: val };
+    this.appliquerCouleursTheme(this.themeForm);
+  }
+
+  /**
+   * Liaison (change) du champ texte hexadécimal → valide le format
+   * et synchronise le color picker avec la valeur saisie.
+   * Appelé par : (change)="onColorText('couleurPrimaire', $event)"
+   */
+  onColorText(key: keyof ThemeForm, event: Event) {
+    const raw = (event.target as HTMLInputElement).value.trim();
+    // Accepter uniquement #rrggbb ou #rgb valides
+    const hexRegex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+    if (!hexRegex.test(raw)) return; // ignorer les valeurs invalides
+    this.themeForm = { ...this.themeForm, [key]: raw };
+    this.appliquerCouleursTheme(this.themeForm);
+  }
+
+  /**
+   * Alias public pour le bouton "Réinitialiser les couleurs par défaut"
+   * dans le template HTML (dashboard-admin.html ligne ~1294).
+   * Délègue à reinitialiserCouleurs() qui contient la logique réelle.
+   */
+  resetCouleursDefaut() {
+    this.reinitialiserCouleurs();
+  }
+
+  /**
+   * Applique les couleurs du formulaire comme variables CSS sur :root
+   * afin que tout le dashboard reflète les changements en direct.
+   */
+  private appliquerCouleursTheme(theme: ThemeForm) {
+    const root = document.documentElement;
+    root.style.setProperty('--accent',          theme.couleurPrimaire);
+    root.style.setProperty('--accent-hover',    theme.couleurSecondaire);
+    root.style.setProperty('--danger',          theme.couleurDanger);
+    root.style.setProperty('--success',         theme.couleurSucces);
+    root.style.setProperty('--warning',         theme.couleurWarning);
+    // Variantes soft (alpha 10%)
+    root.style.setProperty('--accent-soft',     theme.couleurPrimaire + '1a');
+    root.style.setProperty('--danger-soft',     theme.couleurDanger   + '1f');
+    root.style.setProperty('--success-soft',    theme.couleurSucces   + '1a');
+    root.style.setProperty('--warning-soft',    theme.couleurWarning  + '1a');
+  }
+
+  /**
+   * Réinitialise les couleurs aux valeurs par défaut du thème dark.
+   */
+  reinitialiserCouleurs() {
+    this.themeForm = {
+      couleurPrimaire:   '#00d2ff',
+      couleurSecondaire: '#00a8cc',
+      couleurDanger:     '#f87171',
+      couleurSucces:     '#34d399',
+      couleurWarning:    '#f59e0b',
+    };
+    this.appliquerCouleursTheme(this.themeForm);
+  }
+
+  /**
+   * Gère la sélection d'un fichier logo depuis l'input file.
+   * Génère immédiatement une prévisualisation locale (blob URL).
+   */
+  onLogoFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+
+    // Valider côté client (type + taille) avant même d'envoyer
+    if (!file.type.startsWith('image/')) {
+      this.erreur.set('Seules les images sont acceptées (PNG, JPEG, SVG, WebP).');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.erreur.set('Le logo ne doit pas dépasser 2 Mo.');
+      return;
+    }
+
+    this.logoFile = file;
+    this.erreur.set('');
+
+    // Prévisualisation locale immédiate
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.logoPreviewUrl.set(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /**
+   * Annule la sélection en cours et revient au logo sauvegardé.
+   */
+  annulerLogoSelection() {
+    this.logoFile = null;
+    const urlCourante = this.logoUrlCourante();
+    this.logoPreviewUrl.set(urlCourante ? this.api.getLogoUrl(urlCourante) : '');
+  }
+
+  /**
+   * Sauvegarde les paramètres labo + thème en une seule opération.
+   * Si un nouveau logo a été sélectionné, il est uploadé en premier.
+   */
+  sauvegarderParametres() {
+    this.parametresSaving.set(true);
+    this.message.set('');
+    this.erreur.set('');
+
+    if (this.logoFile) {
+      // 1. Uploader le logo, puis sauvegarder le reste
+      this.api.uploadLogo(this.logoFile).subscribe({
+        next: (res) => {
+          this.logoUrlCourante.set(res.logoUrl);
+          this.logoFile = null;
+          this.sauvegarderParamsTexte();
+        },
+        error: err => {
+          this.parametresSaving.set(false);
+          this.handleError(err);
+        }
+      });
+    } else {
+      // Pas de nouveau logo — sauvegarder directement
+      this.sauvegarderParamsTexte();
+    }
+  }
+
+  /**
+   * Envoi en lot de tous les paramètres texte (labo + thème) vers le backend.
+   */
+  private sauvegarderParamsTexte() {
+    const payload: Record<string, string> = {
+      // Identité labo
+      'labo.nom':         this.laboForm.nom,
+      'labo.acronyme':    this.laboForm.acronyme,
+      'labo.description': this.laboForm.description,
+      'labo.email':       this.laboForm.email,
+      'labo.telephone':   this.laboForm.telephone,
+      'labo.adresse':     this.laboForm.adresse,
+      // SMTP
+      'smtp.host': this.smtpForm.host,
+      'smtp.port': String(this.smtpForm.port || ''),
+      'smtp.username': this.smtpForm.username,
+      'smtp.destinataire': this.smtpForm.destinataire,
+      // Couleurs du thème
+      'theme.couleurPrimaire':   this.themeForm.couleurPrimaire,
+      'theme.couleurSecondaire': this.themeForm.couleurSecondaire,
+      'theme.couleurDanger':     this.themeForm.couleurDanger,
+      'theme.couleurSucces':     this.themeForm.couleurSucces,
+      'theme.couleurWarning':    this.themeForm.couleurWarning,
+    };
+
+    if (this.smtpForm.password.trim()) {
+      payload['smtp.password'] = this.smtpForm.password.trim();
+    }
+
+    this.api.updateParametresLot(payload).subscribe({
+      next: () => {
+        this.parametresSaving.set(false);
+        this.message.set('Paramètres sauvegardés avec succès !');
+        this.settings.refresh();
+        this.smtpForm = { ...this.smtpForm, password: '' };
+      },
+      error: err => {
+        this.parametresSaving.set(false);
+        this.handleError(err);
+      }
+    });
+  }
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+
   logout() {
     this.api.logout().subscribe({
       next: () => {

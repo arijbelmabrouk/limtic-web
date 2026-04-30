@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 @Component({
   selector: 'app-doctorants',
@@ -24,7 +25,7 @@ export class Doctorants implements OnInit {
   // Noms des axes pour le <select>
   axes = computed(() => this.axesList().map(a => a.nom).sort());
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, public settings: LabSettingsService) {}
 
   ngOnInit() {
     this.api.getAxes().subscribe(axes => this.axesList.set(axes));

@@ -1,29 +1,35 @@
 package tn.limtic.limtic_backend.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import tn.limtic.limtic_backend.model.PasswordResetToken;
 import tn.limtic.limtic_backend.model.User;
 import tn.limtic.limtic_backend.repository.PasswordResetTokenRepository;
 import tn.limtic.limtic_backend.repository.UserRepository;
 import tn.limtic.limtic_backend.service.AuditService;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import tn.limtic.limtic_backend.service.SmtpSettingsService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,19 +37,19 @@ import java.util.UUID;
 public class AuthController {
 
     private final UserRepository userRepository;
-    private final JavaMailSender mailSender;
     private final PasswordResetTokenRepository resetTokenRepository;
     private final AuditService auditService;
+    private final SmtpSettingsService smtpSettingsService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public AuthController(UserRepository userRepository,
-                          JavaMailSender mailSender,
                           PasswordResetTokenRepository resetTokenRepository,
-                          AuditService auditService) {
+                          AuditService auditService,
+                          SmtpSettingsService smtpSettingsService) {
         this.userRepository = userRepository;
-        this.mailSender = mailSender;
         this.resetTokenRepository = resetTokenRepository;
         this.auditService = auditService;
+        this.smtpSettingsService = smtpSettingsService;
     }
 
     @PostMapping("/login")
@@ -167,12 +173,21 @@ public class AuthController {
         resetToken.setExpiration(LocalDateTime.now().plusHours(1));
         resetTokenRepository.save(resetToken);
 
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setTo(email);
-        mail.setSubject("Réinitialisation de votre mot de passe LIMTIC");
-        mail.setText("Cliquez sur ce lien :\n\nhttps://localhost:4200/reset-password?token=" + token
-            + "\n\nCe lien expire dans 1 heure.");
-        mailSender.send(mail);
+        try {
+            var mailSender = smtpSettingsService.createMailSender();
+            SimpleMailMessage mail = new SimpleMailMessage();
+            mail.setTo(email);
+            mail.setSubject("Réinitialisation de votre mot de passe LIMTIC");
+            mail.setText("Cliquez sur ce lien :\n\nhttps://localhost:4200/reset-password?token=" + token
+                + "\n\nCe lien expire dans 1 heure.");
+            mailSender.send(mail);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(500).body(Map.of("error", "SMTP non configuré (DB/env)."));
+        } catch (Exception e) {
+            auditService.log(request, "FORGOT_PASSWORD_EMAIL_ECHEC", "User", userOpt.get().getId(),
+                "Erreur envoi email reset: " + e.getMessage(), false);
+            return ResponseEntity.status(500).body(Map.of("error", "Erreur lors de l'envoi de l'email."));
+        }
 
         auditService.log(request, "FORGOT_PASSWORD", "User", userOpt.get().getId(),
             "Demande de réinitialisation mot de passe : " + email, true);

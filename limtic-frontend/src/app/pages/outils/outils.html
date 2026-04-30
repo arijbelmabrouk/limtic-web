@@ -1,7 +1,7 @@
 <div class="page">
   <div class="page-header">
     <h1>Outils & Logiciels</h1>
-    <p>Outils développés par le laboratoire LIMTIC</p>
+    <p>Outils développés par le laboratoire {{ settings.acronyme() }}</p>
   </div>
   <div class="outils-grid">
     @for (o of outils(); track o.id) {

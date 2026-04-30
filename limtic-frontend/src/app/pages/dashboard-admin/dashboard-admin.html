@@ -34,6 +34,10 @@
       <button [class.active]="activeTab() === 'masteriens'" (click)="setTab('masteriens')">
         Mastériens
       </button>
+      <!-- §4.3.6 — Paramètres généraux -->
+      <button [class.active]="activeTab() === 'parametres'" (click)="setTab('parametres')" class="nav-btn-settings">
+        ⚙ Paramètres
+      </button>
       <button class="btn-logout-mobile" (click)="logout()">⏻ Quitter</button>
     </nav>
     <div class="sidebar-footer">
@@ -66,7 +70,7 @@
     @if (activeTab() === 'dashboard') {
       <div class="tab-header">
         <h1>Tableau de bord</h1>
-        <p>Vue d'ensemble du laboratoire LIMTIC</p>
+        <p>Vue d'ensemble du laboratoire {{ settings.acronyme() }}</p>
       </div>
 
       <!-- Alerte publications en attente -->
@@ -1075,6 +1079,277 @@
         </div>
       }
     }
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         TAB: PARAMÈTRES GÉNÉRAUX  §4.3.6
+         Configuration : nom du laboratoire, logo, couleurs du thème
+         ═══════════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'parametres') {
+
+      <div class="tab-header">
+        <h1>⚙ Paramètres généraux</h1>
+        <p>Configuration du laboratoire, du logo et des couleurs du thème</p>
+      </div>
+
+      @if (parametresLoading()) {
+        <div class="params-loading">
+          <span class="params-spinner"></span> Chargement des paramètres…
+        </div>
+      }
+
+      @if (!parametresLoading()) {
+
+        <!-- ── Section 1 : Identité du laboratoire ── -->
+        <div class="params-section">
+          <div class="params-section-header">
+            <span class="params-section-icon">🏛</span>
+            <div>
+              <h2>Identité du laboratoire</h2>
+              <p>Nom, acronyme et informations générales affichés sur le site public</p>
+            </div>
+          </div>
+
+          <div class="form-grid params-grid">
+            <div class="field">
+              <label>Nom complet *</label>
+              <input [(ngModel)]="laboForm.nom"
+                     placeholder="ex. Laboratoire d'Informatique et TIC" />
+            </div>
+            <div class="field">
+              <label>Acronyme</label>
+              <input [(ngModel)]="laboForm.acronyme"
+                     placeholder="ex. LIMTIC" />
+            </div>
+            <div class="field">
+              <label>Email de contact</label>
+              <input type="email" [(ngModel)]="laboForm.email"
+                     placeholder="contact@limtic.tn" />
+            </div>
+            <div class="field">
+              <label>Téléphone</label>
+              <input [(ngModel)]="laboForm.telephone"
+                     placeholder="+216 XX XXX XXX" />
+            </div>
+            <div class="field full">
+              <label>Adresse</label>
+              <input [(ngModel)]="laboForm.adresse"
+                     placeholder="Campus universitaire, Tunis" />
+            </div>
+            <div class="field full">
+              <label>Description courte</label>
+              <textarea [(ngModel)]="laboForm.description"
+                        rows="3"
+                        placeholder="Présentation du laboratoire visible sur la page d'accueil…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Section 2 : Logo ── -->
+        <div class="params-section">
+          <div class="params-section-header">
+            <span class="params-section-icon">🖼</span>
+            <div>
+              <h2>Logo du laboratoire</h2>
+              <p>Formats acceptés : PNG, JPG, SVG — taille max. 2 Mo</p>
+            </div>
+          </div>
+
+          <div class="logo-upload-area">
+            <!-- Prévisualisation -->
+            <div class="logo-preview-box">
+              @if (logoPreviewUrl()) {
+                <img [src]="logoPreviewUrl()" alt="Logo laboratoire" class="logo-preview-img" />
+              } @else {
+                <div class="logo-preview-placeholder">
+                  <span>🏛</span>
+                  <small>Aucun logo</small>
+                </div>
+              }
+            </div>
+
+            <!-- Contrôles upload -->
+            <div class="logo-upload-controls">
+              <input type="file"
+                     accept="image/png,image/jpeg,image/svg+xml"
+                     id="logoInput"
+                     class="logo-file-input"
+                     (change)="onLogoFileSelected($event)" />
+              <label for="logoInput" class="btn-logo-choose">
+                📁 Choisir un fichier
+              </label>
+
+              @if (logoFile) {
+                <div class="logo-file-info">
+                  <span class="logo-file-name">📄 {{ logoFile.name }}</span>
+                  <button class="btn-logo-cancel" (click)="annulerLogoSelection()">✕ Annuler</button>
+                </div>
+              }
+
+              @if (!logoPreviewUrl() && !logoFile) {
+                <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Section 3 : SMTP ── -->
+        <div class="params-section">
+          <div class="params-section-header">
+            <span class="params-section-icon">✉️</span>
+            <div>
+              <h2>Paramètres SMTP</h2>
+              <p>Adresse destinataire et mot de passe applicatif</p>
+            </div>
+          </div>
+
+          <div class="form-grid params-grid">
+            <div class="field">
+              <label>Serveur SMTP</label>
+              <input [(ngModel)]="smtpForm.host"
+                     placeholder="smtp.gmail.com" />
+            </div>
+            <div class="field">
+              <label>Port SMTP</label>
+              <input type="number" [(ngModel)]="smtpForm.port"
+                     placeholder="587" min="1" />
+            </div>
+            <div class="field">
+              <label>Utilisateur SMTP</label>
+              <input type="email" [(ngModel)]="smtpForm.username"
+                     placeholder="user@domaine.tn" />
+            </div>
+            <div class="field">
+              <label>Destinataire</label>
+              <input type="email" [(ngModel)]="smtpForm.destinataire"
+                     placeholder="contact@limtic.tn" />
+            </div>
+            <div class="field">
+              <label>Mot de passe SMTP</label>
+              <input type="password" [(ngModel)]="smtpForm.password"
+                     placeholder="Laissez vide pour ne pas changer" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Section 3 : Couleurs du thème ── -->
+        <div class="params-section">
+          <div class="params-section-header">
+            <span class="params-section-icon">🎨</span>
+            <div>
+              <h2>Couleurs du thème</h2>
+              <p>Les modifications s'appliquent en temps réel en prévisualisation</p>
+            </div>
+          </div>
+
+          <div class="colors-grid">
+            <div class="color-field">
+              <label>Couleur principale</label>
+              <div class="color-input-row">
+                <input type="color"
+                       [value]="themeForm.couleurPrimaire"
+                       (input)="onColorInput('couleurPrimaire', $event)"
+                       class="color-picker" />
+                <input type="text"
+                       [value]="themeForm.couleurPrimaire"
+                       (change)="onColorText('couleurPrimaire', $event)"
+                       class="color-hex-input"
+                       maxlength="7"
+                       placeholder="#00d2ff" />
+              </div>
+              <span class="color-hint">Boutons, liens actifs, accents</span>
+            </div>
+
+            <div class="color-field">
+              <label>Couleur secondaire</label>
+              <div class="color-input-row">
+                <input type="color"
+                       [value]="themeForm.couleurSecondaire"
+                       (input)="onColorInput('couleurSecondaire', $event)"
+                       class="color-picker" />
+                <input type="text"
+                       [value]="themeForm.couleurSecondaire"
+                       (change)="onColorText('couleurSecondaire', $event)"
+                       class="color-hex-input"
+                       maxlength="7"
+                       placeholder="#00a8cc" />
+              </div>
+              <span class="color-hint">Hover, états actifs secondaires</span>
+            </div>
+
+            <div class="color-field">
+              <label>Couleur danger</label>
+              <div class="color-input-row">
+                <input type="color"
+                       [value]="themeForm.couleurDanger"
+                       (input)="onColorInput('couleurDanger', $event)"
+                       class="color-picker" />
+                <input type="text"
+                       [value]="themeForm.couleurDanger"
+                       (change)="onColorText('couleurDanger', $event)"
+                       class="color-hex-input"
+                       maxlength="7"
+                       placeholder="#f87171" />
+              </div>
+              <span class="color-hint">Suppressions, alertes critiques</span>
+            </div>
+
+            <div class="color-field">
+              <label>Couleur succès</label>
+              <div class="color-input-row">
+                <input type="color"
+                       [value]="themeForm.couleurSucces"
+                       (input)="onColorInput('couleurSucces', $event)"
+                       class="color-picker" />
+                <input type="text"
+                       [value]="themeForm.couleurSucces"
+                       (change)="onColorText('couleurSucces', $event)"
+                       class="color-hex-input"
+                       maxlength="7"
+                       placeholder="#34d399" />
+              </div>
+              <span class="color-hint">Validations, confirmations</span>
+            </div>
+
+            <div class="color-field">
+              <label>Couleur avertissement</label>
+              <div class="color-input-row">
+                <input type="color"
+                       [value]="themeForm.couleurWarning"
+                       (input)="onColorInput('couleurWarning', $event)"
+                       class="color-picker" />
+                <input type="text"
+                       [value]="themeForm.couleurWarning"
+                       (change)="onColorText('couleurWarning', $event)"
+                       class="color-hex-input"
+                       maxlength="7"
+                       placeholder="#f59e0b" />
+              </div>
+              <span class="color-hint">Mises en garde, en attente</span>
+            </div>
+          </div>
+
+          <!-- Bouton reset couleurs -->
+          <button class="btn-colors-reset" (click)="resetCouleursDefaut()">
+            ↺ Réinitialiser les couleurs par défaut
+          </button>
+        </div>
+
+        <!-- ── Barre d'actions globale ── -->
+        <div class="params-actions-bar">
+          <button class="btn-params-save"
+                  [disabled]="parametresSaving()"
+                  (click)="sauvegarderParametres()">
+            @if (parametresSaving()) {
+              <span class="params-spinner params-spinner-sm"></span> Enregistrement…
+            } @else {
+              💾 Enregistrer tous les paramètres
+            }
+          </button>
+        </div>
+
+      }
+    }
+    <!-- ── fin TAB PARAMÈTRES ── -->
 
   </main>
 </div>

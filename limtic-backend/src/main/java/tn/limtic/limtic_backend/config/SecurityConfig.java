@@ -47,6 +47,10 @@ public class SecurityConfig {
                 .ignoringRequestMatchers("/api/evenements/*/photos")
                 .ignoringRequestMatchers("/api/admin/chercheurs/import-csv")
                 .ignoringRequestMatchers("/api/publications/*/upload-pdf")
+                .ignoringRequestMatchers("/api/admin/parametres/lot")
+                .ignoringRequestMatchers("/api/admin/parametres/logo")
+                .ignoringRequestMatchers("/api/admin/parametres")
+                .ignoringRequestMatchers("/api/admin/parametres/*")
             )
 
             .sessionManagement(session -> session

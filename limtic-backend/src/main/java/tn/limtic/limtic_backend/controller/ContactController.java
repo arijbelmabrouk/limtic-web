@@ -1,16 +1,21 @@
 package tn.limtic.limtic_backend.controller;
 
-import jakarta.mail.internet.MimeMessage;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import tn.limtic.limtic_backend.service.AuditService;
 
-import java.util.Map;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletRequest;
+import tn.limtic.limtic_backend.service.AuditService;
+import tn.limtic.limtic_backend.service.SmtpSettingsService;
 
 /**
  * §3.9 CDC — Formulaire de contact avec captcha hCaptcha.
@@ -35,8 +40,8 @@ import java.util.Map;
 @CrossOrigin(origins = {"http://localhost:4200", "https://localhost:4200"}, allowCredentials = "true")
 public class ContactController {
 
-    private final JavaMailSender mailSender;
     private final AuditService auditService;
+    private final SmtpSettingsService smtpSettingsService;
     private final RestTemplate restTemplate = new RestTemplate();
 
     /**
@@ -50,12 +55,9 @@ public class ContactController {
     @Value("${hcaptcha.verify-url:https://hcaptcha.com/siteverify}")
     private String hcaptchaVerifyUrl;
 
-    @Value("${spring.mail.username:}")
-    private String adminEmail;
-
-    public ContactController(JavaMailSender mailSender, AuditService auditService) {
-        this.mailSender = mailSender;
+    public ContactController(AuditService auditService, SmtpSettingsService smtpSettingsService) {
         this.auditService = auditService;
+        this.smtpSettingsService = smtpSettingsService;
     }
 
     @PostMapping
@@ -98,9 +100,16 @@ public class ContactController {
 
         // ── Envoi de l'email ───────────────────────────────────────────────
         try {
+            var mailSender = smtpSettingsService.createMailSender();
+            String destinataire = smtpSettingsService.getDestinataire();
+            if (destinataire.isBlank()) {
+                return ResponseEntity.status(500)
+                    .body(Map.of("error", "SMTP destinataire manquant (DB/env)."));
+            }
+
             MimeMessage mail = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mail, "UTF-8");
-            helper.setTo(adminEmail.isEmpty() ? "contact@limtic.tn" : adminEmail);
+            helper.setTo(destinataire);
             helper.setSubject("[LIMTIC Contact] " + (sujet.isEmpty() ? "Nouveau message" : sujet));
             helper.setText(
                 "Nouveau message depuis le formulaire de contact LIMTIC\n\n" +
@@ -111,6 +120,9 @@ public class ContactController {
             );
             helper.setReplyTo(email);
             mailSender.send(mail);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "SMTP non configuré (DB/env)."));
         } catch (Exception e) {
             auditService.log(request, "CONTACT_EMAIL_ECHEC", "Contact", null,
                 "Erreur envoi email depuis : " + email + " — " + e.getMessage(), false);

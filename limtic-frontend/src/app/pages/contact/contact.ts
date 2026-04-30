@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../services/api.service';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 declare const hcaptcha: any;
 
@@ -16,6 +17,7 @@ export class Contact implements OnInit {
   private api       = inject(ApiService);
   private sanitizer = inject(DomSanitizer);
   private zone      = inject(NgZone);
+  public settings   = inject(LabSettingsService);
 
   // Formulaire
   nom     = signal('');
@@ -109,10 +111,12 @@ export class Contact implements OnInit {
   }
 
   soumettre(): void {
-    if (!this.captchaToken()) {
+    const token = this.captchaToken() || this.getCaptchaResponse();
+    if (!token) {
       this.erreurMsg.set('Veuillez compléter le captcha.');
       return;
     }
+    this.captchaToken.set(token);
     this.envoi.set('loading');
     this.erreurMsg.set('');
     this.api.envoyerContact({
@@ -144,5 +148,16 @@ export class Contact implements OnInit {
     this.message.set('');
     this.captchaToken.set('');
     if (this.captchaId() !== null) hcaptcha.reset(this.captchaId()!);
+  }
+
+  private getCaptchaResponse(): string {
+    if (typeof hcaptcha === 'undefined') return '';
+    const id = this.captchaId();
+    if (id === null) return '';
+    try {
+      return hcaptcha.getResponse(id) || '';
+    } catch {
+      return '';
+    }
   }
 }

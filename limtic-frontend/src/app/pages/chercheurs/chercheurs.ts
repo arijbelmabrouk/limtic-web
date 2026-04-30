@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Chercheur } from '../../models/chercheur.model';
+import { LabSettingsService } from '../../services/lab-settings.service';
 
 @Component({
   selector: 'app-chercheurs',
@@ -63,7 +64,7 @@ export class Chercheurs implements OnInit {
     return list;
   });
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, public settings: LabSettingsService) {}
 
   ngOnInit() {
     this.api.getChercheurs().subscribe({

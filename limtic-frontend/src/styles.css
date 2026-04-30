@@ -1063,6 +1063,34 @@
   color: #2D3152 !important;
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   §4.3.6 — VARIABLES DYNAMIQUES DU THÈME (admin paramètres)
+   Ces variables sont écrasées en JS via document.documentElement
+   .style.setProperty(...) depuis dashboard-admin.ts :
+   appliquerCouleursTheme().  Leur déclaration ici dans :root
+   (sans sélecteur [data-theme]) garantit qu'elles existent
+   comme propriétés inline overridables même avant que l'attribut
+   data-theme soit posé par Angular.
+   ══════════════════════════════════════════════════════════ */
+:root {
+  /* Couleur primaire — utilisée pour les liens, accents, boutons actifs */
+  --accent:          #00d2ff;
+  --accent-hover:    #00a8cc;
+  --accent-soft:     rgba(0, 210, 255, 0.08);
+
+  /* Couleurs sémantiques — succès, danger, avertissement */
+  --success:         #34d399;
+  --success-soft:    rgba(52, 211, 153, 0.10);
+  --warning:         #f59e0b;
+  --warning-soft:    rgba(245, 158, 11, 0.10);
+  --danger:          #f87171;
+  --danger-soft:     rgba(248, 113, 113, 0.12);
+
+  /* Variable logo — peut être utilisée en background-image si besoin */
+  --logo-url:        none;
+}
+
 html, body {
   height: 100%;
   margin: 0;
