@@ -1,1 +1,20 @@
+# ── Uploads (generated at runtime) ──────────────────────────
 /limtic-backend/uploads
+
+# ── Environment secrets — NEVER commit ──────────────────────
+.env
+*.env
+.env.local
+.env.production
+
+# ── Java / Maven build output ────────────────────────────────
+/limtic-backend/target/
+
+# ── IDE ──────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/settings.json
+
+# ── Node / Angular build output ──────────────────────────────
+/limtic-frontend/node_modules/
+/limtic-frontend/dist/
