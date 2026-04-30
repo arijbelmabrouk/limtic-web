@@ -56,9 +56,9 @@
   }
 
   <!-- ═══ INTERVENANTS ═══ -->
-  @if (evenement()!.intervenants?.length) {
-    <div class="detail-section">
-      <h2>Intervenants invités</h2>
+  <div class="detail-section">
+    <h2>Intervenants invités</h2>
+    @if (evenement()!.intervenants?.length) {
       <div class="intervenants-grid">
         @for (inv of evenement()!.intervenants; track inv.id) {
           <div class="intervenant-card">
@@ -77,8 +77,10 @@
           </div>
         }
       </div>
-    </div>
-  }
+    } @else {
+      <p class="empty-msg">Aucun intervenant invité.</p>
+    }
+  </div>
 
   <!-- ═══ GALERIE PHOTOS ═══ -->
   <div class="detail-section">

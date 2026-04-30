@@ -80,6 +80,9 @@
               <span>→ {{ e.dateFin | date:'dd MMM yyyy' }}</span>
             }
           </p>
+          @if (e.intervenants?.length) {
+            <p class="event-speakers">🎤 {{ speakerSummary(e) }}</p>
+          }
           <p class="event-lieu">📍 {{ e.lieu }}</p>
           <p class="event-desc">{{ e.description }}</p>
         </div>

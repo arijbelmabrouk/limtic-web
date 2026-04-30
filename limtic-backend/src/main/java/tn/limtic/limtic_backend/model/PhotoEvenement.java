@@ -30,6 +30,6 @@ public class PhotoEvenement {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "evenement_id", nullable = false)
-    @JsonIgnoreProperties("photos")
+    @JsonIgnoreProperties({"photos", "intervenants"})
     private Evenement evenement;
 }

@@ -59,6 +59,7 @@
 .event-body h3 { color: var(--text-primary); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
 .event-dates { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.6rem; }
 .event-lieu { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.4rem; }
+.event-speakers { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.4rem; font-style: italic; }
 .event-desc { color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6; }
 
 .stats-row {

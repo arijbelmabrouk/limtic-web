@@ -73,6 +73,15 @@ export class Evenements implements OnInit {
     this.api.getEvenements().subscribe(data => this.evenements.set(data));
   }
 
+  speakerSummary(e: Evenement): string {
+    const names = (e.intervenants ?? [])
+      .map(inv => `${inv.prenom ? inv.prenom + ' ' : ''}${inv.nom}`.trim())
+      .filter(name => !!name);
+    if (!names.length) return '';
+    if (names.length === 1) return names[0];
+    return `${names.slice(0, 2).join(', ')}${names.length > 2 ? ' et +' + (names.length - 2) : ''}`;
+  }
+
   resetFiltres() {
     this.filtreStatut.set('tous');
     this.filtreType.set('');

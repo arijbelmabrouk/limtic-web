@@ -27,6 +27,6 @@ public class Intervenant {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "evenement_id", nullable = false)
-    @JsonIgnoreProperties("intervenants")
+    @JsonIgnoreProperties({"intervenants", "photos"})
     private Evenement evenement;
 }
