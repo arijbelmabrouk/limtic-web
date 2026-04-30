@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -21,14 +21,36 @@ interface LaboForm {
   adresse:    string;
 }
 
+type ThemeKey = 'dark' | 'light';
+
 /** Valeurs du formulaire "Couleurs du thème" */
-interface ThemeForm {
-  couleurPrimaire:  string;   // --accent
-  couleurSecondaire: string;  // --accent-hover
-  couleurDanger:    string;   // --danger
-  couleurSucces:    string;   // --success
-  couleurWarning:   string;   // --warning
+interface ThemePalette {
+  bgPrimary: string;
+  bgSecondary: string;
+  bgCard: string;
+  bgInput: string;
+  bgSidebar: string;
+  bgModal: string;
+  bgTableHead: string;
+  bgTableRow: string;
+  bgTableHover: string;
+  bgNavbar: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  textHeading: string;
+  textBody: string;
+  textPlaceholder: string;
+  borderColor: string;
+  borderSubtle: string;
+  accent: string;
+  accentHover: string;
+  success: string;
+  warning: string;
+  danger: string;
 }
+
+type ThemeForm = Record<ThemeKey, ThemePalette>;
 
 /** Valeurs du formulaire "Parametres SMTP" */
 interface SmtpForm {
@@ -130,13 +152,120 @@ export class DashboardAdmin implements OnInit {
     adresse:     '',
   };
 
+  private readonly THEME_DEFAULTS: ThemeForm = {
+    dark: {
+      bgPrimary: '#111827',
+      bgSecondary: '#1a2234',
+      bgCard: '#1f2937',
+      bgInput: '#252840',
+      bgSidebar: '#1e293b',
+      bgModal: '#1f2937',
+      bgTableHead: '#1a2234',
+      bgTableRow: '#1f2937',
+      bgTableHover: '#252840',
+      bgNavbar: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)',
+      textPrimary: '#ffffff',
+      textSecondary: '#d1d5db',
+      textMuted: 'rgba(255,255,255,0.4)',
+      textHeading: '#ffffff',
+      textBody: '#d1d5db',
+      textPlaceholder: 'rgba(255,255,255,0.4)',
+      borderColor: 'rgba(0,210,255,0.15)',
+      borderSubtle: 'rgba(255,255,255,0.05)',
+      accent: '#00d2ff',
+      accentHover: '#00a8cc',
+      success: '#34d399',
+      warning: '#f59e0b',
+      danger: '#f87171'
+    },
+    light: {
+      bgPrimary: '#f2f3f7',
+      bgSecondary: '#ffffff',
+      bgCard: '#ffffff',
+      bgInput: '#f2f3f7',
+      bgSidebar: '#f8fafc',
+      bgModal: '#ffffff',
+      bgTableHead: '#dde1ef',
+      bgTableRow: '#ffffff',
+      bgTableHover: '#e4e7f2',
+      bgNavbar: 'linear-gradient(135deg, #f2f3f7, #f7f8fc, #ffffff)',
+      textPrimary: '#0a0c18',
+      textSecondary: '#1a1d2e',
+      textMuted: '#5c637a',
+      textHeading: '#0a0c18',
+      textBody: '#2d3152',
+      textPlaceholder: '#9ba3c0',
+      borderColor: '#d9dce8',
+      borderSubtle: '#d8dceb',
+      accent: '#4338ca',
+      accentHover: '#3730a3',
+      success: '#15803d',
+      warning: '#b45309',
+      danger: '#b91c1c'
+    }
+  };
+
   /** Formulaire couleurs du thème */
   themeForm: ThemeForm = {
-    couleurPrimaire:   '#00d2ff',
-    couleurSecondaire: '#00a8cc',
-    couleurDanger:     '#f87171',
-    couleurSucces:     '#34d399',
-    couleurWarning:    '#f59e0b',
+    dark: { ...this.THEME_DEFAULTS.dark },
+    light: { ...this.THEME_DEFAULTS.light }
+  };
+
+  readonly THEME_SECTIONS: { key: ThemeKey; label: string; description: string }[] = [
+    { key: 'dark', label: 'Thème sombre', description: 'Couleurs utilisées quand le site est en mode sombre.' },
+    { key: 'light', label: 'Thème clair', description: 'Couleurs utilisées quand le site est en mode clair.' }
+  ];
+
+  readonly THEME_FIELDS: { key: keyof ThemePalette; label: string; hint: string }[] = [
+    { key: 'bgPrimary', label: 'Fond principal', hint: 'Page globale' },
+    { key: 'bgSecondary', label: 'Fond secondaire', hint: 'Sections' },
+    { key: 'bgCard', label: 'Fond des cartes', hint: 'Cartes et blocs' },
+    { key: 'bgInput', label: 'Fond des champs', hint: 'Inputs et selects' },
+    { key: 'bgSidebar', label: 'Fond sidebar', hint: 'Menus latéraux' },
+    { key: 'bgModal', label: 'Fond modales', hint: 'Fenêtres modales' },
+    { key: 'bgTableHead', label: 'Table - en-tête', hint: 'Ligne d’en-tête' },
+    { key: 'bgTableRow', label: 'Table - lignes', hint: 'Lignes normales' },
+    { key: 'bgTableHover', label: 'Table - survol', hint: 'Ligne au survol' },
+    { key: 'bgNavbar', label: 'Fond navbar', hint: 'Barre de navigation' },
+    { key: 'textPrimary', label: 'Texte principal', hint: 'Titres, contenu' },
+    { key: 'textSecondary', label: 'Texte secondaire', hint: 'Descriptions' },
+    { key: 'textMuted', label: 'Texte atténué', hint: 'Indications' },
+    { key: 'textHeading', label: 'Texte des titres', hint: 'H1/H2' },
+    { key: 'textBody', label: 'Texte corps', hint: 'Paragraphes' },
+    { key: 'textPlaceholder', label: 'Placeholder', hint: 'Champs vides' },
+    { key: 'borderColor', label: 'Bordures', hint: 'Bordures principales' },
+    { key: 'borderSubtle', label: 'Bordures subtiles', hint: 'Séparateurs' },
+    { key: 'accent', label: 'Accent principal', hint: 'Boutons, liens' },
+    { key: 'accentHover', label: 'Accent hover', hint: 'Survols' },
+    { key: 'success', label: 'Succès', hint: 'Confirmations' },
+    { key: 'warning', label: 'Avertissement', hint: 'Alertes' },
+    { key: 'danger', label: 'Danger', hint: 'Suppression' }
+  ];
+
+  private readonly THEME_VAR_MAP: Record<keyof ThemePalette, string> = {
+    bgPrimary: '--bg-primary',
+    bgSecondary: '--bg-secondary',
+    bgCard: '--bg-card',
+    bgInput: '--bg-input',
+    bgSidebar: '--bg-sidebar',
+    bgModal: '--bg-modal',
+    bgTableHead: '--bg-table-head',
+    bgTableRow: '--bg-table-row',
+    bgTableHover: '--bg-table-hover',
+    bgNavbar: '--bg-navbar',
+    textPrimary: '--text-primary',
+    textSecondary: '--text-secondary',
+    textMuted: '--text-muted',
+    textHeading: '--text-heading',
+    textBody: '--text-body',
+    textPlaceholder: '--text-placeholder',
+    borderColor: '--border-color',
+    borderSubtle: '--border-subtle',
+    accent: '--accent',
+    accentHover: '--accent-hover',
+    success: '--success',
+    warning: '--warning',
+    danger: '--danger'
   };
 
   /** Formulaire SMTP */
@@ -173,13 +302,23 @@ export class DashboardAdmin implements OnInit {
   seoPageActive = signal<string>('home');
 
   /** URL courante du logo (relative, ex: /uploads/logos/logo-abc.png) */
-  logoUrlCourante = signal<string>('');
+  logoUrlCouranteLight = signal<string>('');
+  logoUrlCouranteDark = signal<string>('');
 
   /** Prévisualisation locale du logo avant upload */
-  logoPreviewUrl = signal<string>('');
+  logoPreviewUrlLight = signal<string>('');
+  logoPreviewUrlDark = signal<string>('');
 
   /** Fichier logo sélectionné en attente d'upload */
-  logoFile: File | null = null;
+  logoLightFile: File | null = null;
+  logoDarkFile: File | null = null;
+
+  /** Indique si le logo doit être supprimé */
+  logoLightDeleted = signal(false);
+  logoDarkDeleted = signal(false);
+
+  /** Section paramètres ouverte */
+  paramSectionActive = signal<string>('identite');
 
   /** Indicateur de sauvegarde en cours */
   parametresSaving = signal(false);
@@ -195,12 +334,21 @@ export class DashboardAdmin implements OnInit {
     private sanitizer: DomSanitizer,
     public themeService: ThemeService,
     public settings: LabSettingsService
-  ) {}
+  ) {
+    effect(() => {
+      const currentTheme = this.themeService.theme();
+      this.appliquerCouleursTheme(currentTheme, this.themeForm[currentTheme]);
+    });
+  }
 
   private handleError(error: any) {
     const message = error?.error?.message || error?.message || error?.statusText || 'Erreur backend';
     this.message.set('');
     this.erreur.set('Erreur : ' + message);
+  }
+
+  toggleParamSection(key: string) {
+    this.paramSectionActive.set(this.paramSectionActive() === key ? '' : key);
   }
 
   ngOnInit() {
@@ -904,11 +1052,56 @@ export class DashboardAdmin implements OnInit {
 
         // Peupler le formulaire thème (garder les valeurs par défaut si absent)
         this.themeForm = {
-          couleurPrimaire:   map['theme.couleurPrimaire']   ?? '#00d2ff',
-          couleurSecondaire: map['theme.couleurSecondaire'] ?? '#00a8cc',
-          couleurDanger:     map['theme.couleurDanger']     ?? '#f87171',
-          couleurSucces:     map['theme.couleurSucces']     ?? '#34d399',
-          couleurWarning:    map['theme.couleurWarning']    ?? '#f59e0b',
+          dark: {
+            bgPrimary: map['theme.dark.bgPrimary'] ?? this.THEME_DEFAULTS.dark.bgPrimary,
+            bgSecondary: map['theme.dark.bgSecondary'] ?? this.THEME_DEFAULTS.dark.bgSecondary,
+            bgCard: map['theme.dark.bgCard'] ?? this.THEME_DEFAULTS.dark.bgCard,
+            bgInput: map['theme.dark.bgInput'] ?? this.THEME_DEFAULTS.dark.bgInput,
+            bgSidebar: map['theme.dark.bgSidebar'] ?? this.THEME_DEFAULTS.dark.bgSidebar,
+            bgModal: map['theme.dark.bgModal'] ?? this.THEME_DEFAULTS.dark.bgModal,
+            bgTableHead: map['theme.dark.bgTableHead'] ?? this.THEME_DEFAULTS.dark.bgTableHead,
+            bgTableRow: map['theme.dark.bgTableRow'] ?? this.THEME_DEFAULTS.dark.bgTableRow,
+            bgTableHover: map['theme.dark.bgTableHover'] ?? this.THEME_DEFAULTS.dark.bgTableHover,
+            bgNavbar: map['theme.dark.bgNavbar'] ?? this.THEME_DEFAULTS.dark.bgNavbar,
+            textPrimary: map['theme.dark.textPrimary'] ?? this.THEME_DEFAULTS.dark.textPrimary,
+            textSecondary: map['theme.dark.textSecondary'] ?? this.THEME_DEFAULTS.dark.textSecondary,
+            textMuted: map['theme.dark.textMuted'] ?? this.THEME_DEFAULTS.dark.textMuted,
+            textHeading: map['theme.dark.textHeading'] ?? this.THEME_DEFAULTS.dark.textHeading,
+            textBody: map['theme.dark.textBody'] ?? this.THEME_DEFAULTS.dark.textBody,
+            textPlaceholder: map['theme.dark.textPlaceholder'] ?? this.THEME_DEFAULTS.dark.textPlaceholder,
+            borderColor: map['theme.dark.borderColor'] ?? this.THEME_DEFAULTS.dark.borderColor,
+            borderSubtle: map['theme.dark.borderSubtle'] ?? this.THEME_DEFAULTS.dark.borderSubtle,
+            accent: map['theme.dark.accent'] ?? this.THEME_DEFAULTS.dark.accent,
+            accentHover: map['theme.dark.accentHover'] ?? this.THEME_DEFAULTS.dark.accentHover,
+            success: map['theme.dark.success'] ?? this.THEME_DEFAULTS.dark.success,
+            warning: map['theme.dark.warning'] ?? this.THEME_DEFAULTS.dark.warning,
+            danger: map['theme.dark.danger'] ?? this.THEME_DEFAULTS.dark.danger,
+          },
+          light: {
+            bgPrimary: map['theme.light.bgPrimary'] ?? this.THEME_DEFAULTS.light.bgPrimary,
+            bgSecondary: map['theme.light.bgSecondary'] ?? this.THEME_DEFAULTS.light.bgSecondary,
+            bgCard: map['theme.light.bgCard'] ?? this.THEME_DEFAULTS.light.bgCard,
+            bgInput: map['theme.light.bgInput'] ?? this.THEME_DEFAULTS.light.bgInput,
+            bgSidebar: map['theme.light.bgSidebar'] ?? this.THEME_DEFAULTS.light.bgSidebar,
+            bgModal: map['theme.light.bgModal'] ?? this.THEME_DEFAULTS.light.bgModal,
+            bgTableHead: map['theme.light.bgTableHead'] ?? this.THEME_DEFAULTS.light.bgTableHead,
+            bgTableRow: map['theme.light.bgTableRow'] ?? this.THEME_DEFAULTS.light.bgTableRow,
+            bgTableHover: map['theme.light.bgTableHover'] ?? this.THEME_DEFAULTS.light.bgTableHover,
+            bgNavbar: map['theme.light.bgNavbar'] ?? this.THEME_DEFAULTS.light.bgNavbar,
+            textPrimary: map['theme.light.textPrimary'] ?? this.THEME_DEFAULTS.light.textPrimary,
+            textSecondary: map['theme.light.textSecondary'] ?? this.THEME_DEFAULTS.light.textSecondary,
+            textMuted: map['theme.light.textMuted'] ?? this.THEME_DEFAULTS.light.textMuted,
+            textHeading: map['theme.light.textHeading'] ?? this.THEME_DEFAULTS.light.textHeading,
+            textBody: map['theme.light.textBody'] ?? this.THEME_DEFAULTS.light.textBody,
+            textPlaceholder: map['theme.light.textPlaceholder'] ?? this.THEME_DEFAULTS.light.textPlaceholder,
+            borderColor: map['theme.light.borderColor'] ?? this.THEME_DEFAULTS.light.borderColor,
+            borderSubtle: map['theme.light.borderSubtle'] ?? this.THEME_DEFAULTS.light.borderSubtle,
+            accent: map['theme.light.accent'] ?? this.THEME_DEFAULTS.light.accent,
+            accentHover: map['theme.light.accentHover'] ?? this.THEME_DEFAULTS.light.accentHover,
+            success: map['theme.light.success'] ?? this.THEME_DEFAULTS.light.success,
+            warning: map['theme.light.warning'] ?? this.THEME_DEFAULTS.light.warning,
+            danger: map['theme.light.danger'] ?? this.THEME_DEFAULTS.light.danger,
+          }
         };
 
         // Parametres SMTP (mot de passe vide tant qu'il n'est pas change)
@@ -920,13 +1113,20 @@ export class DashboardAdmin implements OnInit {
           password: ''
         };
 
-        // Logo existant
-        const logoUrl = map['labo.logoUrl'] ?? '';
-        this.logoUrlCourante.set(logoUrl);
+        // Logos existants
+        const logoLightUrl = map['labo.logoUrlLight'] ?? '';
+        const logoDarkUrl = map['labo.logoUrlDark'] ?? '';
+        this.logoUrlCouranteLight.set(logoLightUrl);
+        this.logoUrlCouranteDark.set(logoDarkUrl);
         // Ne pas écraser la preview locale si l'admin a déjà sélectionné un fichier
-        if (!this.logoFile) {
-          this.logoPreviewUrl.set(logoUrl ? this.api.getLogoUrl(logoUrl) : '');
+        if (!this.logoLightFile) {
+          this.logoPreviewUrlLight.set(logoLightUrl ? this.api.getLogoUrl(logoLightUrl) : '');
         }
+        if (!this.logoDarkFile) {
+          this.logoPreviewUrlDark.set(logoDarkUrl ? this.api.getLogoUrl(logoDarkUrl) : '');
+        }
+        this.logoLightDeleted.set(false);
+        this.logoDarkDeleted.set(false);
 
         // SEO — charger chaque page
         for (const page of this.SEO_PAGES) {
@@ -937,7 +1137,7 @@ export class DashboardAdmin implements OnInit {
           };
         }
 
-        this.appliquerCouleursTheme(this.themeForm);
+        this.appliquerCouleursTheme(this.themeService.theme(), this.themeForm[this.themeService.theme()]);
 
         this.parametresLoading.set(false);
       },
@@ -952,33 +1152,41 @@ export class DashboardAdmin implements OnInit {
    * Appelé à chaque changement d'un color picker pour prévisualiser
    * les nouvelles couleurs en temps réel sans sauvegarder.
    */
-  onCouleurChange() {
-    this.appliquerCouleursTheme(this.themeForm);
+  onCouleurChange(themeKey: ThemeKey) {
+    this.appliquerCouleursTheme(themeKey, this.themeForm[themeKey]);
   }
 
   /**
    * Liaison (input) du color picker natif → met à jour themeForm et
    * prévisualise immédiatement la couleur choisie.
-   * Appelé par : (input)="onColorInput('couleurPrimaire', $event)"
+  * Appelé par : (input)="onColorInput('dark', 'accent', $event)"
    */
-  onColorInput(key: keyof ThemeForm, event: Event) {
+  onColorInput(themeKey: ThemeKey, key: keyof ThemePalette, event: Event) {
     const val = (event.target as HTMLInputElement).value;
-    this.themeForm = { ...this.themeForm, [key]: val };
-    this.appliquerCouleursTheme(this.themeForm);
+    this.themeForm = {
+      ...this.themeForm,
+      [themeKey]: { ...this.themeForm[themeKey], [key]: val }
+    };
+    this.appliquerCouleursTheme(themeKey, this.themeForm[themeKey]);
   }
 
   /**
    * Liaison (change) du champ texte hexadécimal → valide le format
    * et synchronise le color picker avec la valeur saisie.
-   * Appelé par : (change)="onColorText('couleurPrimaire', $event)"
+  * Appelé par : (change)="onColorText('dark', 'accent', $event)"
    */
-  onColorText(key: keyof ThemeForm, event: Event) {
+  onColorText(themeKey: ThemeKey, key: keyof ThemePalette, event: Event) {
     const raw = (event.target as HTMLInputElement).value.trim();
-    // Accepter uniquement #rrggbb ou #rgb valides
+    // Accepter #rrggbb, #rgb, rgb(a) et linear-gradient()
     const hexRegex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
-    if (!hexRegex.test(raw)) return; // ignorer les valeurs invalides
-    this.themeForm = { ...this.themeForm, [key]: raw };
-    this.appliquerCouleursTheme(this.themeForm);
+    const rgbRegex = /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+)\s*)?\)$/;
+    const gradientRegex = /^linear-gradient\(/i;
+    if (!hexRegex.test(raw) && !rgbRegex.test(raw) && !gradientRegex.test(raw)) return;
+    this.themeForm = {
+      ...this.themeForm,
+      [themeKey]: { ...this.themeForm[themeKey], [key]: raw }
+    };
+    this.appliquerCouleursTheme(themeKey, this.themeForm[themeKey]);
   }
 
   /**
@@ -986,8 +1194,8 @@ export class DashboardAdmin implements OnInit {
    * dans le template HTML (dashboard-admin.html ligne ~1294).
    * Délègue à reinitialiserCouleurs() qui contient la logique réelle.
    */
-  resetCouleursDefaut() {
-    this.reinitialiserCouleurs();
+  resetCouleursDefaut(themeKey: ThemeKey) {
+    this.reinitialiserCouleurs(themeKey);
   }
 
   /** Ouvre/ferme un panneau de la liste SEO (accordéon) */
@@ -999,39 +1207,68 @@ export class DashboardAdmin implements OnInit {
    * Applique les couleurs du formulaire comme variables CSS sur :root
    * afin que tout le dashboard reflète les changements en direct.
    */
-  private appliquerCouleursTheme(theme: ThemeForm) {
+  private appliquerCouleursTheme(themeKey: ThemeKey, theme: ThemePalette) {
+    if (themeKey !== this.themeService.theme()) return;
     const root = document.documentElement;
-    root.style.setProperty('--accent',          theme.couleurPrimaire);
-    root.style.setProperty('--accent-hover',    theme.couleurSecondaire);
-    root.style.setProperty('--danger',          theme.couleurDanger);
-    root.style.setProperty('--success',         theme.couleurSucces);
-    root.style.setProperty('--warning',         theme.couleurWarning);
-    // Variantes soft (alpha 10%)
-    root.style.setProperty('--accent-soft',     theme.couleurPrimaire + '1a');
-    root.style.setProperty('--danger-soft',     theme.couleurDanger   + '1f');
-    root.style.setProperty('--success-soft',    theme.couleurSucces   + '1a');
-    root.style.setProperty('--warning-soft',    theme.couleurWarning  + '1a');
+    const body = document.body;
+
+    const setVar = (name: string, value: string) => {
+      root.style.setProperty(name, value);
+      body?.style.setProperty(name, value);
+    };
+
+    const normalizeHex = (value: string): string | null => {
+      const v = value.trim();
+      if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) return null;
+      if (v.length === 4) {
+        const r = v[1];
+        const g = v[2];
+        const b = v[3];
+        return `#${r}${r}${g}${g}${b}${b}`;
+      }
+      return v;
+    };
+
+    const toRgba = (hex: string, alpha: number): string | null => {
+      const norm = normalizeHex(hex);
+      if (!norm) return null;
+      const r = parseInt(norm.slice(1, 3), 16);
+      const g = parseInt(norm.slice(3, 5), 16);
+      const b = parseInt(norm.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    };
+
+    (Object.keys(this.THEME_VAR_MAP) as (keyof ThemePalette)[]).forEach((key) => {
+      setVar(this.THEME_VAR_MAP[key], theme[key]);
+    });
+
+    const accentSoft = toRgba(theme.accent, 0.1);
+    const dangerSoft = toRgba(theme.danger, 0.12);
+    const successSoft = toRgba(theme.success, 0.1);
+    const warningSoft = toRgba(theme.warning, 0.1);
+
+    if (accentSoft) setVar('--accent-soft', accentSoft);
+    if (dangerSoft) setVar('--danger-soft', dangerSoft);
+    if (successSoft) setVar('--success-soft', successSoft);
+    if (warningSoft) setVar('--warning-soft', warningSoft);
   }
 
   /**
-   * Réinitialise les couleurs aux valeurs par défaut du thème dark.
+   * Réinitialise les couleurs aux valeurs par défaut du thème sélectionné.
    */
-  reinitialiserCouleurs() {
+  reinitialiserCouleurs(themeKey: ThemeKey) {
     this.themeForm = {
-      couleurPrimaire:   '#00d2ff',
-      couleurSecondaire: '#00a8cc',
-      couleurDanger:     '#f87171',
-      couleurSucces:     '#34d399',
-      couleurWarning:    '#f59e0b',
+      ...this.themeForm,
+      [themeKey]: { ...this.THEME_DEFAULTS[themeKey] }
     };
-    this.appliquerCouleursTheme(this.themeForm);
+    this.appliquerCouleursTheme(themeKey, this.themeForm[themeKey]);
   }
 
   /**
    * Gère la sélection d'un fichier logo depuis l'input file.
    * Génère immédiatement une prévisualisation locale (blob URL).
    */
-  onLogoFileSelected(event: Event) {
+  onLogoFileSelected(themeKey: ThemeKey, event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
 
@@ -1047,13 +1284,24 @@ export class DashboardAdmin implements OnInit {
       return;
     }
 
-    this.logoFile = file;
+    if (themeKey === 'light') {
+      this.logoLightFile = file;
+      this.logoLightDeleted.set(false);
+    } else {
+      this.logoDarkFile = file;
+      this.logoDarkDeleted.set(false);
+    }
     this.erreur.set('');
 
     // Prévisualisation locale immédiate
     const reader = new FileReader();
     reader.onload = (e) => {
-      this.logoPreviewUrl.set(e.target?.result as string);
+      const url = e.target?.result as string;
+      if (themeKey === 'light') {
+        this.logoPreviewUrlLight.set(url);
+      } else {
+        this.logoPreviewUrlDark.set(url);
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -1061,10 +1309,33 @@ export class DashboardAdmin implements OnInit {
   /**
    * Annule la sélection en cours et revient au logo sauvegardé.
    */
-  annulerLogoSelection() {
-    this.logoFile = null;
-    const urlCourante = this.logoUrlCourante();
-    this.logoPreviewUrl.set(urlCourante ? this.api.getLogoUrl(urlCourante) : '');
+  annulerLogoSelection(themeKey: ThemeKey) {
+    if (themeKey === 'light') {
+      this.logoLightFile = null;
+      this.logoLightDeleted.set(false);
+      const urlCourante = this.logoUrlCouranteLight();
+      this.logoPreviewUrlLight.set(urlCourante ? this.api.getLogoUrl(urlCourante) : '');
+    } else {
+      this.logoDarkFile = null;
+      this.logoDarkDeleted.set(false);
+      const urlCourante = this.logoUrlCouranteDark();
+      this.logoPreviewUrlDark.set(urlCourante ? this.api.getLogoUrl(urlCourante) : '');
+    }
+  }
+
+  supprimerLogo(themeKey: ThemeKey) {
+    if (!confirm('Supprimer ce logo ?')) return;
+    if (themeKey === 'light') {
+      this.logoLightFile = null;
+      this.logoUrlCouranteLight.set('');
+      this.logoPreviewUrlLight.set('');
+      this.logoLightDeleted.set(true);
+    } else {
+      this.logoDarkFile = null;
+      this.logoUrlCouranteDark.set('');
+      this.logoPreviewUrlDark.set('');
+      this.logoDarkDeleted.set(true);
+    }
   }
 
   /**
@@ -1076,23 +1347,35 @@ export class DashboardAdmin implements OnInit {
     this.message.set('');
     this.erreur.set('');
 
-    if (this.logoFile) {
-      // 1. Uploader le logo, puis sauvegarder le reste
-      this.api.uploadLogo(this.logoFile).subscribe({
+    const uploads: { key: ThemeKey; file: File }[] = [];
+    if (this.logoLightFile) uploads.push({ key: 'light', file: this.logoLightFile });
+    if (this.logoDarkFile) uploads.push({ key: 'dark', file: this.logoDarkFile });
+
+    const uploadNext = (index: number) => {
+      if (index >= uploads.length) {
+        this.sauvegarderParamsTexte();
+        return;
+      }
+      const current = uploads[index];
+      this.api.uploadLogo(current.file).subscribe({
         next: (res) => {
-          this.logoUrlCourante.set(res.logoUrl);
-          this.logoFile = null;
-          this.sauvegarderParamsTexte();
+          if (current.key === 'light') {
+            this.logoUrlCouranteLight.set(res.logoUrl);
+            this.logoLightFile = null;
+          } else {
+            this.logoUrlCouranteDark.set(res.logoUrl);
+            this.logoDarkFile = null;
+          }
+          uploadNext(index + 1);
         },
         error: err => {
           this.parametresSaving.set(false);
           this.handleError(err);
         }
       });
-    } else {
-      // Pas de nouveau logo — sauvegarder directement
-      this.sauvegarderParamsTexte();
-    }
+    };
+
+    uploadNext(0);
   }
 
   /**
@@ -1112,13 +1395,66 @@ export class DashboardAdmin implements OnInit {
       'smtp.port': String(this.smtpForm.port || ''),
       'smtp.username': this.smtpForm.username,
       'smtp.destinataire': this.smtpForm.destinataire,
-      // Couleurs du thème
-      'theme.couleurPrimaire':   this.themeForm.couleurPrimaire,
-      'theme.couleurSecondaire': this.themeForm.couleurSecondaire,
-      'theme.couleurDanger':     this.themeForm.couleurDanger,
-      'theme.couleurSucces':     this.themeForm.couleurSucces,
-      'theme.couleurWarning':    this.themeForm.couleurWarning,
+      // Couleurs du thème (dark)
+      'theme.dark.bgPrimary': this.themeForm.dark.bgPrimary,
+      'theme.dark.bgSecondary': this.themeForm.dark.bgSecondary,
+      'theme.dark.bgCard': this.themeForm.dark.bgCard,
+      'theme.dark.bgInput': this.themeForm.dark.bgInput,
+      'theme.dark.bgSidebar': this.themeForm.dark.bgSidebar,
+      'theme.dark.bgModal': this.themeForm.dark.bgModal,
+      'theme.dark.bgTableHead': this.themeForm.dark.bgTableHead,
+      'theme.dark.bgTableRow': this.themeForm.dark.bgTableRow,
+      'theme.dark.bgTableHover': this.themeForm.dark.bgTableHover,
+      'theme.dark.bgNavbar': this.themeForm.dark.bgNavbar,
+      'theme.dark.textPrimary': this.themeForm.dark.textPrimary,
+      'theme.dark.textSecondary': this.themeForm.dark.textSecondary,
+      'theme.dark.textMuted': this.themeForm.dark.textMuted,
+      'theme.dark.textHeading': this.themeForm.dark.textHeading,
+      'theme.dark.textBody': this.themeForm.dark.textBody,
+      'theme.dark.textPlaceholder': this.themeForm.dark.textPlaceholder,
+      'theme.dark.borderColor': this.themeForm.dark.borderColor,
+      'theme.dark.borderSubtle': this.themeForm.dark.borderSubtle,
+      'theme.dark.accent': this.themeForm.dark.accent,
+      'theme.dark.accentHover': this.themeForm.dark.accentHover,
+      'theme.dark.success': this.themeForm.dark.success,
+      'theme.dark.warning': this.themeForm.dark.warning,
+      'theme.dark.danger': this.themeForm.dark.danger,
+      // Couleurs du thème (light)
+      'theme.light.bgPrimary': this.themeForm.light.bgPrimary,
+      'theme.light.bgSecondary': this.themeForm.light.bgSecondary,
+      'theme.light.bgCard': this.themeForm.light.bgCard,
+      'theme.light.bgInput': this.themeForm.light.bgInput,
+      'theme.light.bgSidebar': this.themeForm.light.bgSidebar,
+      'theme.light.bgModal': this.themeForm.light.bgModal,
+      'theme.light.bgTableHead': this.themeForm.light.bgTableHead,
+      'theme.light.bgTableRow': this.themeForm.light.bgTableRow,
+      'theme.light.bgTableHover': this.themeForm.light.bgTableHover,
+      'theme.light.bgNavbar': this.themeForm.light.bgNavbar,
+      'theme.light.textPrimary': this.themeForm.light.textPrimary,
+      'theme.light.textSecondary': this.themeForm.light.textSecondary,
+      'theme.light.textMuted': this.themeForm.light.textMuted,
+      'theme.light.textHeading': this.themeForm.light.textHeading,
+      'theme.light.textBody': this.themeForm.light.textBody,
+      'theme.light.textPlaceholder': this.themeForm.light.textPlaceholder,
+      'theme.light.borderColor': this.themeForm.light.borderColor,
+      'theme.light.borderSubtle': this.themeForm.light.borderSubtle,
+      'theme.light.accent': this.themeForm.light.accent,
+      'theme.light.accentHover': this.themeForm.light.accentHover,
+      'theme.light.success': this.themeForm.light.success,
+      'theme.light.warning': this.themeForm.light.warning,
+      'theme.light.danger': this.themeForm.light.danger,
     };
+
+    if (this.logoLightDeleted()) {
+      payload['labo.logoUrlLight'] = '';
+    } else if (this.logoUrlCouranteLight()) {
+      payload['labo.logoUrlLight'] = this.logoUrlCouranteLight();
+    }
+    if (this.logoDarkDeleted()) {
+      payload['labo.logoUrlDark'] = '';
+    } else if (this.logoUrlCouranteDark()) {
+      payload['labo.logoUrlDark'] = this.logoUrlCouranteDark();
+    }
 
     // SEO par page
     for (const page of this.SEO_PAGES) {

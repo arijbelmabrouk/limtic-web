@@ -1100,16 +1100,21 @@
       @if (!parametresLoading()) {
 
         <!-- ── Section 1 : Identité du laboratoire ── -->
-        <div class="params-section">
-          <div class="params-section-header">
+        <div class="params-accordion" [class.open]="paramSectionActive() === 'identite'">
+          <button class="params-accordion-header"
+                  type="button"
+                  (click)="toggleParamSection('identite')">
             <span class="params-section-icon">🏛</span>
             <div>
               <h2>Identité du laboratoire</h2>
               <p>Nom, acronyme et informations générales affichés sur le site public</p>
             </div>
-          </div>
+            <span class="params-accordion-chevron">{{ paramSectionActive() === 'identite' ? '▲' : '▼' }}</span>
+          </button>
 
-          <div class="form-grid params-grid">
+          @if (paramSectionActive() === 'identite') {
+          <div class="params-accordion-body">
+            <div class="form-grid params-grid">
             <div class="field">
               <label>Nom complet *</label>
               <input [(ngModel)]="laboForm.nom"
@@ -1142,170 +1147,188 @@
                         placeholder="Présentation du laboratoire visible sur la page d'accueil…"></textarea>
             </div>
           </div>
+          </div>
+          }
         </div>
 
         <!-- ── Section 2 : Logo ── -->
-        <div class="params-section">
-          <div class="params-section-header">
+        <div class="params-accordion" [class.open]="paramSectionActive() === 'logo'">
+          <button class="params-accordion-header"
+                  type="button"
+                  (click)="toggleParamSection('logo')">
             <span class="params-section-icon">🖼</span>
             <div>
-              <h2>Logo du laboratoire</h2>
-              <p>Formats acceptés : PNG, JPG, SVG — taille max. 2 Mo</p>
+              <h2>Logos du laboratoire</h2>
+              <p>Deux logos séparés pour les thèmes sombre et clair</p>
+            </div>
+            <span class="params-accordion-chevron">{{ paramSectionActive() === 'logo' ? '▲' : '▼' }}</span>
+          </button>
+
+          @if (paramSectionActive() === 'logo') {
+          <div class="params-accordion-body">
+            <div class="logo-grid">
+            <div class="logo-block">
+              <h3>Logo thème clair</h3>
+              <div class="logo-upload-area">
+                <!-- Prévisualisation -->
+                <div class="logo-preview-box">
+                  @if (logoPreviewUrlLight()) {
+                    <img [src]="logoPreviewUrlLight()" alt="Logo clair" class="logo-preview-img" />
+                  } @else {
+                    <div class="logo-preview-placeholder">
+                      <span>🌞</span>
+                      <small>Aucun logo</small>
+                    </div>
+                  }
+                </div>
+
+                <!-- Contrôles upload -->
+                <div class="logo-upload-controls">
+                  <input type="file"
+                         accept="image/png,image/jpeg,image/svg+xml"
+                         id="logoInputLight"
+                         class="logo-file-input"
+                         (change)="onLogoFileSelected('light', $event)" />
+                  <label for="logoInputLight" class="btn-logo-choose">
+                    📁 Choisir un fichier
+                  </label>
+
+                  @if (logoPreviewUrlLight() || logoUrlCouranteLight()) {
+                    <button class="btn-logo-delete" (click)="supprimerLogo('light')">✕ Supprimer le logo</button>
+                  }
+
+                  @if (logoLightFile) {
+                    <div class="logo-file-info">
+                      <span class="logo-file-name">📄 {{ logoLightFile.name }}</span>
+                      <button class="btn-logo-cancel" (click)="annulerLogoSelection('light')">✕ Annuler</button>
+                    </div>
+                  }
+
+                  @if (!logoPreviewUrlLight() && !logoLightFile) {
+                    <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="logo-block">
+              <h3>Logo thème sombre</h3>
+              <div class="logo-upload-area">
+                <!-- Prévisualisation -->
+                <div class="logo-preview-box">
+                  @if (logoPreviewUrlDark()) {
+                    <img [src]="logoPreviewUrlDark()" alt="Logo sombre" class="logo-preview-img" />
+                  } @else {
+                    <div class="logo-preview-placeholder">
+                      <span>🌙</span>
+                      <small>Aucun logo</small>
+                    </div>
+                  }
+                </div>
+
+                <!-- Contrôles upload -->
+                <div class="logo-upload-controls">
+                  <input type="file"
+                         accept="image/png,image/jpeg,image/svg+xml"
+                         id="logoInputDark"
+                         class="logo-file-input"
+                         (change)="onLogoFileSelected('dark', $event)" />
+                  <label for="logoInputDark" class="btn-logo-choose">
+                    📁 Choisir un fichier
+                  </label>
+
+                  @if (logoPreviewUrlDark() || logoUrlCouranteDark()) {
+                    <button class="btn-logo-delete" (click)="supprimerLogo('dark')">✕ Supprimer le logo</button>
+                  }
+
+                  @if (logoDarkFile) {
+                    <div class="logo-file-info">
+                      <span class="logo-file-name">📄 {{ logoDarkFile.name }}</span>
+                      <button class="btn-logo-cancel" (click)="annulerLogoSelection('dark')">✕ Annuler</button>
+                    </div>
+                  }
+
+                  @if (!logoPreviewUrlDark() && !logoDarkFile) {
+                    <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
+                  }
+                </div>
+              </div>
             </div>
           </div>
-
-          <div class="logo-upload-area">
-            <!-- Prévisualisation -->
-            <div class="logo-preview-box">
-              @if (logoPreviewUrl()) {
-                <img [src]="logoPreviewUrl()" alt="Logo laboratoire" class="logo-preview-img" />
-              } @else {
-                <div class="logo-preview-placeholder">
-                  <span>🏛</span>
-                  <small>Aucun logo</small>
-                </div>
-              }
-            </div>
-
-            <!-- Contrôles upload -->
-            <div class="logo-upload-controls">
-              <input type="file"
-                     accept="image/png,image/jpeg,image/svg+xml"
-                     id="logoInput"
-                     class="logo-file-input"
-                     (change)="onLogoFileSelected($event)" />
-              <label for="logoInput" class="btn-logo-choose">
-                📁 Choisir un fichier
-              </label>
-
-              @if (logoFile) {
-                <div class="logo-file-info">
-                  <span class="logo-file-name">📄 {{ logoFile.name }}</span>
-                  <button class="btn-logo-cancel" (click)="annulerLogoSelection()">✕ Annuler</button>
-                </div>
-              }
-
-              @if (!logoPreviewUrl() && !logoFile) {
-                <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
-              }
-            </div>
           </div>
+          }
         </div>
 
                 <!-- ── Section 3 : Couleurs du thème ── -->
-        <div class="params-section">
-          <div class="params-section-header">
-            <span class="params-section-icon">🎨</span>
-            <div>
-              <h2>Couleurs du thème</h2>
-              <p>Les modifications s'appliquent en temps réel en prévisualisation</p>
-            </div>
-          </div>
+                <div class="params-accordion" [class.open]="paramSectionActive() === 'theme'">
+                  <button class="params-accordion-header"
+                          type="button"
+                          (click)="toggleParamSection('theme')">
+                    <span class="params-section-icon">🎨</span>
+                    <div>
+                      <h2>Couleurs du thème</h2>
+                      <p>Les modifications s'appliquent en temps réel au thème actif</p>
+                    </div>
+                    <span class="params-accordion-chevron">{{ paramSectionActive() === 'theme' ? '▲' : '▼' }}</span>
+                  </button>
 
-          <div class="colors-grid">
-            <div class="color-field">
-              <label>Couleur principale</label>
-              <div class="color-input-row">
-                <input type="color"
-                       [value]="themeForm.couleurPrimaire"
-                       (input)="onColorInput('couleurPrimaire', $event)"
-                       class="color-picker" />
-                <input type="text"
-                       [value]="themeForm.couleurPrimaire"
-                       (change)="onColorText('couleurPrimaire', $event)"
-                       class="color-hex-input"
-                       maxlength="7"
-                       placeholder="#00d2ff" />
-              </div>
-              <span class="color-hint">Boutons, liens actifs, accents</span>
-            </div>
+                  @if (paramSectionActive() === 'theme') {
+                  <div class="params-accordion-body">
+                    <div class="theme-groups">
+                    @for (section of THEME_SECTIONS; track section.key) {
+                      <div class="theme-group">
+                        <div class="theme-group-header">
+                          <h3>{{ section.label }}</h3>
+                          <p>{{ section.description }}</p>
+                        </div>
 
-            <div class="color-field">
-              <label>Couleur secondaire</label>
-              <div class="color-input-row">
-                <input type="color"
-                       [value]="themeForm.couleurSecondaire"
-                       (input)="onColorInput('couleurSecondaire', $event)"
-                       class="color-picker" />
-                <input type="text"
-                       [value]="themeForm.couleurSecondaire"
-                       (change)="onColorText('couleurSecondaire', $event)"
-                       class="color-hex-input"
-                       maxlength="7"
-                       placeholder="#00a8cc" />
-              </div>
-              <span class="color-hint">Hover, états actifs secondaires</span>
-            </div>
+                        <div class="colors-grid">
+                          @for (field of THEME_FIELDS; track field.key) {
+                            <div class="color-field">
+                              <label>{{ field.label }}</label>
+                              <div class="color-input-row">
+                                <input type="color"
+                                       [value]="themeForm[section.key][field.key]"
+                                       (input)="onColorInput(section.key, field.key, $event)"
+                                       class="color-picker" />
+                                <input type="text"
+                                       [value]="themeForm[section.key][field.key]"
+                                       (change)="onColorText(section.key, field.key, $event)"
+                                       class="color-hex-input"
+                                       maxlength="64"
+                                       placeholder="#000000" />
+                              </div>
+                              <span class="color-hint">{{ field.hint }}</span>
+                            </div>
+                          }
+                        </div>
 
-            <div class="color-field">
-              <label>Couleur danger</label>
-              <div class="color-input-row">
-                <input type="color"
-                       [value]="themeForm.couleurDanger"
-                       (input)="onColorInput('couleurDanger', $event)"
-                       class="color-picker" />
-                <input type="text"
-                       [value]="themeForm.couleurDanger"
-                       (change)="onColorText('couleurDanger', $event)"
-                       class="color-hex-input"
-                       maxlength="7"
-                       placeholder="#f87171" />
-              </div>
-              <span class="color-hint">Suppressions, alertes critiques</span>
-            </div>
-
-            <div class="color-field">
-              <label>Couleur succès</label>
-              <div class="color-input-row">
-                <input type="color"
-                       [value]="themeForm.couleurSucces"
-                       (input)="onColorInput('couleurSucces', $event)"
-                       class="color-picker" />
-                <input type="text"
-                       [value]="themeForm.couleurSucces"
-                       (change)="onColorText('couleurSucces', $event)"
-                       class="color-hex-input"
-                       maxlength="7"
-                       placeholder="#34d399" />
-              </div>
-              <span class="color-hint">Validations, confirmations</span>
-            </div>
-
-            <div class="color-field">
-              <label>Couleur avertissement</label>
-              <div class="color-input-row">
-                <input type="color"
-                       [value]="themeForm.couleurWarning"
-                       (input)="onColorInput('couleurWarning', $event)"
-                       class="color-picker" />
-                <input type="text"
-                       [value]="themeForm.couleurWarning"
-                       (change)="onColorText('couleurWarning', $event)"
-                       class="color-hex-input"
-                       maxlength="7"
-                       placeholder="#f59e0b" />
-              </div>
-              <span class="color-hint">Mises en garde, en attente</span>
-            </div>
-          </div>
-
-          <!-- Bouton reset couleurs -->
-          <button class="btn-colors-reset" (click)="resetCouleursDefaut()">
-            ↺ Réinitialiser les couleurs par défaut
-          </button>
-        </div>
+                        <button class="btn-colors-reset" (click)="resetCouleursDefaut(section.key)">
+                          ↺ Réinitialiser les couleurs par défaut
+                        </button>
+                      </div>
+                    }
+                    </div>
+                  </div>
+                  }
+                </div>
         
         <!-- ── Section 3 : SMTP ── -->
-        <div class="params-section">
-          <div class="params-section-header">
+        <div class="params-accordion" [class.open]="paramSectionActive() === 'smtp'">
+          <button class="params-accordion-header"
+                  type="button"
+                  (click)="toggleParamSection('smtp')">
             <span class="params-section-icon">✉️</span>
             <div>
               <h2>Paramètres SMTP</h2>
               <p>Adresse destinataire et mot de passe applicatif</p>
             </div>
-          </div>
+            <span class="params-accordion-chevron">{{ paramSectionActive() === 'smtp' ? '▲' : '▼' }}</span>
+          </button>
 
-          <div class="form-grid params-grid">
+          @if (paramSectionActive() === 'smtp') {
+          <div class="params-accordion-body">
+            <div class="form-grid params-grid">
             <div class="field">
               <label>Serveur SMTP</label>
               <input [(ngModel)]="smtpForm.host"
@@ -1332,19 +1355,26 @@
                      placeholder="Laissez vide pour ne pas changer" />
             </div>
           </div>
+          </div>
+          }
         </div>
 
         <!-- ── Section 4 : SEO par page ── -->
-        <div class="params-section">
-          <div class="params-section-header">
+        <div class="params-accordion" [class.open]="paramSectionActive() === 'seo'">
+          <button class="params-accordion-header"
+                  type="button"
+                  (click)="toggleParamSection('seo')">
             <span class="params-section-icon">🔍</span>
             <div>
               <h2>Métadonnées SEO</h2>
               <p>Titre, description et mots-clés pour chaque page publique du site</p>
             </div>
-          </div>
+            <span class="params-accordion-chevron">{{ paramSectionActive() === 'seo' ? '▲' : '▼' }}</span>
+          </button>
 
-          <div class="seo-accordion">
+          @if (paramSectionActive() === 'seo') {
+          <div class="params-accordion-body">
+            <div class="seo-accordion">
             @for (page of SEO_PAGES; track page.key) {
               <div class="seo-accordion-item"
                    [class.open]="seoPageActive() === page.key">
@@ -1411,6 +1441,8 @@
               </div>
             }
           </div>
+          </div>
+          }
         </div>
 
         <!-- ── Barre d'actions globale ── -->

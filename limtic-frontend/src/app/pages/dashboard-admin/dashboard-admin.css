@@ -1460,6 +1460,18 @@
 }
 
 /* ── Zone logo ── */
+.logo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.logo-block h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
 .logo-upload-area {
   display: flex;
   align-items: flex-start;
@@ -1578,6 +1590,35 @@
 }
 
 /* ── Grille couleurs ── */
+.theme-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.theme-group {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.theme-group-header {
+  margin-bottom: 1rem;
+}
+
+.theme-group-header h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.theme-group-header p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
 .colors-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
