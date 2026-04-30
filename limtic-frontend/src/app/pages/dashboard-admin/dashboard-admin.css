@@ -1787,7 +1787,7 @@
   padding: 1rem 1.5rem;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-subtle);
-  margin: 0 -3rem -2.5rem;  /* annule le padding du main-content */
+  margin: 3rem -3rem -2.5rem;  /* annule le padding du main-content */
 }
 
 .btn-params-save {
@@ -1841,6 +1841,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 200px;
 }
 
 /* ── Item de l'accordéon ── */
@@ -1983,5 +1984,100 @@
 
   .seo-status-badge {
     display: none; /* masqué sur mobile pour économiser l'espace */
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   PARAMS ACCORDION  (Settings tab — all sections)
+   ══════════════════════════════════════════════════════ */
+.params-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.params-accordion-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+  animation: fadeSlideIn 0.22s ease;
+  transition: box-shadow 0.2s ease;
+}
+
+.params-accordion-item.open {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-color: var(--accent, #6366f1);
+}
+
+.params-accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  transition: background 0.15s ease;
+}
+
+.params-accordion-header:hover {
+  background: var(--bg-hover, rgba(99,102,241,0.06));
+}
+
+.params-accordion-item.open .params-accordion-header {
+  background: var(--bg-hover, rgba(99,102,241,0.06));
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.params-accordion-title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.params-accordion-title span {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.params-accordion-title small {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.params-accordion-chevron {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.params-accordion-item.open .params-accordion-chevron {
+  color: var(--accent, #6366f1);
+}
+
+.params-accordion-body {
+  padding: 1.5rem 1.75rem 1.75rem;
+  animation: fadeSlideIn 0.2s ease;
+}
+
+@media (max-width: 640px) {
+  .params-accordion-header {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  .params-accordion-body {
+    padding: 1rem;
+  }
+  .params-accordion-title span {
+    font-size: 0.95rem;
   }
 }

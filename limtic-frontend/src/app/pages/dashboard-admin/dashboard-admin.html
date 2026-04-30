@@ -1099,237 +1099,264 @@
 
       @if (!parametresLoading()) {
 
-        <!-- ── Section 1 : Identité du laboratoire ── -->
-        <div class="params-section">
-          <div class="params-section-header">
-            <span class="params-section-icon">🏛</span>
-            <div>
-              <h2>Identité du laboratoire</h2>
-              <p>Nom, acronyme et informations générales affichés sur le site public</p>
-            </div>
-          </div>
+        <div class="params-accordion">
 
-          <div class="form-grid params-grid">
-            <div class="field">
-              <label>Nom complet *</label>
-              <input [(ngModel)]="laboForm.nom"
-                     placeholder="ex. Laboratoire d'Informatique et TIC" />
-            </div>
-            <div class="field">
-              <label>Acronyme</label>
-              <input [(ngModel)]="laboForm.acronyme"
-                     placeholder="ex. LIMTIC" />
-            </div>
-            <div class="field">
-              <label>Email de contact</label>
-              <input type="email" [(ngModel)]="laboForm.email"
-                     placeholder="contact@limtic.tn" />
-            </div>
-            <div class="field">
-              <label>Téléphone</label>
-              <input [(ngModel)]="laboForm.telephone"
-                     placeholder="+216 XX XXX XXX" />
-            </div>
-            <div class="field full">
-              <label>Adresse</label>
-              <input [(ngModel)]="laboForm.adresse"
-                     placeholder="Campus universitaire, Tunis" />
-            </div>
-            <div class="field full">
-              <label>Description courte</label>
-              <textarea [(ngModel)]="laboForm.description"
-                        rows="3"
-                        placeholder="Présentation du laboratoire visible sur la page d'accueil…"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── Section 2 : Logo ── -->
-        <div class="params-section">
-          <div class="params-section-header">
-            <span class="params-section-icon">🖼</span>
-            <div>
-              <h2>Logos du laboratoire</h2>
-              <p>Deux logos séparés pour les thèmes sombre et clair</p>
-            </div>
-          </div>
-
-          <div class="logo-grid">
-            <div class="logo-block">
-              <h3>Logo thème clair</h3>
-              <div class="logo-upload-area">
-                <!-- Prévisualisation -->
-                <div class="logo-preview-box">
-                  @if (logoPreviewUrlLight()) {
-                    <img [src]="logoPreviewUrlLight()" alt="Logo clair" class="logo-preview-img" />
-                  } @else {
-                    <div class="logo-preview-placeholder">
-                      <span>🌞</span>
-                      <small>Aucun logo</small>
-                    </div>
-                  }
-                </div>
-
-                <!-- Contrôles upload -->
-                <div class="logo-upload-controls">
-                  <input type="file"
-                         accept="image/png,image/jpeg,image/svg+xml"
-                         id="logoInputLight"
-                         class="logo-file-input"
-                         (change)="onLogoFileSelected('light', $event)" />
-                  <label for="logoInputLight" class="btn-logo-choose">
-                    📁 Choisir un fichier
-                  </label>
-                  @if (logoUrlCouranteLight()) {
-                    <button class="btn-logo-delete" (click)="supprimerLogo('light')">✕ Supprimer le logo</button>
-                  }
-
-                  @if (logoLightFile) {
-                    <div class="logo-file-info">
-                      <span class="logo-file-name">📄 {{ logoLightFile.name }}</span>
-                      <button class="btn-logo-cancel" (click)="annulerLogoSelection('light')">✕ Annuler</button>
-                    </div>
-                  }
-
-                  @if (!logoPreviewUrlLight() && !logoLightFile) {
-                    <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
-                  }
-                </div>
+          <!-- ── Accordion 1 : Identité du laboratoire ── -->
+          <div class="params-accordion-item" [class.open]="activeParamsSection() === 'identite'">
+            <button class="params-accordion-header" type="button"
+                    (click)="toggleParamsSection('identite')">
+              <span class="params-section-icon">🏛</span>
+              <div class="params-accordion-title">
+                <span>Identité du laboratoire</span>
+                <small>Nom, acronyme et informations générales affichés sur le site public</small>
               </div>
-            </div>
+              <span class="params-accordion-chevron">{{ activeParamsSection() === 'identite' ? '▲' : '▼' }}</span>
+            </button>
 
-            <div class="logo-block">
-              <h3>Logo thème sombre</h3>
-              <div class="logo-upload-area">
-                <!-- Prévisualisation -->
-                <div class="logo-preview-box">
-                  @if (logoPreviewUrlDark()) {
-                    <img [src]="logoPreviewUrlDark()" alt="Logo sombre" class="logo-preview-img" />
-                  } @else {
-                    <div class="logo-preview-placeholder">
-                      <span>🌙</span>
-                      <small>Aucun logo</small>
-                    </div>
-                  }
-                </div>
-
-                <!-- Contrôles upload -->
-                <div class="logo-upload-controls">
-                  <input type="file"
-                         accept="image/png,image/jpeg,image/svg+xml"
-                         id="logoInputDark"
-                         class="logo-file-input"
-                         (change)="onLogoFileSelected('dark', $event)" />
-                  <label for="logoInputDark" class="btn-logo-choose">
-                    📁 Choisir un fichier
-                  </label>
-
-                  @if (logoUrlCouranteDark()) {
-                    <button class="btn-logo-delete" (click)="supprimerLogo('dark')">✕ Supprimer le logo</button>
-                  }
-                  
-                  @if (logoDarkFile) {
-                    <div class="logo-file-info">
-                      <span class="logo-file-name">📄 {{ logoDarkFile.name }}</span>
-                      <button class="btn-logo-cancel" (click)="annulerLogoSelection('dark')">✕ Annuler</button>
-                    </div>
-                  }
-
-                  @if (!logoPreviewUrlDark() && !logoDarkFile) {
-                    <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-                <!-- ── Section 3 : Couleurs du thème ── -->
-                <div class="params-section">
-                  <div class="params-section-header">
-                    <span class="params-section-icon">🎨</span>
-                    <div>
-                      <h2>Couleurs du thème</h2>
-                      <p>Les modifications s'appliquent en temps réel au thème actif</p>
-                    </div>
+            @if (activeParamsSection() === 'identite') {
+              <div class="params-accordion-body">
+                <div class="form-grid params-grid">
+                  <div class="field">
+                    <label>Nom complet *</label>
+                    <input [(ngModel)]="laboForm.nom"
+                           placeholder="ex. Laboratoire d'Informatique et TIC" />
                   </div>
+                  <div class="field">
+                    <label>Acronyme</label>
+                    <input [(ngModel)]="laboForm.acronyme"
+                           placeholder="ex. LIMTIC" />
+                  </div>
+                  <div class="field">
+                    <label>Email de contact</label>
+                    <input type="email" [(ngModel)]="laboForm.email"
+                           placeholder="contact@limtic.tn" />
+                  </div>
+                  <div class="field">
+                    <label>Téléphone</label>
+                    <input [(ngModel)]="laboForm.telephone"
+                           placeholder="+216 XX XXX XXX" />
+                  </div>
+                  <div class="field full">
+                    <label>Adresse</label>
+                    <input [(ngModel)]="laboForm.adresse"
+                           placeholder="Campus universitaire, Tunis" />
+                  </div>
+                  <div class="field full">
+                    <label>Description courte</label>
+                    <textarea [(ngModel)]="laboForm.description"
+                              rows="3"
+                              placeholder="Présentation du laboratoire visible sur la page d'accueil…"></textarea>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
 
-                  <div class="theme-groups">
-                    @for (section of THEME_SECTIONS; track section.key) {
-                      <div class="theme-group">
-                        <div class="theme-group-header">
-                          <h3>{{ section.label }}</h3>
-                          <p>{{ section.description }}</p>
-                        </div>
+          <!-- ── Accordion 2 : Logos ── -->
+          <div class="params-accordion-item" [class.open]="activeParamsSection() === 'logos'">
+            <button class="params-accordion-header" type="button"
+                    (click)="toggleParamsSection('logos')">
+              <span class="params-section-icon">🖼</span>
+              <div class="params-accordion-title">
+                <span>Logos du laboratoire</span>
+                <small>Deux logos séparés pour les thèmes sombre et clair</small>
+              </div>
+              <span class="params-accordion-chevron">{{ activeParamsSection() === 'logos' ? '▲' : '▼' }}</span>
+            </button>
 
-                        <div class="colors-grid">
-                          @for (field of THEME_FIELDS; track field.key) {
-                            <div class="color-field">
-                              <label>{{ field.label }}</label>
-                              <div class="color-input-row">
-                                <input type="color"
-                                       [value]="themeForm[section.key][field.key]"
-                                       (input)="onColorInput(section.key, field.key, $event)"
-                                       class="color-picker" />
-                                <input type="text"
-                                       [value]="themeForm[section.key][field.key]"
-                                       (change)="onColorText(section.key, field.key, $event)"
-                                       class="color-hex-input"
-                                       maxlength="64"
-                                       placeholder="#000000" />
-                              </div>
-                              <span class="color-hint">{{ field.hint }}</span>
-                            </div>
-                          }
-                        </div>
-
-                        <button class="btn-colors-reset" (click)="resetCouleursDefaut(section.key)">
-                          ↺ Réinitialiser les couleurs par défaut
-                        </button>
+            @if (activeParamsSection() === 'logos') {
+              <div class="params-accordion-body">
+                <div class="logo-grid">
+                  <div class="logo-block">
+                    <h3>Logo thème clair</h3>
+                    <div class="logo-upload-area">
+                      <div class="logo-preview-box">
+                        @if (logoPreviewUrlLight()) {
+                          <img [src]="logoPreviewUrlLight()" alt="Logo clair" class="logo-preview-img" />
+                        } @else {
+                          <div class="logo-preview-placeholder">
+                            <span>🌞</span>
+                            <small>Aucun logo</small>
+                          </div>
+                        }
                       </div>
-                    }
+                      <div class="logo-upload-controls">
+                        <input type="file"
+                               accept="image/png,image/jpeg,image/svg+xml"
+                               id="logoInputLight"
+                               class="logo-file-input"
+                               (change)="onLogoFileSelected('light', $event)" />
+                        <label for="logoInputLight" class="btn-logo-choose">
+                          📁 Choisir un fichier
+                        </label>
+                        @if (logoUrlCouranteLight()) {
+                          <button class="btn-logo-delete" (click)="supprimerLogo('light')">✕ Supprimer le logo</button>
+                        }
+                        @if (logoLightFile) {
+                          <div class="logo-file-info">
+                            <span class="logo-file-name">📄 {{ logoLightFile.name }}</span>
+                            <button class="btn-logo-cancel" (click)="annulerLogoSelection('light')">✕ Annuler</button>
+                          </div>
+                        }
+                        @if (!logoPreviewUrlLight() && !logoLightFile) {
+                          <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="logo-block">
+                    <h3>Logo thème sombre</h3>
+                    <div class="logo-upload-area">
+                      <div class="logo-preview-box">
+                        @if (logoPreviewUrlDark()) {
+                          <img [src]="logoPreviewUrlDark()" alt="Logo sombre" class="logo-preview-img" />
+                        } @else {
+                          <div class="logo-preview-placeholder">
+                            <span>🌙</span>
+                            <small>Aucun logo</small>
+                          </div>
+                        }
+                      </div>
+                      <div class="logo-upload-controls">
+                        <input type="file"
+                               accept="image/png,image/jpeg,image/svg+xml"
+                               id="logoInputDark"
+                               class="logo-file-input"
+                               (change)="onLogoFileSelected('dark', $event)" />
+                        <label for="logoInputDark" class="btn-logo-choose">
+                          📁 Choisir un fichier
+                        </label>
+                        @if (logoUrlCouranteDark()) {
+                          <button class="btn-logo-delete" (click)="supprimerLogo('dark')">✕ Supprimer le logo</button>
+                        }
+                        @if (logoDarkFile) {
+                          <div class="logo-file-info">
+                            <span class="logo-file-name">📄 {{ logoDarkFile.name }}</span>
+                            <button class="btn-logo-cancel" (click)="annulerLogoSelection('dark')">✕ Annuler</button>
+                          </div>
+                        }
+                        @if (!logoPreviewUrlDark() && !logoDarkFile) {
+                          <p class="logo-hint">Aucun logo sélectionné — le logo actuel sera conservé.</p>
+                        }
+                      </div>
+                    </div>
                   </div>
                 </div>
-        
-        <!-- ── Section 3 : SMTP ── -->
-        <div class="params-section">
-          <div class="params-section-header">
-            <span class="params-section-icon">✉️</span>
-            <div>
-              <h2>Paramètres SMTP</h2>
-              <p>Adresse destinataire et mot de passe applicatif</p>
-            </div>
+              </div>
+            }
           </div>
 
-          <div class="form-grid params-grid">
-            <div class="field">
-              <label>Serveur SMTP</label>
-              <input [(ngModel)]="smtpForm.host"
-                     placeholder="smtp.gmail.com" />
-            </div>
-            <div class="field">
-              <label>Port SMTP</label>
-              <input type="number" [(ngModel)]="smtpForm.port"
-                     placeholder="587" min="1" />
-            </div>
-            <div class="field">
-              <label>Utilisateur SMTP</label>
-              <input type="email" [(ngModel)]="smtpForm.username"
-                     placeholder="user@domaine.tn" />
-            </div>
-            <div class="field">
-              <label>Destinataire</label>
-              <input type="email" [(ngModel)]="smtpForm.destinataire"
-                     placeholder="contact@limtic.tn" />
-            </div>
-            <div class="field">
-              <label>Mot de passe SMTP</label>
-              <input type="password" [(ngModel)]="smtpForm.password"
-                     placeholder="Laissez vide pour ne pas changer" />
-            </div>
-          </div>
-        </div>
+          <!-- ── Accordion 3 : Couleurs du thème ── -->
+          <div class="params-accordion-item" [class.open]="activeParamsSection() === 'couleurs'">
+            <button class="params-accordion-header" type="button"
+                    (click)="toggleParamsSection('couleurs')">
+              <span class="params-section-icon">🎨</span>
+              <div class="params-accordion-title">
+                <span>Couleurs du thème</span>
+                <small>Les modifications s'appliquent en temps réel au thème actif</small>
+              </div>
+              <span class="params-accordion-chevron">{{ activeParamsSection() === 'couleurs' ? '▲' : '▼' }}</span>
+            </button>
 
+            @if (activeParamsSection() === 'couleurs') {
+              <div class="params-accordion-body">
+                <div class="theme-groups">
+                  @for (section of THEME_SECTIONS; track section.key) {
+                    <div class="theme-group">
+                      <div class="theme-group-header">
+                        <h3>{{ section.label }}</h3>
+                        <p>{{ section.description }}</p>
+                      </div>
+                      <div class="colors-grid">
+                        @for (field of THEME_FIELDS; track field.key) {
+                          <div class="color-field">
+                            <label>{{ field.label }}</label>
+                            <div class="color-input-row">
+                              <input type="color"
+                                     [value]="themeForm[section.key][field.key]"
+                                     (input)="onColorInput(section.key, field.key, $event)"
+                                     class="color-picker" />
+                              <input type="text"
+                                     [value]="themeForm[section.key][field.key]"
+                                     (change)="onColorText(section.key, field.key, $event)"
+                                     class="color-hex-input"
+                                     maxlength="64"
+                                     placeholder="#000000" />
+                            </div>
+                            <span class="color-hint">{{ field.hint }}</span>
+                          </div>
+                        }
+                      </div>
+                      <button class="btn-colors-reset" (click)="resetCouleursDefaut(section.key)">
+                        ↺ Réinitialiser les couleurs par défaut
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- ── Accordion 4 : SMTP ── -->
+          <div class="params-accordion-item" [class.open]="activeParamsSection() === 'smtp'">
+            <button class="params-accordion-header" type="button"
+                    (click)="toggleParamsSection('smtp')">
+              <span class="params-section-icon">✉️</span>
+              <div class="params-accordion-title">
+                <span>Paramètres SMTP</span>
+                <small>Adresse destinataire et mot de passe applicatif</small>
+              </div>
+              <span class="params-accordion-chevron">{{ activeParamsSection() === 'smtp' ? '▲' : '▼' }}</span>
+            </button>
+
+            @if (activeParamsSection() === 'smtp') {
+              <div class="params-accordion-body">
+                <div class="form-grid params-grid">
+                  <div class="field">
+                    <label>Serveur SMTP</label>
+                    <input [(ngModel)]="smtpForm.host"
+                           placeholder="smtp.gmail.com" />
+                  </div>
+                  <div class="field">
+                    <label>Port SMTP</label>
+                    <input type="number" [(ngModel)]="smtpForm.port"
+                           placeholder="587" min="1" />
+                  </div>
+                  <div class="field">
+                    <label>Utilisateur SMTP</label>
+                    <input type="email" [(ngModel)]="smtpForm.username"
+                           placeholder="user@domaine.tn" />
+                  </div>
+                  <div class="field">
+                    <label>Destinataire</label>
+                    <input type="email" [(ngModel)]="smtpForm.destinataire"
+                           placeholder="contact@limtic.tn" />
+                  </div>
+                  <div class="field">
+                    <label>Mot de passe SMTP</label>
+                    <input type="password" [(ngModel)]="smtpForm.password"
+                           placeholder="Laissez vide pour ne pas changer" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- ── Accordion 5 : SEO par page ── -->
+          <div class="params-accordion-item" [class.open]="activeParamsSection() === 'seo'">
+            <button class="params-accordion-header" type="button"
+                    (click)="toggleParamsSection('seo')">
+              <span class="params-section-icon">🔍</span>
+              <div class="params-accordion-title">
+                <span>Métadonnées SEO</span>
+                <small>Titre, description et mots-clés pour chaque page publique du site</small>
+              </div>
+              <span class="params-accordion-chevron">{{ activeParamsSection() === 'seo' ? '▲' : '▼' }}</span>
+            </button>
+
+            @if (activeParamsSection() === 'seo') {
+              <div class="params-accordion-body">
         <!-- ── Section 4 : SEO par page ── -->
         <div class="params-section">
           <div class="params-section-header">
@@ -1408,6 +1435,11 @@
             }
           </div>
         </div>
+              </div>
+            }
+          </div>
+
+        </div><!-- /.params-accordion -->
 
         <!-- ── Barre d'actions globale ── -->
         <div class="params-actions-bar">

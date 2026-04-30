@@ -301,6 +301,9 @@ export class DashboardAdmin implements OnInit {
   /** Page SEO actuellement ouverte dans l'accordéon */
   seoPageActive = signal<string>('home');
 
+  /** Section de paramètres actuellement ouverte dans l'accordéon */
+  activeParamsSection = signal<string>('identite');
+
   /** URL courante du logo (relative, ex: /uploads/logos/logo-abc.png) */
   logoUrlCouranteLight = signal<string>('');
   logoUrlCouranteDark = signal<string>('');
@@ -1201,6 +1204,11 @@ export class DashboardAdmin implements OnInit {
   /** Ouvre/ferme un panneau de la liste SEO (accordéon) */
   toggleSeoPage(key: string) {
     this.seoPageActive.set(this.seoPageActive() === key ? '' : key);
+  }
+
+  /** Ouvre/ferme une section de paramètres dans l'accordéon */
+  toggleParamsSection(key: string) {
+    this.activeParamsSection.set(this.activeParamsSection() === key ? '' : key);
   }
 
   /**
