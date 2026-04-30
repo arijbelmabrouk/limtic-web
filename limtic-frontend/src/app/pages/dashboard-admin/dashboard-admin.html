@@ -1162,10 +1162,6 @@
                 <div class="logo-preview-box">
                   @if (logoPreviewUrlLight()) {
                     <img [src]="logoPreviewUrlLight()" alt="Logo clair" class="logo-preview-img" />
-                    <button class="btn-logo-preview-delete"
-                            type="button"
-                            title="Supprimer le logo"
-                            (click)="supprimerLogo('light')">✕</button>
                   } @else {
                     <div class="logo-preview-placeholder">
                       <span>🌞</span>
@@ -1184,7 +1180,7 @@
                   <label for="logoInputLight" class="btn-logo-choose">
                     📁 Choisir un fichier
                   </label>
-                  @if (logoPreviewUrlLight() || logoUrlCouranteLight()) {
+                  @if (logoUrlCouranteLight()) {
                     <button class="btn-logo-delete" (click)="supprimerLogo('light')">✕ Supprimer le logo</button>
                   }
 
@@ -1209,10 +1205,6 @@
                 <div class="logo-preview-box">
                   @if (logoPreviewUrlDark()) {
                     <img [src]="logoPreviewUrlDark()" alt="Logo sombre" class="logo-preview-img" />
-                    <button class="btn-logo-preview-delete"
-                            type="button"
-                            title="Supprimer le logo"
-                            (click)="supprimerLogo('dark')">✕</button>
                   } @else {
                     <div class="logo-preview-placeholder">
                       <span>🌙</span>
@@ -1232,7 +1224,7 @@
                     📁 Choisir un fichier
                   </label>
 
-                  @if (logoPreviewUrlDark() || logoUrlCouranteDark()) {
+                  @if (logoUrlCouranteDark()) {
                     <button class="btn-logo-delete" (click)="supprimerLogo('dark')">✕ Supprimer le logo</button>
                   }
                   
