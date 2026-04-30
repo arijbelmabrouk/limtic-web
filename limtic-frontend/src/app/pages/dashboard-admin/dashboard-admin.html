@@ -27,11 +27,9 @@
       <button [class.active]="activeTab() === 'evenements'" (click)="setTab('evenements')">
         Événements
       </button>
-      @if (userRole() === 'SUPER_ADMIN') {
-        <button [class.active]="activeTab() === 'axes'" (click)="setTab('axes')">
-          Axes
-        </button>
-      }
+      <button [class.active]="activeTab() === 'axes'" (click)="setTab('axes')">
+        Axes
+      </button>
       <button [class.active]="activeTab() === 'doctorants'" (click)="setTab('doctorants')">
         Doctorants
       </button>
@@ -111,12 +109,13 @@
           <div class="stat-label">Événements</div>
           <div class="stat-action">Gérer →</div>
         </div>
-        @if (userRole() === 'SUPER_ADMIN') {
+  
           <div class="stat-card" (click)="setTab('axes')">
             <div class="stat-num">{{ stats().axes }}</div>
             <div class="stat-label">Axes</div>
             <div class="stat-action">Gérer →</div>
           </div>
+         @if (userRole() === 'SUPER_ADMIN') {
           <div class="stat-card" (click)="setTab('comptes')">
             <div class="stat-num">{{ users().length }}</div>
             <div class="stat-label">Comptes</div>
@@ -144,10 +143,11 @@
           <div class="quick-card" (click)="setTab('evenements'); showForm.set('event')">
             <span>➕</span> Nouvel événement
           </div>
-          @if (userRole() === 'SUPER_ADMIN') {
+          
             <div class="quick-card" (click)="setTab('axes'); showForm.set('axe')">
               <span>➕</span> Nouvel axe
             </div>
+          @if (userRole() === 'SUPER_ADMIN') {
             <div class="quick-card" (click)="setTab('comptes'); showForm.set('user')">
               <span>➕</span> Nouveau compte
             </div>

@@ -386,7 +386,7 @@ export class DashboardAdmin implements OnInit {
   }
 
   setTab(tab: string) {
-    if (this.userRole() !== 'SUPER_ADMIN' && ['comptes', 'axes', 'parametres'].includes(tab)) {
+    if (this.userRole() !== 'SUPER_ADMIN' && ['comptes', 'parametres'].includes(tab)) {
       return;
     }
     
