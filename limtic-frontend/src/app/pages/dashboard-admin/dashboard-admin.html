@@ -1100,21 +1100,16 @@
       @if (!parametresLoading()) {
 
         <!-- ── Section 1 : Identité du laboratoire ── -->
-        <div class="params-accordion" [class.open]="paramSectionActive() === 'identite'">
-          <button class="params-accordion-header"
-                  type="button"
-                  (click)="toggleParamSection('identite')">
+        <div class="params-section">
+          <div class="params-section-header">
             <span class="params-section-icon">🏛</span>
             <div>
               <h2>Identité du laboratoire</h2>
               <p>Nom, acronyme et informations générales affichés sur le site public</p>
             </div>
-            <span class="params-accordion-chevron">{{ paramSectionActive() === 'identite' ? '▲' : '▼' }}</span>
-          </button>
+          </div>
 
-          @if (paramSectionActive() === 'identite') {
-          <div class="params-accordion-body">
-            <div class="form-grid params-grid">
+          <div class="form-grid params-grid">
             <div class="field">
               <label>Nom complet *</label>
               <input [(ngModel)]="laboForm.nom"
@@ -1147,26 +1142,19 @@
                         placeholder="Présentation du laboratoire visible sur la page d'accueil…"></textarea>
             </div>
           </div>
-          </div>
-          }
         </div>
 
         <!-- ── Section 2 : Logo ── -->
-        <div class="params-accordion" [class.open]="paramSectionActive() === 'logo'">
-          <button class="params-accordion-header"
-                  type="button"
-                  (click)="toggleParamSection('logo')">
+        <div class="params-section">
+          <div class="params-section-header">
             <span class="params-section-icon">🖼</span>
             <div>
               <h2>Logos du laboratoire</h2>
               <p>Deux logos séparés pour les thèmes sombre et clair</p>
             </div>
-            <span class="params-accordion-chevron">{{ paramSectionActive() === 'logo' ? '▲' : '▼' }}</span>
-          </button>
+          </div>
 
-          @if (paramSectionActive() === 'logo') {
-          <div class="params-accordion-body">
-            <div class="logo-grid">
+          <div class="logo-grid">
             <div class="logo-block">
               <h3>Logo thème clair</h3>
               <div class="logo-upload-area">
@@ -1174,6 +1162,10 @@
                 <div class="logo-preview-box">
                   @if (logoPreviewUrlLight()) {
                     <img [src]="logoPreviewUrlLight()" alt="Logo clair" class="logo-preview-img" />
+                    <button class="btn-logo-preview-delete"
+                            type="button"
+                            title="Supprimer le logo"
+                            (click)="supprimerLogo('light')">✕</button>
                   } @else {
                     <div class="logo-preview-placeholder">
                       <span>🌞</span>
@@ -1192,7 +1184,6 @@
                   <label for="logoInputLight" class="btn-logo-choose">
                     📁 Choisir un fichier
                   </label>
-
                   @if (logoPreviewUrlLight() || logoUrlCouranteLight()) {
                     <button class="btn-logo-delete" (click)="supprimerLogo('light')">✕ Supprimer le logo</button>
                   }
@@ -1218,6 +1209,10 @@
                 <div class="logo-preview-box">
                   @if (logoPreviewUrlDark()) {
                     <img [src]="logoPreviewUrlDark()" alt="Logo sombre" class="logo-preview-img" />
+                    <button class="btn-logo-preview-delete"
+                            type="button"
+                            title="Supprimer le logo"
+                            (click)="supprimerLogo('dark')">✕</button>
                   } @else {
                     <div class="logo-preview-placeholder">
                       <span>🌙</span>
@@ -1240,7 +1235,7 @@
                   @if (logoPreviewUrlDark() || logoUrlCouranteDark()) {
                     <button class="btn-logo-delete" (click)="supprimerLogo('dark')">✕ Supprimer le logo</button>
                   }
-
+                  
                   @if (logoDarkFile) {
                     <div class="logo-file-info">
                       <span class="logo-file-name">📄 {{ logoDarkFile.name }}</span>
@@ -1255,26 +1250,19 @@
               </div>
             </div>
           </div>
-          </div>
-          }
         </div>
 
                 <!-- ── Section 3 : Couleurs du thème ── -->
-                <div class="params-accordion" [class.open]="paramSectionActive() === 'theme'">
-                  <button class="params-accordion-header"
-                          type="button"
-                          (click)="toggleParamSection('theme')">
+                <div class="params-section">
+                  <div class="params-section-header">
                     <span class="params-section-icon">🎨</span>
                     <div>
                       <h2>Couleurs du thème</h2>
                       <p>Les modifications s'appliquent en temps réel au thème actif</p>
                     </div>
-                    <span class="params-accordion-chevron">{{ paramSectionActive() === 'theme' ? '▲' : '▼' }}</span>
-                  </button>
+                  </div>
 
-                  @if (paramSectionActive() === 'theme') {
-                  <div class="params-accordion-body">
-                    <div class="theme-groups">
+                  <div class="theme-groups">
                     @for (section of THEME_SECTIONS; track section.key) {
                       <div class="theme-group">
                         <div class="theme-group-header">
@@ -1308,27 +1296,20 @@
                         </button>
                       </div>
                     }
-                    </div>
                   </div>
-                  }
                 </div>
         
         <!-- ── Section 3 : SMTP ── -->
-        <div class="params-accordion" [class.open]="paramSectionActive() === 'smtp'">
-          <button class="params-accordion-header"
-                  type="button"
-                  (click)="toggleParamSection('smtp')">
+        <div class="params-section">
+          <div class="params-section-header">
             <span class="params-section-icon">✉️</span>
             <div>
               <h2>Paramètres SMTP</h2>
               <p>Adresse destinataire et mot de passe applicatif</p>
             </div>
-            <span class="params-accordion-chevron">{{ paramSectionActive() === 'smtp' ? '▲' : '▼' }}</span>
-          </button>
+          </div>
 
-          @if (paramSectionActive() === 'smtp') {
-          <div class="params-accordion-body">
-            <div class="form-grid params-grid">
+          <div class="form-grid params-grid">
             <div class="field">
               <label>Serveur SMTP</label>
               <input [(ngModel)]="smtpForm.host"
@@ -1355,26 +1336,19 @@
                      placeholder="Laissez vide pour ne pas changer" />
             </div>
           </div>
-          </div>
-          }
         </div>
 
         <!-- ── Section 4 : SEO par page ── -->
-        <div class="params-accordion" [class.open]="paramSectionActive() === 'seo'">
-          <button class="params-accordion-header"
-                  type="button"
-                  (click)="toggleParamSection('seo')">
+        <div class="params-section">
+          <div class="params-section-header">
             <span class="params-section-icon">🔍</span>
             <div>
               <h2>Métadonnées SEO</h2>
               <p>Titre, description et mots-clés pour chaque page publique du site</p>
             </div>
-            <span class="params-accordion-chevron">{{ paramSectionActive() === 'seo' ? '▲' : '▼' }}</span>
-          </button>
+          </div>
 
-          @if (paramSectionActive() === 'seo') {
-          <div class="params-accordion-body">
-            <div class="seo-accordion">
+          <div class="seo-accordion">
             @for (page of SEO_PAGES; track page.key) {
               <div class="seo-accordion-item"
                    [class.open]="seoPageActive() === page.key">
@@ -1441,8 +1415,6 @@
               </div>
             }
           </div>
-          </div>
-          }
         </div>
 
         <!-- ── Barre d'actions globale ── -->
