@@ -68,7 +68,7 @@
 }
 .pub-card:hover {
   border-left-color: var(--accent);
-  background: rgba(0,0,0,0.04);
+  background: var(--bg-table-hover);
   transform: translateX(5px);
   box-shadow: 0 6px 24px rgba(0,0,0,0.12);
 }
@@ -167,7 +167,7 @@
 
 /* ── Auteurs ── */
 .pub-authors {
-  color: #7c3aed;
+  color: var(--accent);
   font-size: 0.85rem;
   margin: 0;
 }

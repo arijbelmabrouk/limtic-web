@@ -86,7 +86,7 @@
 .avatar-initials {
   width: 56px; height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00d2ff, #0077b6);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   display: flex; align-items: center; justify-content: center;
   font-size: 1.2rem; font-weight: 700; color: white;
   flex-shrink: 0;
@@ -101,7 +101,7 @@
   font-weight: 600;
 }
 
-.en-cours { background: rgba(0,210,255,0.15); color: #00d2ff; }
+.en-cours { background: var(--accent-soft); color: var(--accent); }
 .soutenu-badge { background: rgba(63,185,80,0.15); color: #3fb950; }
 
 .sujet { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.4; }

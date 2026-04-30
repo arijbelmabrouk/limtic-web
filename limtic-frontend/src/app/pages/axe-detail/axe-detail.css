@@ -120,7 +120,7 @@
   margin: 0 0 4px 0;
   font-size: 0.875rem;
 }
-.responsable-info .email { color: #00d2ff; font-style: italic; }
+.responsable-info .email { color: var(--accent); font-style: italic; }
 
 /* Chercheurs grid */
 .chercheurs-grid {
@@ -149,7 +149,7 @@
   font-weight: 700;
 }
 .chercheur-info p { color: var(--text-secondary); margin: 0 0 4px 0; font-size: 0.85rem; }
-.chercheur-info .email { color: #00d2ff; font-style: italic; }
+.chercheur-info .email { color: var(--accent); font-style: italic; }
 
 /* Publications list */
 .publications-list { display: flex; flex-direction: column; gap: 0.75rem; }
